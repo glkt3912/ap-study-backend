@@ -56,6 +56,7 @@ src/
 
 - **Hono** - 高速軽量Webフレームワーク
 - **Prisma** - Type-safe ORM
+- **PostgreSQL/Supabase** - 本番データベース
 - **SQLite** - 開発用データベース
 - **Zod** - スキーマバリデーション
 - **TypeScript** - 型安全性
@@ -67,6 +68,9 @@ src/
 | 変数名 | デフォルト値 | 説明 |
 |--------|-------------|------|
 | `DATABASE_URL` | `"file:./dev.db"` | データベース接続文字列 |
+| `SUPABASE_URL` | - | Supabase プロジェクト URL |
+| `SUPABASE_ANON_KEY` | - | Supabase 匿名キー |
+| `SUPABASE_SERVICE_ROLE_KEY` | - | Supabase サービスロールキー（オプション） |
 | `PORT` | `8000` | サーバーポート番号 (1-65535) |
 | `NODE_ENV` | `development` | 実行環境 |
 | `ALLOWED_ORIGINS` | `"http://localhost:3000,http://localhost:3001"` | CORS許可オリジン |
@@ -83,12 +87,15 @@ ALLOWED_ORIGINS="http://localhost:3000,http://localhost:3001"
 LOG_LEVEL=info
 ```
 
-**本番環境 (.env.production):**
+**本番環境 (Supabase):**
 ```env
-DATABASE_URL="postgresql://user:pass@host:5432/dbname"
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
+SUPABASE_URL="https://[PROJECT-REF].supabase.co"
+SUPABASE_ANON_KEY="[YOUR-ANON-KEY]"
+SUPABASE_SERVICE_ROLE_KEY="[YOUR-SERVICE-ROLE-KEY]"
 PORT=3000
 NODE_ENV=production
-ALLOWED_ORIGINS="https://yourdomain.com"
+ALLOWED_ORIGINS="https://yourdomain.com,https://your-app.vercel.app"
 LOG_LEVEL=warn
 ```
 
@@ -263,7 +270,31 @@ npm run test:e2e
 
 ## 🌍 デプロイ
 
-### Railway
+### Supabase + Vercel 推奨構成
+
+1. **Supabase でデータベース作成**
+   ```bash
+   # Supabase CLI
+   npx supabase init
+   npx supabase start
+   npx supabase db push
+   ```
+
+2. **Vercel でAPI デプロイ**
+   ```bash
+   # Vercel CLI
+   npm install -g vercel
+   vercel login
+   vercel --prod
+   ```
+
+3. **環境変数設定（Vercel）**
+   - `DATABASE_URL`: Supabase 接続文字列
+   - `SUPABASE_URL`: Supabase プロジェクト URL
+   - `SUPABASE_ANON_KEY`: Supabase 匿名キー
+   - `ALLOWED_ORIGINS`: フロントエンドドメイン
+
+### Railway（代替案）
 
 ```bash
 # railway.toml
