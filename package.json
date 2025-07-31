@@ -1,0 +1,28 @@
+{
+  "name": "ap-study-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.18.0",
+    "@hono/zod-validator": "^0.7.2",
+    "@prisma/client": "^5.10.0",
+    "cors": "^2.8.5",
+    "hono": "^4.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "prisma": "^5.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}

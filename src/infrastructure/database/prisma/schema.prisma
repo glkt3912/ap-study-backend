@@ -1,0 +1,89 @@
+// Prisma Schema - データベース設計
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 学習週モデル
+model StudyWeek {
+  id         Int      @id @default(autoincrement())
+  weekNumber Int      @unique
+  title      String
+  phase      String
+  goals      String // JSON配列として保存
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // リレーション
+  days StudyDay[]
+
+  @@map("study_weeks")
+}
+
+// 学習日モデル  
+model StudyDay {
+  id            Int      @id @default(autoincrement())
+  day           String // 月、火、水...
+  subject       String
+  topics        String // JSON配列として保存
+  estimatedTime Int // 分
+  actualTime    Int      @default(0)
+  completed     Boolean  @default(false)
+  understanding Int      @default(0) // 1-5
+  memo          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // 外部キー
+  weekId Int
+  week   StudyWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+
+  @@map("study_days")
+}
+
+// 学習記録モデル
+model StudyLog {
+  id            Int      @id @default(autoincrement())
+  date          DateTime
+  subject       String
+  studyTime     Int // 分
+  understanding Int // 1-5
+  memo          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("study_logs")
+}
+
+// 午前問題記録モデル
+model MorningTest {
+  id             Int      @id @default(autoincrement())
+  date           DateTime
+  category       String
+  totalQuestions Int
+  correctAnswers Int
+  timeSpent      Int // 分
+  memo           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("morning_tests")
+}
+
+// 午後問題記録モデル
+model AfternoonTest {
+  id           Int      @id @default(autoincrement())
+  date         DateTime
+  questionType String
+  score        Int // 点数
+  timeSpent    Int // 分
+  memo         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("afternoon_tests")
+}
