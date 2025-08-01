@@ -220,21 +220,30 @@ export class StudyRepository implements IStudyRepository {
     const result = await this.prisma.studyDay.aggregate({
       _count: {
         id: true,
-        completed: { equals: true }
+        completed: true
       },
       _sum: {
         actualTime: true
       },
       _avg: {
         understanding: true
+      },
+      where: {
+        completed: true
+      }
+    })
+
+    const completedCount = await this.prisma.studyDay.count({
+      where: {
+        completed: true
       }
     })
 
     return {
-      totalDays: result._count.id || 0,
-      completedDays: result._count.completed || 0,
-      totalStudyTime: result._sum.actualTime || 0,
-      averageUnderstanding: result._avg.understanding || 0
+      totalDays: result._count?.id || 0,
+      completedDays: completedCount || 0,
+      totalStudyTime: result._sum?.actualTime || 0,
+      averageUnderstanding: result._avg?.understanding || 0
     }
   }
 

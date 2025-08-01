@@ -4,16 +4,30 @@ Hono + Prisma + クリーンアーキテクチャで構築された高性能API�
 
 ## 🚀 クイックスタート
 
+### Docker環境（推奨）
+
+```bash
+# プロジェクトルートから
+cd ap-study-project
+docker compose up --build
+
+# API確認: http://localhost:3001
+```
+
+### ローカル環境
+
 ```bash
 # 依存関係のインストール
 npm install
 
-# データベースのセットアップ
-npx prisma generate
-npx prisma db push
+# PostgreSQL データベース準備
+createdb ap_study
 
-# 環境変数設定（.envファイルをコピー）
-cp .env.example .env
+# 環境変数設定
+export DATABASE_URL="postgresql://postgres:password@localhost:5432/ap_study?schema=public"
+
+# マイグレーション実行
+npx prisma migrate deploy --schema=./src/infrastructure/database/prisma/schema.prisma
 
 # データベース初期化とシード
 npx tsx src/seed.ts
@@ -56,8 +70,8 @@ src/
 
 - **Hono** - 高速軽量Webフレームワーク
 - **Prisma** - Type-safe ORM
-- **PostgreSQL/Supabase** - 本番データベース
-- **SQLite** - 開発用データベース
+- **PostgreSQL** - リレーショナルデータベース
+- **Supabase** - 本番データベース（PostgreSQL）
 - **Zod** - スキーマバリデーション
 - **TypeScript** - 型安全性
 
@@ -80,7 +94,7 @@ src/
 
 **開発環境 (.env):**
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/ap_study?schema=public"
 PORT=8000
 NODE_ENV=development
 ALLOWED_ORIGINS="http://localhost:3000,http://localhost:3001"

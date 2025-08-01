@@ -120,7 +120,7 @@ export function createStudyRoutes(
   });
 
   // PUT /api/study/progress - 学習進捗更新
-  app.put("/progress", zValidator("json", updateProgressSchema), async (c) => {
+  app.put("/progress", zValidator("json", updateProgressSchema as any), async (c) => {
     try {
       const {
         weekNumber,
@@ -185,7 +185,7 @@ export function createStudyRoutes(
       z.object({
         weekNumber: z.number().min(1).max(12),
         dayIndex: z.number().min(0).max(6),
-      })
+      }) as any
     ),
     async (c) => {
       try {
