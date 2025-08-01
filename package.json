@@ -2,6 +2,9 @@
   "name": "ap-study-backend",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": "^22.17.1"
+  },
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/app.ts",
     "build": "tsc",
