@@ -156,3 +156,64 @@ model ReviewSession {
 
   @@map("review_sessions")
 }
+
+// 過去問題モデル（IPA公式過去問データ）
+model Question {
+  id          String   @id // ap2024spring_am_01 形式
+  year        Int      // 2024
+  season      String   // spring/autumn
+  section     String   // morning/afternoon
+  number      Int      // 問題番号
+  category    String   // 基礎理論、コンピュータシステム等
+  subcategory String?  // より詳細な分類
+  difficulty  Int      // 1-5（推定難易度）
+  question    String   // 問題文
+  choices     String   // JSON配列["選択肢A", "選択肢B", ...]
+  answer      String   // 正解（A,B,C,D または記述）
+  explanation String?  // 解説
+  tags        String?  // JSON配列でタグ管理
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // リレーション
+  userAnswers UserAnswer[]
+
+  @@map("questions")
+}
+
+// ユーザー回答記録モデル
+model UserAnswer {
+  id            Int      @id @default(autoincrement())
+  userId        String?
+  questionId    String
+  userAnswer    String   // ユーザーの回答
+  isCorrect     Boolean  // 正解フラグ
+  timeSpent     Int?     // 回答にかかった時間（秒）
+  attemptNumber Int      @default(1) // 何回目の挑戦か
+  createdAt     DateTime @default(now())
+
+  // リレーション
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("user_answers")
+}
+
+// Quizセッションモデル
+model QuizSession {
+  id              Int      @id @default(autoincrement())
+  userId          String?
+  sessionType     String   // category/random/review/weak_points
+  category        String?  // セッションの対象カテゴリ
+  totalQuestions  Int      // 出題数
+  correctAnswers  Int      @default(0)
+  totalTime       Int      @default(0) // 総回答時間（秒）
+  avgTimePerQ     Int      @default(0) // 平均回答時間
+  score           Int      @default(0) // スコア（正答率%）
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  isCompleted     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("quiz_sessions")
+}

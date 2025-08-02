@@ -30,6 +30,7 @@ import { createStudyRoutes } from "./infrastructure/web/routes/study.js";
 import { createStudyLogRoutes } from "./infrastructure/web/routes/studylog.js";
 import { createTestRoutes } from "./infrastructure/web/routes/test.js";
 import { createAnalysisRoutes } from "./infrastructure/web/routes/analysis-routes.js";
+import { createQuizRoutes } from "./infrastructure/web/routes/quiz.js";
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -171,6 +172,9 @@ app.route("/api/test", createTestRoutes(container.prisma));
 // 分析API
 app.route("/api/analysis", createAnalysisRoutes(container.prisma));
 
+// Quiz API
+app.route("/api/quiz", createQuizRoutes());
+
 // エラーハンドリング
 app.onError((err, c) => {
   console.error("Error:", err);
@@ -229,6 +233,7 @@ async function startServer() {
   console.log(`📝 学習記録API: http://localhost:${port}/api/studylog`);
   console.log(`📋 問題演習API: http://localhost:${port}/api/test`);
   console.log(`📊 分析API: http://localhost:${port}/api/analysis`);
+  console.log(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");

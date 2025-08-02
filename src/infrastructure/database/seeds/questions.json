@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ap2024spring_am_01",
+    "year": 2024,
+    "season": "spring",
+    "section": "morning",
+    "number": 1,
+    "category": "基礎理論",
+    "subcategory": "2進数",
+    "difficulty": 2,
+    "question": "2進数1011と1101の和を10進数で表したものはどれか。",
+    "choices": ["24", "26", "28", "30"],
+    "answer": "A",
+    "explanation": "2進数1011は10進数で11、2進数1101は10進数で13。11 + 13 = 24",
+    "tags": ["2進数", "計算", "基礎"]
+  },
+  {
+    "id": "ap2024spring_am_02", 
+    "year": 2024,
+    "season": "spring",
+    "section": "morning",
+    "number": 2,
+    "category": "基礎理論",
+    "subcategory": "論理演算",
+    "difficulty": 3,
+    "question": "論理式 A ∧ (B ∨ C) と同じ真理値を持つ論理式はどれか。",
+    "choices": [
+      "(A ∧ B) ∨ (A ∧ C)",
+      "(A ∨ B) ∧ (A ∨ C)", 
+      "A ∨ (B ∧ C)",
+      "A ∧ B ∧ C"
+    ],
+    "answer": "A",
+    "explanation": "分配法則により A ∧ (B ∨ C) = (A ∧ B) ∨ (A ∧ C) が成り立つ",
+    "tags": ["論理演算", "分配法則", "論理式"]
+  },
+  {
+    "id": "ap2024spring_am_03",
+    "year": 2024, 
+    "season": "spring",
+    "section": "morning",
+    "number": 3,
+    "category": "コンピュータシステム",
+    "subcategory": "プロセッサ",
+    "difficulty": 3,
+    "question": "キャッシュメモリのヒット率が90%、キャッシュアクセス時間が10ns、主記憶アクセス時間が100nsのとき、平均アクセス時間は何nsか。",
+    "choices": ["19", "28", "37", "46"],
+    "answer": "A", 
+    "explanation": "平均アクセス時間 = ヒット率 × キャッシュ時間 + ミス率 × 主記憶時間 = 0.9 × 10 + 0.1 × 100 = 9 + 10 = 19ns",
+    "tags": ["キャッシュ", "メモリ", "アクセス時間"]
+  },
+  {
+    "id": "ap2024spring_am_04",
+    "year": 2024,
+    "season": "spring", 
+    "section": "morning",
+    "number": 4,
+    "category": "コンピュータシステム",
+    "subcategory": "オペレーティングシステム",
+    "difficulty": 2,
+    "question": "プロセスの状態遷移で、実行可能状態から実行状態に遷移するきっかけはどれか。",
+    "choices": [
+      "プロセスの生成",
+      "I/O要求の発生", 
+      "CPUスケジューラによる選択",
+      "プロセスの終了"
+    ],
+    "answer": "C",
+    "explanation": "実行可能状態のプロセスがCPUスケジューラによって選択されることで実行状態に遷移する",
+    "tags": ["プロセス", "状態遷移", "スケジューラ"]
+  },
+  {
+    "id": "ap2024spring_am_05",
+    "year": 2024,
+    "season": "spring",
+    "section": "morning", 
+    "number": 5,
+    "category": "技術要素",
+    "subcategory": "データベース",
+    "difficulty": 3,
+    "question": "関係データベースの正規化に関する記述のうち、適切なものはどれか。",
+    "choices": [
+      "第1正規形では、すべての属性が原子値である",
+      "第2正規形では、推移的従属性を排除する",
+      "第3正規形では、部分従属性を排除する", 
+      "非正規形では、重複データが存在しない"
+    ],
+    "answer": "A",
+    "explanation": "第1正規形では各属性が原子値（分割不可能な値）である。第2正規形は部分従属性、第3正規形は推移的従属性を排除する",
+    "tags": ["データベース", "正規化", "関係モデル"]
+  }
+]
