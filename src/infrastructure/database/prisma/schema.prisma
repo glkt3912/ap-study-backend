@@ -50,6 +50,7 @@ model StudyLog {
   id            Int      @id @default(autoincrement())
   date          DateTime
   subject       String
+  topics        String // JSON配列として保存
   studyTime     Int // 分
   understanding Int // 1-5
   memo          String?
@@ -78,7 +79,7 @@ model MorningTest {
 model AfternoonTest {
   id           Int      @id @default(autoincrement())
   date         DateTime
-  questionType String
+  category     String   // questionType → category に統一
   score        Int // 点数
   timeSpent    Int // 分
   memo         String?

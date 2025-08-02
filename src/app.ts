@@ -18,21 +18,27 @@ console.log(
 
 // リポジトリ
 import { StudyRepository } from "./infrastructure/database/repositories/StudyRepository.js";
+import { StudyLogRepository } from "./infrastructure/database/repositories/StudyLogRepository.js";
 
 // ユースケース
 import { GetStudyPlanUseCase } from "./domain/usecases/GetStudyPlan.js";
 import { UpdateStudyProgressUseCase } from "./domain/usecases/UpdateStudyProgress.js";
+import { CreateStudyLogUseCase } from "./domain/usecases/CreateStudyLog.js";
 
 // ルート
 import { createStudyRoutes } from "./infrastructure/web/routes/study.js";
+import { createStudyLogRoutes } from "./infrastructure/web/routes/studylog.js";
+import { createTestRoutes } from "./infrastructure/web/routes/test.js";
 
 // 依存性注入コンテナ
 class DIContainer {
   private static instance: DIContainer;
   private _prisma: PrismaClient;
   private _studyRepository: StudyRepository;
+  private _studyLogRepository: StudyLogRepository;
   private _getStudyPlanUseCase: GetStudyPlanUseCase;
   private _updateStudyProgressUseCase: UpdateStudyProgressUseCase;
+  private _createStudyLogUseCase: CreateStudyLogUseCase;
 
   private constructor() {
     // Prisma Client
@@ -40,12 +46,14 @@ class DIContainer {
 
     // Repository
     this._studyRepository = new StudyRepository(this._prisma);
+    this._studyLogRepository = new StudyLogRepository(this._prisma);
 
     // Use Cases
     this._getStudyPlanUseCase = new GetStudyPlanUseCase(this._studyRepository);
     this._updateStudyProgressUseCase = new UpdateStudyProgressUseCase(
       this._studyRepository
     );
+    this._createStudyLogUseCase = new CreateStudyLogUseCase(this._studyLogRepository);
   }
 
   static getInstance(): DIContainer {
@@ -61,11 +69,17 @@ class DIContainer {
   get studyRepository() {
     return this._studyRepository;
   }
+  get studyLogRepository() {
+    return this._studyLogRepository;
+  }
   get getStudyPlanUseCase() {
     return this._getStudyPlanUseCase;
   }
   get updateStudyProgressUseCase() {
     return this._updateStudyProgressUseCase;
+  }
+  get createStudyLogUseCase() {
+    return this._createStudyLogUseCase;
   }
 }
 
@@ -140,6 +154,21 @@ app.route(
   )
 );
 
+// 学習記録API
+app.route(
+  "/api/studylog",
+  createStudyLogRoutes(
+    container.createStudyLogUseCase,
+    container.studyLogRepository
+  )
+);
+
+// 問題演習記録API
+app.route(
+  "/api/test",
+  createTestRoutes(container.prisma)
+);
+
 // エラーハンドリング
 app.onError((err, c) => {
   console.error("Error:", err);
@@ -195,6 +224,8 @@ async function startServer() {
   console.log(`🚀 サーバーを起動中... ポート: ${port}`);
   console.log(`📊 API仕様: http://localhost:${port}/`);
   console.log(`🎯 学習計画API: http://localhost:${port}/api/study/plan`);
+  console.log(`📝 学習記録API: http://localhost:${port}/api/studylog`);
+  console.log(`📋 問題演習API: http://localhost:${port}/api/test`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");
