@@ -88,3 +88,71 @@ model AfternoonTest {
 
   @@map("afternoon_tests")
 }
+
+// 学習分析結果モデル
+model AnalysisResult {
+  id              Int      @id @default(autoincrement())
+  userId          String?
+  analysisDate    DateTime
+  studyPattern    String   // JSON形式で保存
+  weaknessAnalysis String  // JSON形式で保存
+  studyRecommendation String // JSON形式で保存
+  overallScore    Int      // 0-100
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("analysis_results")
+}
+
+// 予測結果モデル
+model PredictionResult {
+  id                Int      @id @default(autoincrement())
+  userId            String?
+  predictionDate    DateTime
+  examDate          DateTime
+  passProbability   String   // JSON形式で保存
+  studyTimePrediction String // JSON形式で保存
+  scorePrediction   String   // JSON形式で保存
+  examReadiness     String   // JSON形式で保存
+  modelVersion      String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("prediction_results")
+}
+
+// 復習項目モデル
+model ReviewItem {
+  id                    Int      @id @default(autoincrement())
+  userId                String?
+  subject               String
+  topic                 String
+  lastStudyDate         DateTime
+  nextReviewDate        DateTime
+  reviewCount           Int      @default(0)
+  difficulty            Int      // 1-5
+  understanding         Int      // 1-5
+  priority              Int      // 0-100
+  forgettingCurveStage  Int      @default(1) // 1-7
+  intervalDays          Int      @default(1)
+  isCompleted           Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("review_items")
+}
+
+// 復習セッションモデル
+model ReviewSession {
+  id                   Int      @id @default(autoincrement())
+  userId               String?
+  sessionDate          DateTime
+  totalItems           Int
+  completedItems       Int      @default(0)
+  sessionDuration      Int      // 分
+  averageUnderstanding Float    @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("review_sessions")
+}

@@ -29,6 +29,7 @@ import { CreateStudyLogUseCase } from "./domain/usecases/CreateStudyLog.js";
 import { createStudyRoutes } from "./infrastructure/web/routes/study.js";
 import { createStudyLogRoutes } from "./infrastructure/web/routes/studylog.js";
 import { createTestRoutes } from "./infrastructure/web/routes/test.js";
+import { createAnalysisRoutes } from "./infrastructure/web/routes/analysis-routes.js";
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -53,7 +54,9 @@ class DIContainer {
     this._updateStudyProgressUseCase = new UpdateStudyProgressUseCase(
       this._studyRepository
     );
-    this._createStudyLogUseCase = new CreateStudyLogUseCase(this._studyLogRepository);
+    this._createStudyLogUseCase = new CreateStudyLogUseCase(
+      this._studyLogRepository
+    );
   }
 
   static getInstance(): DIContainer {
@@ -90,48 +93,47 @@ const container = DIContainer.getInstance();
 // ミドルウェア
 app.use("*", logger());
 // CORS設定
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map(origin => origin.trim()) || [
-  "http://localhost:3000",
-  "http://localhost:3001",
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((origin) =>
+  origin.trim()
+) || ["http://localhost:3000", "http://localhost:3001"];
 
 app.use(
   "*",
   cors({
     origin: (origin) => {
-      console.log(`🔍 CORS チェック: Origin = ${origin || 'null'}`)
-      
+      console.log(`🔍 CORS チェック: Origin = ${origin || "null"}`);
+
       // オリジンなしのリクエスト（curl, Postman等）は開発環境でのみ許可
       if (!origin) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ オリジンなしリクエストを開発環境で許可')
-          return '*'
+        if (process.env.NODE_ENV === "development") {
+          console.log("✅ オリジンなしリクエストを開発環境で許可");
+          return "*";
         }
-        console.log('❌ 本番環境でオリジンなしリクエストを拒否')
-        return null
+        console.log("❌ 本番環境でオリジンなしリクエストを拒否");
+        return null;
       }
-      
+
       // 許可されたオリジンかチェック
       if (allowedOrigins.includes(origin)) {
-        console.log(`✅ 許可されたオリジン: ${origin}`)
-        return origin
+        console.log(`✅ 許可されたオリジン: ${origin}`);
+        return origin;
       }
-      
+
       // 許可されていないオリジンは拒否
-      console.log(`❌ 許可されていないオリジン: ${origin}`)
-      console.log(`許可済みオリジン: ${allowedOrigins.join(', ')}`)
-      return null
+      console.log(`❌ 許可されていないオリジン: ${origin}`);
+      console.log(`許可済みオリジン: ${allowedOrigins.join(", ")}`);
+      return null;
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowHeaders: [
-      "Content-Type", 
-      "Authorization", 
+      "Content-Type",
+      "Authorization",
       "X-Requested-With",
       "Accept",
-      "Origin"
+      "Origin",
     ],
     credentials: true, // 認証情報を含むリクエストを許可
-    maxAge: 86400,     // プリフライトリクエストのキャッシュ時間（24時間）
+    maxAge: 86400, // プリフライトリクエストのキャッシュ時間（24時間）
   })
 );
 
@@ -164,10 +166,10 @@ app.route(
 );
 
 // 問題演習記録API
-app.route(
-  "/api/test",
-  createTestRoutes(container.prisma)
-);
+app.route("/api/test", createTestRoutes(container.prisma));
+
+// 分析API
+app.route("/api/analysis", createAnalysisRoutes(container.prisma));
 
 // エラーハンドリング
 app.onError((err, c) => {
@@ -226,6 +228,7 @@ async function startServer() {
   console.log(`🎯 学習計画API: http://localhost:${port}/api/study/plan`);
   console.log(`📝 学習記録API: http://localhost:${port}/api/studylog`);
   console.log(`📋 問題演習API: http://localhost:${port}/api/test`);
+  console.log(`📊 分析API: http://localhost:${port}/api/analysis`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");

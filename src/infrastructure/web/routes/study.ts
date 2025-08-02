@@ -120,62 +120,72 @@ export function createStudyRoutes(
   });
 
   // PUT /api/study/progress - 学習進捗更新
-  app.put("/progress", zValidator("json", updateProgressSchema as any), async (c) => {
-    try {
-      const {
-        weekNumber,
-        dayIndex,
-        actualTime,
-        understanding,
-        memo,
-        completed,
-      } = c.req.valid("json");
+  app.put(
+    "/progress",
+    zValidator("json", updateProgressSchema as any),
+    async (c) => {
+      try {
+        const {
+          weekNumber,
+          dayIndex,
+          actualTime,
+          understanding,
+          memo,
+          completed,
+        } = c.req.valid("json");
 
-      // 完了状態の更新
-      if (completed !== undefined) {
-        if (completed) {
-          await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
+        // 完了状態の更新
+        if (completed !== undefined) {
+          if (completed) {
+            await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
+          }
         }
-      }
 
-      // 学習時間の更新
-      if (actualTime !== undefined) {
-        await updateStudyProgressUseCase.updateStudyTime(
-          weekNumber,
-          dayIndex,
-          actualTime
+        // 学習時間の更新
+        if (actualTime !== undefined) {
+          await updateStudyProgressUseCase.updateStudyTime(
+            weekNumber,
+            dayIndex,
+            actualTime
+          );
+        }
+
+        // 理解度の更新
+        if (understanding !== undefined) {
+          await updateStudyProgressUseCase.updateUnderstanding(
+            weekNumber,
+            dayIndex,
+            understanding
+          );
+        }
+
+        // メモの更新
+        if (memo !== undefined) {
+          await updateStudyProgressUseCase.updateMemo(
+            weekNumber,
+            dayIndex,
+            memo
+          );
+        }
+
+        return c.json({
+          success: true,
+          message: "進捗が更新されました",
+        });
+      } catch (error) {
+        return c.json(
+          {
+            success: false,
+            error:
+              error instanceof Error
+                ? error.message
+                : "進捗の更新に失敗しました",
+          },
+          400
         );
       }
-
-      // 理解度の更新
-      if (understanding !== undefined) {
-        await updateStudyProgressUseCase.updateUnderstanding(
-          weekNumber,
-          dayIndex,
-          understanding
-        );
-      }
-
-      // メモの更新
-      if (memo !== undefined) {
-        await updateStudyProgressUseCase.updateMemo(weekNumber, dayIndex, memo);
-      }
-
-      return c.json({
-        success: true,
-        message: "進捗が更新されました",
-      });
-    } catch (error) {
-      return c.json(
-        {
-          success: false,
-          error:
-            error instanceof Error ? error.message : "進捗の更新に失敗しました",
-        },
-        400
-      );
     }
-  });
+  );
 
   // POST /api/study/complete-task - タスク完了
   app.post(
