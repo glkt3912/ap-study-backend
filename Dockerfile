@@ -25,6 +25,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Remove dev dependencies
 RUN npm prune --omit=dev
 
-EXPOSE 3001
+EXPOSE 8000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
