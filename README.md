@@ -48,21 +48,42 @@ src/
 │   │   └── StudyLog.ts        # 学習記録エンティティ
 │   ├── repositories/          # リポジトリインターフェース
 │   │   ├── IStudyRepository.ts
-│   │   └── IStudyLogRepository.ts
+│   │   ├── IStudyLogRepository.ts
+│   │   ├── IAnalysisRepository.ts
+│   │   ├── IPredictionRepository.ts
+│   │   └── IReviewRepository.ts
 │   └── usecases/              # ユースケース
 │       ├── GetStudyPlan.ts
 │       ├── UpdateStudyProgress.ts
-│       └── CreateStudyLog.ts
+│       ├── CreateStudyLog.ts
+│       ├── AnalyzeStudyData.ts
+│       ├── PredictExamResults.ts
+│       └── GenerateReviewSchedule.ts
 ├── infrastructure/            # インフラ層
 │   ├── database/
 │   │   ├── prisma/
 │   │   │   └── schema.prisma   # データベーススキーマ
-│   │   └── repositories/       # リポジトリ実装
-│   │       └── StudyRepository.ts
+│   │   ├── repositories/       # リポジトリ実装
+│   │   │   ├── StudyRepository.ts
+│   │   │   ├── StudyLogRepository.ts
+│   │   │   ├── AnalysisRepository.ts
+│   │   │   ├── PredictionRepository.ts
+│   │   │   └── ReviewRepository.ts
+│   │   └── seeds/             # データベースシード
+│   │       ├── questions-2022.json
+│   │       ├── questions-2023.json
+│   │       ├── questions-2024.json
+│   │       ├── questions-2025.json
+│   │       └── seed-questions.ts
 │   └── web/                   # Web API
 │       ├── routes/
-│       │   └── study.ts       # 学習関連ルート
+│       │   ├── study.ts       # 学習関連ルート
+│       │   ├── studylog.ts    # 学習記録ルート
+│       │   ├── quiz.ts        # クイズルート
+│       │   └── analysis-routes.ts # 分析ルート
 │       └── middlewares/
+├── utils/                     # ユーティリティ
+│   └── logger.ts              # ログ機能
 └── app.ts                     # アプリケーションエントリーポイント
 ```
 
@@ -74,6 +95,8 @@ src/
 - **Supabase** - 本番データベース（PostgreSQL）
 - **Zod** - スキーマバリデーション
 - **TypeScript** - 型安全性
+- **ESLint** - コード品質チェック
+- **Prettier** - コードフォーマット
 
 ## ⚙️ 環境変数設定
 
@@ -216,13 +239,22 @@ LOG_LEVEL=warn
 ## 🔧 開発コマンド
 
 ```bash
+# 開発・実行
 npm run dev          # 開発サーバー起動 (tsx watch)
 npm run build        # TypeScriptビルド
 npm run start        # プロダクション実行
+
+# データベース
 npm run db:generate  # Prisma クライアント生成
 npm run db:push      # データベーススキーマ同期
 npm run db:migrate   # マイグレーション実行
 npm run db:studio    # Prisma Studio起動
+
+# コード品質
+npm run lint         # ESLint による静的解析
+npm run lint:fix     # ESLint 自動修正
+npm run format       # Prettier によるコードフォーマット
+npm run format:check # フォーマット確認（CI用）
 ```
 
 ## 🏗️ アーキテクチャの利点
@@ -261,6 +293,7 @@ const useCase = new GetStudyPlanUseCase(mockRepository)
 - 入力値のZodバリデーション
 - SQL注入対策（Prisma使用）
 - 型安全なAPIエンドポイント
+- ESLintによるセキュリティ脆弱性チェック
 
 ## 📊 パフォーマンス
 
@@ -269,17 +302,20 @@ const useCase = new GetStudyPlanUseCase(mockRepository)
 - **依存性注入**: シングルトンパターンでメモリ効率
 - **エラーハンドリング**: グレースフルなエラー処理
 
-## 🧪 テスト戦略
+## 🧪 テスト・品質管理
 
 ```bash
-# ユニットテスト
-npm test
+# テスト
+npm test                 # ユニットテスト
+npm run test:integration # 統合テスト
+npm run test:e2e         # E2Eテスト
 
-# 統合テスト
-npm run test:integration
-
-# E2Eテスト
-npm run test:e2e
+# コード品質チェック
+npm run lint             # ESLint チェック
+npm run lint:fix         # ESLint 自動修正
+npm run format           # Prettier フォーマット
+npm run format:check     # フォーマット確認
+npm run build           # TypeScript型チェック
 ```
 
 ## 🌍 デプロイ
