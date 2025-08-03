@@ -1,7 +1,7 @@
 // ユースケース: 学習記録作成
 
-import { IStudyLogRepository } from "../repositories/IStudyLogRepository.js";
-import { StudyLogEntity, StudyLogData } from "../entities/StudyLog.js";
+import { IStudyLogRepository } from "src/domain/repositories/IStudyLogRepository.js";
+import { StudyLogEntity, StudyLogData } from "src/domain/entities/StudyLog.js";
 
 export interface CreateStudyLogRequest {
   date: Date;

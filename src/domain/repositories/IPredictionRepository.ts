@@ -1,4 +1,4 @@
-import { PredictionResult } from "../entities/PredictionResult";
+import { PredictionResult } from "src/domain/entities/PredictionResult.js";
 
 export interface IPredictionRepository {
   save(predictionResult: PredictionResult): Promise<PredictionResult>;

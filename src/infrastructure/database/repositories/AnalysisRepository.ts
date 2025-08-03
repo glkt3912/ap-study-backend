@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { IAnalysisRepository } from '../../../domain/repositories/IAnalysisRepository';
-import { AnalysisResult } from '../../../domain/entities/AnalysisResult';
+import { IAnalysisRepository } from 'src/domain/repositories/IAnalysisRepository.js';
+import { AnalysisResult } from 'src/domain/entities/AnalysisResult.js';
 
 export class AnalysisRepository implements IAnalysisRepository {
   constructor(private prisma: PrismaClient) {}

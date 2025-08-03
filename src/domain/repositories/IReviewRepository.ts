@@ -1,4 +1,4 @@
-import { ReviewItem, ReviewSession } from "../entities/ReviewSchedule";
+import { ReviewItem, ReviewSession } from "src/domain/entities/ReviewSchedule.js";
 
 export interface IReviewRepository {
   // ReviewItem管理

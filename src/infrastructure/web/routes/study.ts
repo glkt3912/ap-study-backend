@@ -3,8 +3,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { GetStudyPlanUseCase } from "../../../domain/usecases/GetStudyPlan.js";
-import { UpdateStudyProgressUseCase } from "../../../domain/usecases/UpdateStudyProgress.js";
+import { GetStudyPlanUseCase } from "src/domain/usecases/GetStudyPlan.js";
+import { UpdateStudyProgressUseCase } from "src/domain/usecases/UpdateStudyProgress.js";
 
 // バリデーションスキーマ
 const updateProgressSchema = z.object({

@@ -1,6 +1,6 @@
-import { IReviewRepository } from '../repositories/IReviewRepository';
-import { IStudyLogRepository } from '../repositories/IStudyLogRepository';
-import { ReviewItem, ForgettingCurveConfig } from '../entities/ReviewSchedule';
+import { IReviewRepository } from 'src/domain/repositories/IReviewRepository.js';
+import { IStudyLogRepository } from 'src/domain/repositories/IStudyLogRepository.js';
+import { ReviewItem, ForgettingCurveConfig } from 'src/domain/entities/ReviewSchedule.js';
 
 export class GenerateReviewSchedule {
   private forgettingCurve: ForgettingCurveConfig = {

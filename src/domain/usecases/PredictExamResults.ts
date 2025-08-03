@@ -1,13 +1,13 @@
-import { IStudyLogRepository } from "../repositories/IStudyLogRepository";
-import { IPredictionRepository } from "../repositories/IPredictionRepository";
-import { IAnalysisRepository } from "../repositories/IAnalysisRepository";
+import { IStudyLogRepository } from "src/domain/repositories/IStudyLogRepository.js";
+import { IPredictionRepository } from "src/domain/repositories/IPredictionRepository.js";
+import { IAnalysisRepository } from "src/domain/repositories/IAnalysisRepository.js";
 import {
   PredictionResult,
   PassProbability,
   StudyTimePrediction,
   ScorePrediction,
   ExamReadiness,
-} from "../entities/PredictionResult";
+} from "src/domain/entities/PredictionResult.js";
 
 export class PredictExamResults {
   constructor(
@@ -375,7 +375,7 @@ export class PredictExamResults {
       subjectTimes.set(log.subject, currentTime + log.studyTime);
     });
 
-    if (subjectTimes.size === 0) return 0;
+    if (subjectTimes.size === 0) {return 0;}
 
     const times = Array.from(subjectTimes.values());
     const totalTime = times.reduce((sum, time) => sum + time, 0);

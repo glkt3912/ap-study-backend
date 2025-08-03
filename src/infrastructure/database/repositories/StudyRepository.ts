@@ -1,8 +1,8 @@
 // Prismaを使ったリポジトリ実装
 
 import { PrismaClient } from '@prisma/client'
-import { IStudyRepository } from '../../../domain/repositories/IStudyRepository.js'
-import { StudyWeekEntity, StudyWeek } from '../../../domain/entities/StudyWeek.js'
+import { IStudyRepository } from 'src/domain/repositories/IStudyRepository.js'
+import { StudyWeekEntity, StudyWeek } from 'src/domain/entities/StudyWeek.js'
 
 export class StudyRepository implements IStudyRepository {
   constructor(private prisma: PrismaClient) {}

@@ -3,8 +3,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { CreateStudyLogUseCase } from "../../../domain/usecases/CreateStudyLog.js";
-import { StudyLogRepository } from "../../database/repositories/StudyLogRepository.js";
+import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
+import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
 
 // バリデーションスキーマ
 const createStudyLogSchema = z.object({

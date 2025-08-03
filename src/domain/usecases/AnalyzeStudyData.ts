@@ -1,11 +1,11 @@
-import { IStudyLogRepository } from "../repositories/IStudyLogRepository";
-import { IAnalysisRepository } from "../repositories/IAnalysisRepository";
+import { IStudyLogRepository } from "src/domain/repositories/IStudyLogRepository.js";
+import { IAnalysisRepository } from "src/domain/repositories/IAnalysisRepository.js";
 import {
   AnalysisResult,
   StudyPattern,
   WeaknessAnalysis,
   StudyRecommendation,
-} from "../entities/AnalysisResult";
+} from "src/domain/entities/AnalysisResult.js";
 
 export class AnalyzeStudyData {
   constructor(
@@ -178,8 +178,8 @@ export class AnalyzeStudyData {
     let score = 50; // ベーススコア
 
     // 学習時間による加点
-    if (pattern.totalStudyTime > 3600) score += 20; // 60時間以上
-    else if (pattern.totalStudyTime > 1800) score += 10; // 30時間以上
+    if (pattern.totalStudyTime > 3600) {score += 20;} // 60時間以上
+    else if (pattern.totalStudyTime > 1800) {score += 10;} // 30時間以上
 
     // 継続性による加点
     score += pattern.consistencyScore * 0.2;
@@ -195,14 +195,14 @@ export class AnalyzeStudyData {
     const highUnderstandingLogs = studyLogs.filter(
       (log) => log.understanding >= 4
     );
-    if (highUnderstandingLogs.length === 0) return "9:00";
+    if (highUnderstandingLogs.length === 0) {return "9:00";}
 
     // 朝型学習を推奨（実際の実装では時間帯データが必要）
     return "9:00";
   }
 
   private calculateConsistencyScore(studyLogs: any[]): number {
-    if (studyLogs.length < 7) return 0;
+    if (studyLogs.length < 7) {return 0;}
 
     // 学習日の分散を計算して継続性を評価
     const studyDates = studyLogs.map((log) => new Date(log.date).getDate());

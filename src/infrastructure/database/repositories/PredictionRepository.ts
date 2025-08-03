@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { IPredictionRepository } from '../../../domain/repositories/IPredictionRepository';
-import { PredictionResult } from '../../../domain/entities/PredictionResult';
+import { IPredictionRepository } from 'src/domain/repositories/IPredictionRepository.js';
+import { PredictionResult } from 'src/domain/entities/PredictionResult.js';
 
 export class PredictionRepository implements IPredictionRepository {
   constructor(private prisma: PrismaClient) {}

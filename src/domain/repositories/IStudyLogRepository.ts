@@ -1,6 +1,6 @@
 // 学習記録リポジトリインターフェース
 
-import { StudyLogEntity, StudyLogData } from "../entities/StudyLog.js";
+import { StudyLogEntity, StudyLogData } from "src/domain/entities/StudyLog.js";
 
 export interface IStudyLogRepository {
   // 基本CRUD

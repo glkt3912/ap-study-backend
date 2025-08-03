@@ -2,35 +2,36 @@
 
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
+import { logger as honoLogger } from "hono/logger";
 import { PrismaClient } from "@prisma/client";
+import { logger } from "src/utils/logger.js";
 
 // 環境変数の読み込み（dotenvは不要、Node.jsが自動読み込み）
-console.log("🔧 環境設定:");
-console.log(`  NODE_ENV: ${process.env.NODE_ENV || "development"}`);
-console.log(`  DATABASE_URL: ${process.env.DATABASE_URL || "file:./dev.db"}`);
-console.log(`  PORT: ${process.env.PORT || "8000"}`);
-console.log(
+logger.info("🔧 環境設定:");
+logger.info(`  NODE_ENV: ${process.env.NODE_ENV || "development"}`);
+logger.info(`  DATABASE_URL: ${process.env.DATABASE_URL || "file:./dev.db"}`);
+logger.info(`  PORT: ${process.env.PORT || "8000"}`);
+logger.info(
   `  ALLOWED_ORIGINS: ${
     process.env.ALLOWED_ORIGINS || "http://localhost:3000,http://localhost:3001"
   }`
 );
 
 // リポジトリ
-import { StudyRepository } from "./infrastructure/database/repositories/StudyRepository.js";
-import { StudyLogRepository } from "./infrastructure/database/repositories/StudyLogRepository.js";
+import { StudyRepository } from "src/infrastructure/database/repositories/StudyRepository.js";
+import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
 
 // ユースケース
-import { GetStudyPlanUseCase } from "./domain/usecases/GetStudyPlan.js";
-import { UpdateStudyProgressUseCase } from "./domain/usecases/UpdateStudyProgress.js";
-import { CreateStudyLogUseCase } from "./domain/usecases/CreateStudyLog.js";
+import { GetStudyPlanUseCase } from "src/domain/usecases/GetStudyPlan.js";
+import { UpdateStudyProgressUseCase } from "src/domain/usecases/UpdateStudyProgress.js";
+import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
 
 // ルート
-import { createStudyRoutes } from "./infrastructure/web/routes/study.js";
-import { createStudyLogRoutes } from "./infrastructure/web/routes/studylog.js";
-import { createTestRoutes } from "./infrastructure/web/routes/test.js";
-import { createAnalysisRoutes } from "./infrastructure/web/routes/analysis-routes.js";
-import { createQuizRoutes } from "./infrastructure/web/routes/quiz.js";
+import { createStudyRoutes } from "src/infrastructure/web/routes/study.js";
+import { createStudyLogRoutes } from "src/infrastructure/web/routes/studylog.js";
+import { createTestRoutes } from "src/infrastructure/web/routes/test.js";
+import { createAnalysisRoutes } from "src/infrastructure/web/routes/analysis-routes.js";
+import { createQuizRoutes } from "src/infrastructure/web/routes/quiz.js";
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -92,7 +93,7 @@ const app = new Hono();
 const container = DIContainer.getInstance();
 
 // ミドルウェア
-app.use("*", logger());
+app.use("*", honoLogger());
 // CORS設定
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((origin) =>
   origin.trim()
@@ -102,27 +103,27 @@ app.use(
   "*",
   cors({
     origin: (origin) => {
-      console.log(`🔍 CORS チェック: Origin = ${origin || "null"}`);
+      logger.debug(`🔍 CORS チェック: Origin = ${origin || "null"}`);
 
       // オリジンなしのリクエスト（curl, Postman等）は開発環境でのみ許可
       if (!origin) {
         if (process.env.NODE_ENV === "development") {
-          console.log("✅ オリジンなしリクエストを開発環境で許可");
+          logger.debug("✅ オリジンなしリクエストを開発環境で許可");
           return "*";
         }
-        console.log("❌ 本番環境でオリジンなしリクエストを拒否");
+        logger.warn("❌ 本番環境でオリジンなしリクエストを拒否");
         return null;
       }
 
       // 許可されたオリジンかチェック
       if (allowedOrigins.includes(origin)) {
-        console.log(`✅ 許可されたオリジン: ${origin}`);
+        logger.debug(`✅ 許可されたオリジン: ${origin}`);
         return origin;
       }
 
       // 許可されていないオリジンは拒否
-      console.log(`❌ 許可されていないオリジン: ${origin}`);
-      console.log(`許可済みオリジン: ${allowedOrigins.join(", ")}`);
+      logger.warn(`❌ 許可されていないオリジン: ${origin}`);
+      logger.debug(`許可済みオリジン: ${allowedOrigins.join(", ")}`);
       return null;
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -177,7 +178,7 @@ app.route("/api/quiz", createQuizRoutes());
 
 // エラーハンドリング
 app.onError((err, c) => {
-  console.error("Error:", err);
+  logger.error("Error:", err);
 
   return c.json(
     {
@@ -203,13 +204,13 @@ app.notFound((c) => {
 
 // グレースフルシャットダウン
 process.on("SIGINT", async () => {
-  console.log("シャットダウン中...");
+  logger.info("シャットダウン中...");
   await container.prisma.$disconnect();
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  console.log("シャットダウン中...");
+  logger.info("シャットダウン中...");
   await container.prisma.$disconnect();
   process.exit(0);
 });
@@ -220,20 +221,20 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : DEFAULT_PORT;
 
 // ポート番号のバリデーション
 if (isNaN(port) || port < 1 || port > 65535) {
-  console.error(
+  logger.error(
     `❌ 無効なポート番号: ${process.env.PORT}. デフォルトポート ${DEFAULT_PORT} を使用します。`
   );
   process.exit(1);
 }
 
 async function startServer() {
-  console.log(`🚀 サーバーを起動中... ポート: ${port}`);
-  console.log(`📊 API仕様: http://localhost:${port}/`);
-  console.log(`🎯 学習計画API: http://localhost:${port}/api/study/plan`);
-  console.log(`📝 学習記録API: http://localhost:${port}/api/studylog`);
-  console.log(`📋 問題演習API: http://localhost:${port}/api/test`);
-  console.log(`📊 分析API: http://localhost:${port}/api/analysis`);
-  console.log(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
+  logger.info(`🚀 サーバーを起動中... ポート: ${port}`);
+  logger.info(`📊 API仕様: http://localhost:${port}/`);
+  logger.info(`🎯 学習計画API: http://localhost:${port}/api/study/plan`);
+  logger.info(`📝 学習記録API: http://localhost:${port}/api/studylog`);
+  logger.info(`📋 問題演習API: http://localhost:${port}/api/test`);
+  logger.info(`📊 分析API: http://localhost:${port}/api/analysis`);
+  logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");
@@ -241,7 +242,7 @@ async function startServer() {
     fetch: app.fetch,
     port: Number(port),
   });
-  console.log(`✅ サーバーが起動しました: http://localhost:${port}`);
+  logger.info(`✅ サーバーが起動しました: http://localhost:${port}`);
 }
 
 // 開発環境では直接起動

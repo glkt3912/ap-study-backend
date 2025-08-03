@@ -1,7 +1,7 @@
 // ユースケース: 学習計画取得
 
-import { IStudyRepository } from "../repositories/IStudyRepository.js";
-import { StudyWeekEntity } from "../entities/StudyWeek.js";
+import { IStudyRepository } from "src/domain/repositories/IStudyRepository.js";
+import { StudyWeekEntity } from "src/domain/entities/StudyWeek.js";
 
 export class GetStudyPlanUseCase {
   constructor(private studyRepository: IStudyRepository) {}

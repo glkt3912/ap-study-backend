@@ -1,4 +1,4 @@
-import { AnalysisResult } from "../entities/AnalysisResult";
+import { AnalysisResult } from "src/domain/entities/AnalysisResult.js";
 
 export interface IAnalysisRepository {
   save(analysisResult: AnalysisResult): Promise<AnalysisResult>;

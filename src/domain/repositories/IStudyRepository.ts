@@ -1,6 +1,6 @@
 // リポジトリインターフェース - データアクセスの抽象化
 
-import { StudyWeekEntity, StudyWeek } from "../entities/StudyWeek.js";
+import { StudyWeekEntity, StudyWeek } from "src/domain/entities/StudyWeek.js";
 
 export interface IStudyRepository {
   // 学習計画の取得

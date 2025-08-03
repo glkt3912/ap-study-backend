@@ -1,8 +1,8 @@
 // Prismaを使ったStudyLogリポジトリ実装
 
 import { PrismaClient } from '@prisma/client'
-import { IStudyLogRepository } from '../../../domain/repositories/IStudyLogRepository.js'
-import { StudyLogEntity, StudyLogData } from '../../../domain/entities/StudyLog.js'
+import { IStudyLogRepository } from 'src/domain/repositories/IStudyLogRepository.js'
+import { StudyLogEntity, StudyLogData } from 'src/domain/entities/StudyLog.js'
 
 export class StudyLogRepository implements IStudyLogRepository {
   constructor(private prisma: PrismaClient) {}

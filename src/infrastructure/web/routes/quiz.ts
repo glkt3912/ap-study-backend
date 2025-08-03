@@ -35,7 +35,7 @@ export function createQuizRoutes() {
       const limit = parseInt(c.req.query("limit") || "10");
       const random = c.req.query("random") === "true";
 
-      let whereClause: any = {};
+      const whereClause: any = {};
       if (category) {
         whereClause.category = category;
       }
@@ -138,7 +138,7 @@ export function createQuizRoutes() {
         });
 
         // 問題を取得
-        let whereClause: any = {};
+        const whereClause: any = {};
         if (category && sessionType === "category") {
           whereClause.category = category;
         }
@@ -409,6 +409,462 @@ export function createQuizRoutes() {
           error: error instanceof Error ? error.message : "統計情報の取得に失敗しました",
         },
         500
+      );
+    }
+  });
+
+  // GET /api/quiz/weak-points - 苦手分野分析
+  app.get("/weak-points", async (c) => {
+    try {
+      const userId = c.req.header("X-User-ID") || "anonymous";
+      const limit = parseInt(c.req.query("limit") || "5");
+
+      // カテゴリ別の正答率を計算
+      const categoryPerformance = await prisma.$queryRaw`
+        SELECT 
+          q.category,
+          COUNT(*) as total_answers,
+          SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) as correct_answers,
+          ROUND(
+            (SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 2
+          ) as accuracy_rate
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id  
+        WHERE ua.user_id = ${userId}
+        GROUP BY q.category
+        HAVING COUNT(*) >= 3
+        ORDER BY accuracy_rate ASC, total_answers DESC
+        LIMIT ${limit}
+      `;
+
+      return c.json({
+        success: true,
+        data: categoryPerformance,
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "苦手分野分析の取得に失敗しました",
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/quiz/recommendations - 学習推奨問題
+  app.get("/recommendations", async (c) => {
+    try {
+      const userId = c.req.header("X-User-ID") || "anonymous";
+      const limit = parseInt(c.req.query("limit") || "10");
+
+      // 苦手カテゴリを取得
+      const weakCategories = await prisma.$queryRaw`
+        SELECT q.category
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id  
+        WHERE ua.user_id = ${userId}
+        GROUP BY q.category
+        HAVING COUNT(*) >= 3 AND 
+               (SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) < 70
+        ORDER BY (SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 100.0 / COUNT(*)) ASC
+        LIMIT 3
+      ` as any[];
+
+      if (weakCategories.length === 0) {
+        // 苦手分野がない場合はランダムな問題を推奨
+        const randomQuestions = await prisma.question.findMany({
+          take: limit,
+          orderBy: { number: 'asc' },
+          select: {
+            id: true,
+            category: true,
+            subcategory: true,
+            difficulty: true,
+            question: true,
+            choices: true,
+            tags: true,
+          },
+        });
+
+        return c.json({
+          success: true,
+          data: {
+            reason: "general_practice",
+            questions: randomQuestions.map(q => ({
+              ...q,
+              choices: JSON.parse(q.choices),
+              tags: q.tags ? JSON.parse(q.tags) : [],
+            })),
+          },
+        });
+      }
+
+      // 苦手カテゴリから未回答の問題を取得
+      const categoryList = weakCategories.map(cat => cat.category);
+      
+      const recommendedQuestions = await prisma.question.findMany({
+        where: {
+          category: { in: categoryList },
+          NOT: {
+            userAnswers: {
+              some: { userId },
+            },
+          },
+        },
+        take: limit,
+        orderBy: [
+          { difficulty: 'asc' },
+          { number: 'asc' },
+        ],
+        select: {
+          id: true,
+          category: true,
+          subcategory: true,
+          difficulty: true,
+          question: true,
+          choices: true,
+          tags: true,
+        },
+      });
+
+      return c.json({
+        success: true,
+        data: {
+          reason: "weak_category_focus",
+          weakCategories: categoryList,
+          questions: recommendedQuestions.map(q => ({
+            ...q,
+            choices: JSON.parse(q.choices),
+            tags: q.tags ? JSON.parse(q.tags) : [],
+          })),
+        },
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "推奨問題の取得に失敗しました",
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/quiz/progress - 学習進捗取得
+  app.get("/progress", async (c) => {
+    try {
+      const userId = c.req.header("X-User-ID") || "anonymous";
+
+      // 全問題数
+      const totalQuestions = await prisma.question.count();
+
+      // 回答済み問題数（ユニーク）
+      const answeredQuestions = await prisma.userAnswer.groupBy({
+        by: ['questionId'],
+        where: { userId },
+      });
+      const answeredQuestionsCount = answeredQuestions.length;
+
+      // カテゴリ別進捗
+      const categoryProgress = await prisma.$queryRaw`
+        SELECT 
+          q.category,
+          COUNT(DISTINCT q.id) as total_questions,
+          COUNT(DISTINCT ua.question_id) as answered_questions,
+          ROUND(
+            (COUNT(DISTINCT ua.question_id) * 100.0 / COUNT(DISTINCT q.id)), 2
+          ) as progress_rate
+        FROM questions q
+        LEFT JOIN user_answers ua ON q.id = ua.question_id AND ua.user_id = ${userId}
+        GROUP BY q.category
+        ORDER BY q.category
+      `;
+
+      // 最近の学習活動
+      const recentActivity = await prisma.quizSession.findMany({
+        where: { userId, isCompleted: true },
+        orderBy: { completedAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          category: true,
+          score: true,
+          totalQuestions: true,
+          correctAnswers: true,
+          completedAt: true,
+        },
+      });
+
+      return c.json({
+        success: true,
+        data: {
+          overall: {
+            totalQuestions,
+            answeredQuestions: answeredQuestionsCount,
+            progressRate: Math.round((answeredQuestionsCount / totalQuestions) * 100),
+          },
+          categoryProgress,
+          recentActivity,
+        },
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "学習進捗の取得に失敗しました",
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/quiz/detailed-analysis - 詳細分析
+  app.get("/detailed-analysis", async (c) => {
+    try {
+      const userId = c.req.header("X-User-ID") || "anonymous";
+      const category = c.req.query("category");
+      const period = parseInt(c.req.query("period") || "30");
+
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - period);
+
+      let categoryFilter = "";
+      if (category) {
+        categoryFilter = `AND q.category = '${category}'`;
+      }
+
+      // 学習効率分析（正答率 vs 回答時間）
+      const efficiencyAnalysis = await prisma.$queryRaw`
+        SELECT 
+          q.difficulty,
+          AVG(ua.time_spent) as avg_time,
+          AVG(CASE WHEN ua.is_correct THEN 1.0 ELSE 0.0 END) as accuracy_rate,
+          COUNT(*) as total_questions
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId} 
+          AND ua.time_spent IS NOT NULL
+          AND ua.created_at >= ${startDate.toISOString()}
+          ${categoryFilter}
+        GROUP BY q.difficulty
+        ORDER BY q.difficulty ASC
+      `;
+
+      // 間違いパターン分析
+      const errorPatterns = await prisma.$queryRaw`
+        SELECT 
+          q.subcategory,
+          q.difficulty,
+          COUNT(*) as error_count,
+          AVG(ua.time_spent) as avg_time_on_errors,
+          STRING_AGG(DISTINCT q.tags, ',') as common_tags
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId}
+          AND ua.is_correct = false
+          AND ua.created_at >= ${startDate.toISOString()}
+          ${categoryFilter}
+        GROUP BY q.subcategory, q.difficulty
+        HAVING COUNT(*) >= 2
+        ORDER BY error_count DESC, q.difficulty DESC
+        LIMIT 10
+      `;
+
+      // 学習時刻別パフォーマンス
+      const timeAnalysis = await prisma.$queryRaw`
+        SELECT 
+          EXTRACT(HOUR FROM ua.created_at) as study_hour,
+          COUNT(*) as questions_count,
+          AVG(CASE WHEN ua.is_correct THEN 1.0 ELSE 0.0 END) as accuracy_rate,
+          AVG(ua.time_spent) as avg_time_spent
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId}
+          AND ua.created_at >= ${startDate.toISOString()}
+          ${categoryFilter}
+        GROUP BY EXTRACT(HOUR FROM ua.created_at)
+        HAVING COUNT(*) >= 3
+        ORDER BY study_hour ASC
+      `;
+
+      // 復習効果分析
+      const reviewEffectiveness = await prisma.$queryRaw`
+        SELECT 
+          ua.attempt_number,
+          COUNT(*) as attempts,
+          AVG(CASE WHEN ua.is_correct THEN 1.0 ELSE 0.0 END) as accuracy_rate,
+          AVG(ua.time_spent) as avg_time_spent
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId}
+          AND ua.created_at >= ${startDate.toISOString()}
+          ${categoryFilter}
+        GROUP BY ua.attempt_number
+        ORDER BY ua.attempt_number ASC
+      `;
+
+      return c.json({
+        success: true,
+        data: {
+          period,
+          category,
+          efficiencyAnalysis,
+          errorPatterns,
+          timeAnalysis,
+          reviewEffectiveness,
+        },
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "詳細分析の取得に失敗しました",
+        },
+        500
+      );
+    }
+  });
+
+  // GET /api/quiz/learning-trends - 学習トレンド分析
+  app.get("/learning-trends", async (c) => {
+    try {
+      const userId = c.req.header("X-User-ID") || "anonymous";
+      const days = parseInt(c.req.query("days") || "14");
+
+      // 日別トレンド
+      const dailyTrends = await prisma.$queryRaw`
+        SELECT 
+          DATE(ua.created_at) as study_date,
+          COUNT(DISTINCT ua.question_id) as unique_questions,
+          COUNT(*) as total_attempts,
+          AVG(CASE WHEN ua.is_correct THEN 1.0 ELSE 0.0 END) as accuracy_rate,
+          AVG(ua.time_spent) as avg_time_per_question,
+          COUNT(DISTINCT q.category) as categories_studied
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId}
+          AND ua.created_at >= CURRENT_DATE - INTERVAL '${days} days'
+        GROUP BY DATE(ua.created_at)
+        ORDER BY study_date ASC
+      `;
+
+      // 累積進捗
+      const cumulativeProgress = await prisma.$queryRaw`
+        SELECT 
+          DATE(ua.created_at) as study_date,
+          COUNT(DISTINCT ua.question_id) OVER (ORDER BY DATE(ua.created_at)) as cumulative_questions,
+          AVG(CASE WHEN ua.is_correct THEN 1.0 ELSE 0.0 END) 
+            OVER (ORDER BY DATE(ua.created_at) ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as cumulative_accuracy
+        FROM user_answers ua
+        WHERE ua.user_id = ${userId}
+          AND ua.created_at >= CURRENT_DATE - INTERVAL '${days} days'
+        GROUP BY DATE(ua.created_at)
+        ORDER BY study_date ASC
+      `;
+
+      // カテゴリ別学習頻度の変化
+      const categoryTrends = await prisma.$queryRaw`
+        SELECT 
+          q.category,
+          DATE(ua.created_at) as study_date,
+          COUNT(*) as questions_count,
+          AVG(CASE WHEN ua.is_correct THEN 1.0 ELSE 0.0 END) as accuracy_rate
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId}
+          AND ua.created_at >= CURRENT_DATE - INTERVAL '${days} days'
+        GROUP BY q.category, DATE(ua.created_at)
+        ORDER BY q.category, study_date ASC
+      `;
+
+      return c.json({
+        success: true,
+        data: {
+          period: days,
+          dailyTrends,
+          cumulativeProgress,
+          categoryTrends,
+        },
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "学習トレンド分析の取得に失敗しました",
+        },
+        500
+      );
+    }
+  });
+
+  // POST /api/quiz/export - 学習データエクスポート
+  app.post("/export", async (c) => {
+    try {
+      const userId = c.req.header("X-User-ID") || "anonymous";
+      const body = await c.req.json();
+      const { format = "json", period = 30, categories = [] } = body;
+
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - period);
+
+      let categoryFilter = "";
+      if (categories.length > 0) {
+        const categoryList = categories.map((cat: string) => `'${cat}'`).join(',');
+        categoryFilter = `AND q.category IN (${categoryList})`;
+      }
+
+      const exportData = await prisma.$queryRaw`
+        SELECT 
+          ua.created_at,
+          q.id as question_id,
+          q.category,
+          q.subcategory,
+          q.difficulty,
+          q.question,
+          ua.user_answer,
+          q.answer as correct_answer,
+          ua.is_correct,
+          ua.time_spent,
+          ua.attempt_number,
+          q.tags
+        FROM user_answers ua
+        JOIN questions q ON ua.question_id = q.id
+        WHERE ua.user_id = ${userId}
+          AND ua.created_at >= ${startDate.toISOString()}
+          ${categoryFilter}
+        ORDER BY ua.created_at ASC
+      `;
+
+      if (format === "csv") {
+        const csvHeaders = "Date,QuestionID,Category,Subcategory,Difficulty,Question,UserAnswer,CorrectAnswer,IsCorrect,TimeSpent,AttemptNumber,Tags\n";
+        const csvData = (exportData as any[]).map(row => 
+          `"${row.created_at}","${row.question_id}","${row.category}","${row.subcategory}",${row.difficulty},"${row.question?.replace(/"/g, '""')}","${row.user_answer}","${row.correct_answer}",${row.is_correct},${row.time_spent || ''},${row.attempt_number},"${row.tags || ''}"`
+        ).join('\n');
+
+        c.header('Content-Type', 'text/csv; charset=utf-8');
+        c.header('Content-Disposition', `attachment; filename="quiz_data_${userId}_${period}days.csv"`);
+        return c.text(csvHeaders + csvData);
+      }
+
+      return c.json({
+        success: true,
+        data: {
+          exportDate: new Date().toISOString(),
+          period,
+          userId,
+          categories,
+          totalRecords: (exportData as any[]).length,
+          records: exportData,
+        },
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : "データエクスポートに失敗しました",
+        },
+        400
       );
     }
   });
