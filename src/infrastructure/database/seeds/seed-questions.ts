@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { logger } from 'src/utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,19 +11,33 @@ const prisma = new PrismaClient();
 
 async function seedQuestions() {
   try {
-    console.log('📚 過去問データのシードを開始...');
+    logger.info('📚 過去問データのシードを開始...');
 
     // 既存の過去問データを削除
     await prisma.userAnswer.deleteMany();
     await prisma.question.deleteMany();
-    console.log('🗑️ 既存データを削除しました');
+    logger.info('🗑️ 既存データを削除しました');
 
-    // JSON ファイルから過去問データを読み込み
-    const questionsPath = path.join(__dirname, 'questions.json');
-    const questionsData = JSON.parse(fs.readFileSync(questionsPath, 'utf-8'));
+    // 年度別ファイルから過去問データを読み込み
+    const years = [2025, 2024, 2023, 2022];
+    let allQuestionsData: any[] = [];
+
+    for (const year of years) {
+      const questionsPath = path.join(__dirname, `questions-${year}.json`);
+      
+      if (fs.existsSync(questionsPath)) {
+        const yearQuestionsData = JSON.parse(fs.readFileSync(questionsPath, 'utf-8'));
+        allQuestionsData = allQuestionsData.concat(yearQuestionsData);
+        logger.info(`📖 ${year}年度: ${yearQuestionsData.length}問を読み込み`);
+      } else {
+        logger.warn(`⚠️ ${year}年度のファイルが見つかりません: questions-${year}.json`);
+      }
+    }
+
+    logger.info(`📚 総読み込み問題数: ${allQuestionsData.length}問`);
 
     // データベースに挿入
-    for (const questionData of questionsData) {
+    for (const questionData of allQuestionsData) {
       await prisma.question.create({
         data: {
           id: questionData.id,
@@ -42,7 +57,7 @@ async function seedQuestions() {
       });
     }
 
-    console.log(`✅ ${questionsData.length}件の過去問データを投入しました`);
+    logger.info(`✅ ${allQuestionsData.length}件の過去問データを投入しました`);
 
     // データ確認
     const totalQuestions = await prisma.question.count();
@@ -51,14 +66,14 @@ async function seedQuestions() {
       _count: { category: true },
     });
 
-    console.log(`📊 総問題数: ${totalQuestions}`);
-    console.log('📋 カテゴリ別問題数:');
+    logger.info(`📊 総問題数: ${totalQuestions}`);
+    logger.info('📋 カテゴリ別問題数:');
     categories.forEach(cat => {
-      console.log(`  - ${cat.category}: ${cat._count.category}問`);
+      logger.info(`  - ${cat.category}: ${cat._count.category}問`);
     });
 
   } catch (error) {
-    console.error('❌ シード実行中にエラーが発生しました:', error);
+    logger.error('❌ シード実行中にエラーが発生しました:', error);
     throw error;
   } finally {
     await prisma.$disconnect();
@@ -69,7 +84,7 @@ async function seedQuestions() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   seedQuestions()
     .catch((error) => {
-      console.error(error);
+      logger.error('Seed execution failed:', error);
       process.exit(1);
     });
 }
