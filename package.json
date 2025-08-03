@@ -5,10 +5,19 @@
   "engines": {
     "node": "^22.17.1"
   },
+  "imports": {
+    "src/*": "./src/*",
+    "tests/*": "./tests/*"
+  },
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "format:check": "prettier --check src/**/*.ts",
+    "type-check": "tsc --noEmit",
     "db:generate": "prisma generate --schema=src/infrastructure/database/prisma/schema.prisma",
     "db:push": "prisma db push --schema=src/infrastructure/database/prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=src/infrastructure/database/prisma/schema.prisma",
@@ -25,8 +34,15 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
+    "prettier": "^3.6.2",
     "prisma": "^5.10.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.38.0"
   }
 }
