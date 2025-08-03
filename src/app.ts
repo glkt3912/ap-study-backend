@@ -1,6 +1,7 @@
 // Hono アプリケーション - エントリーポイント
 
 import { Hono } from "hono";
+import { createOpenAPIApp } from "src/infrastructure/web/openapi.js";
 import { cors } from "hono/cors";
 import { logger as honoLogger } from "hono/logger";
 import { PrismaClient } from "@prisma/client";
@@ -88,8 +89,8 @@ class DIContainer {
   }
 }
 
-// アプリケーション初期化
-const app = new Hono();
+// アプリケーション初期化 - OpenAPI対応アプリを作成
+const app = createOpenAPIApp();
 const container = DIContainer.getInstance();
 
 // ミドルウェア
@@ -230,6 +231,8 @@ if (isNaN(port) || port < 1 || port > 65535) {
 async function startServer() {
   logger.info(`🚀 サーバーを起動中... ポート: ${port}`);
   logger.info(`📊 API仕様: http://localhost:${port}/`);
+  logger.info(`📄 OpenAPI仕様書: http://localhost:${port}/doc`);
+  logger.info(`🔧 Swagger UI: http://localhost:${port}/ui`);
   logger.info(`🎯 学習計画API: http://localhost:${port}/api/study/plan`);
   logger.info(`📝 学習記録API: http://localhost:${port}/api/studylog`);
   logger.info(`📋 問題演習API: http://localhost:${port}/api/test`);
