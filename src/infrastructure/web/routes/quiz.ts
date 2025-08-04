@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
+import type { Variables } from '../middleware/auth';
 
 const prisma = new PrismaClient();
 
@@ -26,7 +27,7 @@ const completeQuizSchema = z.object({
 });
 
 export function createQuizRoutes() {
-  const app = new Hono();
+  const app = new Hono<{ Variables: Variables }>();
 
   // GET /api/quiz/questions - 問題一覧取得（カテゴリ別、ランダム等）
   app.get("/questions", async (c) => {
@@ -125,7 +126,8 @@ export function createQuizRoutes() {
     async (c) => {
       try {
         const { category, sessionType, questionCount } = c.req.valid("json");
-        const userId = c.req.header("X-User-ID") || "anonymous";
+        const authUser = c.get('authUser') || { userId: 0 };
+        const userId = authUser.userId;
 
         // Quizセッションを作成
         const session = await prisma.quizSession.create({
@@ -203,7 +205,8 @@ export function createQuizRoutes() {
     async (c) => {
       try {
         const { sessionId, questionId, userAnswer, timeSpent } = c.req.valid("json");
-        const userId = c.req.header("X-User-ID") || "anonymous";
+        const authUser = c.get('authUser') || { userId: 0 };
+        const userId = authUser.userId;
 
         // 問題の正解を取得
         const question = await prisma.question.findUnique({

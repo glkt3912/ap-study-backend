@@ -3,16 +3,20 @@ import { HTTPException } from 'hono/http-exception'
 import { verify } from 'hono/jwt'
 
 export interface AuthContext {
-  userId: string
+  userId: number
   email?: string
   role?: 'user' | 'admin'
+}
+
+export type Variables = {
+  authUser: AuthContext
 }
 
 /**
  * JWT認証ミドルウェア
  * Bearer tokenまたはX-User-IDヘッダーからユーザーを認証
  */
-export const authMiddleware = async (c: Context, next: Next) => {
+export const authMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   try {
     // 1. Authorization ヘッダーからJWT取得を試行
     const authHeader = c.req.header('Authorization')
@@ -26,7 +30,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
         
         // JWTペイロードから認証情報を設定
         c.set('authUser', {
-          userId: payload.sub || payload.userId,
+          userId: parseInt(payload.sub || payload.userId),
           email: payload.email,
           role: payload.role || 'user'
         } as AuthContext)
@@ -43,7 +47,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
     
     if (userId && userId !== 'anonymous') {
       c.set('authUser', {
-        userId,
+        userId: parseInt(userId) || 0,
         role: 'user'
       } as AuthContext)
       
@@ -53,7 +57,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
     // 3. 開発環境でのフォールバック（anonymous許可）
     if (process.env.NODE_ENV === 'development') {
       c.set('authUser', {
-        userId: 'anonymous',
+        userId: 0, // anonymous user as ID 0
         role: 'user'
       } as AuthContext)
       
@@ -79,7 +83,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
 /**
  * 管理者権限チェックミドルウェア
  */
-export const adminMiddleware = async (c: Context, next: Next) => {
+export const adminMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   const authUser = c.get('authUser') as AuthContext
   
   if (!authUser) {
@@ -96,7 +100,7 @@ export const adminMiddleware = async (c: Context, next: Next) => {
 /**
  * ユーザー情報取得ヘルパー
  */
-export const getAuthUser = (c: Context): AuthContext => {
+export const getAuthUser = (c: Context<{ Variables: Variables }>): AuthContext => {
   const authUser = c.get('authUser') as AuthContext
   
   if (!authUser) {
@@ -109,14 +113,14 @@ export const getAuthUser = (c: Context): AuthContext => {
 /**
  * 認証なしでも許可するミドルウェア（オプショナル認証）
  */
-export const optionalAuthMiddleware = async (c: Context, next: Next) => {
+export const optionalAuthMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   try {
     // 認証を試行するが、失敗してもエラーにしない
     await authMiddleware(c, async () => {})
   } catch {
     // 認証失敗時はanonymousユーザーとして設定
     c.set('authUser', {
-      userId: 'anonymous',
+      userId: 0, // anonymous user as ID 0
       role: 'user'
     } as AuthContext)
   }

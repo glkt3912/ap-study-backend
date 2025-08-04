@@ -4,8 +4,8 @@ export interface IReviewRepository {
   // ReviewItem管理
   saveReviewItem(item: ReviewItem): Promise<ReviewItem>;
   findReviewItemById(id: number): Promise<ReviewItem | null>;
-  findReviewItemsByUser(userId?: string): Promise<ReviewItem[]>;
-  findDueReviewItems(date: Date, userId?: string): Promise<ReviewItem[]>;
+  findReviewItemsByUser(userId?: number): Promise<ReviewItem[]>;
+  findDueReviewItems(date: Date, userId?: number): Promise<ReviewItem[]>;
   updateReviewItem(
     id: number,
     updates: Partial<ReviewItem>
@@ -14,9 +14,9 @@ export interface IReviewRepository {
 
   // ReviewSession管理
   saveReviewSession(session: ReviewSession): Promise<ReviewSession>;
-  findReviewSessionsByUser(userId?: string): Promise<ReviewSession[]>;
+  findReviewSessionsByUser(userId?: number): Promise<ReviewSession[]>;
   findRecentReviewSessions(
     days: number,
-    userId?: string
+    userId?: number
   ): Promise<ReviewSession[]>;
 }

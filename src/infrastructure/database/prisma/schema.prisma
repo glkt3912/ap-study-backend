@@ -10,7 +10,7 @@ datasource db {
 
 // ユーザーモデル
 model User {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String
   password  String
@@ -38,7 +38,7 @@ model StudyWeek {
   weekNumber Int      @unique
   title      String
   phase      String
-  goals      String // JSON配列として保存
+  goals      Json   // JSON配列として保存
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -53,7 +53,7 @@ model StudyDay {
   id            Int      @id @default(autoincrement())
   day           String // 月、火、水...
   subject       String
-  topics        String // JSON配列として保存
+  topics        Json   // JSON配列として保存
   estimatedTime Int // 分
   actualTime    Int      @default(0)
   completed     Boolean  @default(false)
@@ -72,12 +72,13 @@ model StudyDay {
 // 学習記録モデル
 model StudyLog {
   id            Int      @id @default(autoincrement())
-  userId        String
+  userId        Int
   date          DateTime
   subject       String
-  topics        String // JSON配列として保存
+  topics        Json   // JSON配列として保存
   studyTime     Int // 分
   understanding Int // 1-5
+  completed     Boolean  @default(false) // 完了フラグ追加
   memo          String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -91,7 +92,7 @@ model StudyLog {
 // 午前問題記録モデル
 model MorningTest {
   id             Int      @id @default(autoincrement())
-  userId         String
+  userId         Int
   date           DateTime
   category       String
   totalQuestions Int
@@ -110,7 +111,7 @@ model MorningTest {
 // 午後問題記録モデル
 model AfternoonTest {
   id           Int      @id @default(autoincrement())
-  userId       String
+  userId       Int
   date         DateTime
   category     String   // questionType → category に統一
   score        Int // 点数
@@ -128,11 +129,11 @@ model AfternoonTest {
 // 学習分析結果モデル
 model AnalysisResult {
   id              Int      @id @default(autoincrement())
-  userId          String
+  userId          Int
   analysisDate    DateTime
-  studyPattern    String   // JSON形式で保存
-  weaknessAnalysis String  // JSON形式で保存
-  studyRecommendation String // JSON形式で保存
+  studyPattern    Json     // JSON型で型安全性確保
+  weaknessAnalysis Json    // JSON型で型安全性確保
+  studyRecommendation Json // JSON型で型安全性確保
   overallScore    Int      // 0-100
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -146,13 +147,13 @@ model AnalysisResult {
 // 予測結果モデル
 model PredictionResult {
   id                Int      @id @default(autoincrement())
-  userId            String
+  userId            Int
   predictionDate    DateTime
   examDate          DateTime
-  passProbability   String   // JSON形式で保存
-  studyTimePrediction String // JSON形式で保存
-  scorePrediction   String   // JSON形式で保存
-  examReadiness     String   // JSON形式で保存
+  passProbability   Json     // JSON型で型安全性確保
+  studyTimePrediction Json   // JSON型で型安全性確保
+  scorePrediction   Json     // JSON型で型安全性確保
+  examReadiness     Json     // JSON型で型安全性確保
   modelVersion      String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -166,7 +167,7 @@ model PredictionResult {
 // 復習項目モデル
 model ReviewItem {
   id                    Int      @id @default(autoincrement())
-  userId                String
+  userId                Int
   subject               String
   topic                 String
   lastStudyDate         DateTime
@@ -190,7 +191,7 @@ model ReviewItem {
 // 復習セッションモデル
 model ReviewSession {
   id                   Int      @id @default(autoincrement())
-  userId               String
+  userId               Int
   sessionDate          DateTime
   totalItems           Int
   completedItems       Int      @default(0)
@@ -216,10 +217,10 @@ model Question {
   subcategory String?  // より詳細な分類
   difficulty  Int      // 1-5（推定難易度）
   question    String   // 問題文
-  choices     String   // JSON配列["選択肢A", "選択肢B", ...]
+  choices     Json     // JSON配列["選択肢A", "選択肢B", ...]
   answer      String   // 正解（A,B,C,D または記述）
   explanation String?  // 解説
-  tags        String?  // JSON配列でタグ管理
+  tags        Json?    // JSON配列でタグ管理
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -232,7 +233,7 @@ model Question {
 // ユーザー回答記録モデル
 model UserAnswer {
   id            Int      @id @default(autoincrement())
-  userId        String
+  userId        Int
   questionId    String
   userAnswer    String   // ユーザーの回答
   isCorrect     Boolean  // 正解フラグ
@@ -250,7 +251,7 @@ model UserAnswer {
 // Quizセッションモデル
 model QuizSession {
   id              Int      @id @default(autoincrement())
-  userId          String
+  userId          Int
   sessionType     String   // category/random/review/weak_points
   category        String?  // セッションの対象カテゴリ
   totalQuestions  Int      // 出題数

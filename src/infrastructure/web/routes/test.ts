@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
+import type { Variables } from '../middleware/auth';
 
 // バリデーションスキーマ
 const morningTestSchema = z
@@ -33,7 +34,7 @@ const dateRangeSchema = z.object({
 });
 
 export function createTestRoutes(prisma: PrismaClient) {
-  const app = new Hono();
+  const app = new Hono<{ Variables: Variables }>();
 
   // === 午前問題記録 ===
 
@@ -43,10 +44,12 @@ export function createTestRoutes(prisma: PrismaClient) {
     zValidator("json", morningTestSchema as any),
     async (c) => {
       try {
+        const authUser = c.get('authUser') || { userId: 0 };
         const testData = c.req.valid("json");
 
         const morningTest = await prisma.morningTest.create({
           data: {
+            userId: authUser.userId,
             date: testData.date,
             category: testData.category,
             totalQuestions: testData.totalQuestions,
@@ -223,10 +226,12 @@ export function createTestRoutes(prisma: PrismaClient) {
     zValidator("json", afternoonTestSchema as any),
     async (c) => {
       try {
+        const authUser = c.get('authUser') || { userId: 0 };
         const testData = c.req.valid("json");
 
         const afternoonTest = await prisma.afternoonTest.create({
           data: {
+            userId: authUser.userId,
             date: testData.date,
             category: testData.category,
             score: testData.score,

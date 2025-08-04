@@ -7,13 +7,13 @@ export class PredictionRepository implements IPredictionRepository {
 
   async save(predictionResult: PredictionResult): Promise<PredictionResult> {
     const data = {
-      userId: predictionResult.userId,
+      userId: predictionResult.userId || 0,
       predictionDate: predictionResult.predictionDate,
       examDate: predictionResult.examDate,
-      passProbability: JSON.stringify(predictionResult.passProbability),
-      studyTimePrediction: JSON.stringify(predictionResult.studyTimePrediction),
-      scorePrediction: JSON.stringify(predictionResult.scorePrediction),
-      examReadiness: JSON.stringify(predictionResult.examReadiness),
+      passProbability: predictionResult.passProbability,
+      studyTimePrediction: predictionResult.studyTimePrediction,
+      scorePrediction: predictionResult.scorePrediction,
+      examReadiness: predictionResult.examReadiness,
       modelVersion: predictionResult.modelVersion
     };
 

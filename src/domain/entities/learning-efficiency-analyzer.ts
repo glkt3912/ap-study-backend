@@ -1,7 +1,7 @@
 // Domain Entity: Learning Efficiency Analysis
 export interface LearningEfficiencyAnalysis {
   id: string
-  userId: string
+  userId: number
   analysisDate: Date
   timeRange: {
     startDate: Date
@@ -41,7 +41,7 @@ export interface LearningRecommendation {
 }
 
 export interface CreateLearningEfficiencyAnalysisInput {
-  userId: string
+  userId: number
   timeRange: {
     startDate: Date
     endDate: Date

@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import type { Variables } from '../middleware/auth'
 import { sign } from 'hono/jwt'
 import { HTTPException } from 'hono/http-exception'
 import { zValidator } from '@hono/zod-validator'
@@ -19,7 +20,7 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 })
 
-const app = new Hono()
+const app = new Hono<{ Variables: Variables }>()
 const prisma = new PrismaClient()
 
 /**
@@ -159,7 +160,7 @@ app.get('/me', authMiddleware, async (c) => {
     // 認証ミドルウェアで設定された認証情報を取得
     const authUser = c.get('authUser')
     
-    if (!authUser || authUser.userId === 'anonymous') {
+    if (!authUser || authUser.userId === 0) {
       throw new HTTPException(401, { message: 'Authentication required' })
     }
     
@@ -202,7 +203,7 @@ app.post('/refresh', authMiddleware, async (c) => {
   try {
     const authUser = c.get('authUser')
     
-    if (!authUser || authUser.userId === 'anonymous') {
+    if (!authUser || authUser.userId === 0) {
       throw new HTTPException(401, { message: 'Valid authentication required for token refresh' })
     }
     

@@ -8,7 +8,7 @@ export interface IStudyLogRepository {
   findById(id: number): Promise<StudyLogEntity | null>;
   findAll(): Promise<StudyLogEntity[]>;
   findByDateRange(startDate: Date, endDate: Date): Promise<StudyLogEntity[]>;
-  findByUserAndDateRange(userId: string, startDate: Date, endDate: Date): Promise<StudyLogEntity[]>;
+  findByUserAndDateRange(userId: number, startDate: Date, endDate: Date): Promise<StudyLogEntity[]>;
   findBySubject(subject: string): Promise<StudyLogEntity[]>;
 
   // 統計・分析

@@ -7,7 +7,7 @@ export class ReviewRepository implements IReviewRepository {
 
   async saveReviewItem(item: ReviewItem): Promise<ReviewItem> {
     const data = {
-      userId: item.userId,
+      userId: item.userId || 0,
       subject: item.subject,
       topic: item.topic,
       lastStudyDate: item.lastStudyDate,
@@ -83,7 +83,7 @@ export class ReviewRepository implements IReviewRepository {
 
   async saveReviewSession(session: ReviewSession): Promise<ReviewSession> {
     const data = {
-      userId: session.userId,
+      userId: session.userId || 0,
       sessionDate: session.sessionDate,
       totalItems: session.totalItems,
       completedItems: session.completedItems,

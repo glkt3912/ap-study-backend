@@ -7,11 +7,11 @@ export class AnalysisRepository implements IAnalysisRepository {
 
   async save(analysisResult: AnalysisResult): Promise<AnalysisResult> {
     const data = {
-      userId: analysisResult.userId,
+      userId: analysisResult.userId || 0,
       analysisDate: analysisResult.analysisDate,
-      studyPattern: JSON.stringify(analysisResult.studyPattern),
-      weaknessAnalysis: JSON.stringify(analysisResult.weaknessAnalysis),
-      studyRecommendation: JSON.stringify(analysisResult.studyRecommendation),
+      studyPattern: analysisResult.studyPattern,
+      weaknessAnalysis: analysisResult.weaknessAnalysis,
+      studyRecommendation: analysisResult.studyRecommendation,
       overallScore: analysisResult.overallScore
     };
 

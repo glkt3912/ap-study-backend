@@ -7,7 +7,7 @@ import {
 
 export interface ILearningEfficiencyAnalysisRepository {
   findById(id: string): Promise<LearningEfficiencyAnalysis | null>
-  findByUserId(userId: string): Promise<LearningEfficiencyAnalysis[]>
+  findByUserId(userId: number): Promise<LearningEfficiencyAnalysis[]>
   create(input: Omit<LearningEfficiencyAnalysis, 'id' | 'createdAt' | 'updatedAt'>): Promise<LearningEfficiencyAnalysis>
   update(id: string, input: UpdateLearningEfficiencyAnalysisInput): Promise<LearningEfficiencyAnalysis>
   delete(id: string): Promise<void>

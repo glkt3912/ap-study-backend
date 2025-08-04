@@ -4,7 +4,7 @@ import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { sign, verify } from 'hono/jwt';
 import authRoutes from '../infrastructure/web/routes/auth';
-import { authMiddleware, getAuthUser } from '../infrastructure/web/middleware/auth';
+import { authMiddleware, getAuthUser, type Variables } from '../infrastructure/web/middleware/auth';
 
 // Mock PrismaClient
 const mockUser = {
@@ -19,8 +19,8 @@ const mockUser = {
 // Mock bcryptjs
 vi.mock('bcryptjs', () => ({
   default: {
-    hash: vi.fn(),
-    compare: vi.fn(),
+    hash: vi.fn().mockResolvedValue('hashed-password'),
+    compare: vi.fn().mockResolvedValue(true),
   },
 }));
 
@@ -60,7 +60,7 @@ describe('Authentication System (TDD)', () => {
       };
 
       mockPrisma.user.findUnique.mockResolvedValue(null); // User doesn't exist
-      vi.mocked(bcrypt.hash).mockResolvedValue('hashed-password');
+      vi.mocked(bcrypt.hash).mockResolvedValue('hashed-password' as never);
       mockPrisma.user.create.mockResolvedValue({
         ...mockUser,
         email: newUser.email,
@@ -162,7 +162,7 @@ describe('Authentication System (TDD)', () => {
         ...mockUser,
         password: 'hashed-password',
       });
-      vi.mocked(bcrypt.compare).mockResolvedValue(true);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       // Act
       const response = await app.request('/auth/login', {
@@ -214,7 +214,7 @@ describe('Authentication System (TDD)', () => {
         ...mockUser,
         password: 'hashed-password',
       });
-      vi.mocked(bcrypt.compare).mockResolvedValue(false);
+      vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
       // Act
       const response = await app.request('/auth/login', {
@@ -243,7 +243,7 @@ describe('Authentication System (TDD)', () => {
         ...mockUser,
         password: 'hashed-password',
       });
-      vi.mocked(bcrypt.compare).mockResolvedValue(true);
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
 
       // Act
       const response = await app.request('/auth/login', {
@@ -283,7 +283,7 @@ describe('Authentication System (TDD)', () => {
       const token = await sign(payload, 'development-secret-key');
 
       // Act: Create a protected route for testing
-      const testApp = new Hono();
+      const testApp = new Hono<{ Variables: Variables }>();
       testApp.use('/protected', authMiddleware);
       testApp.get('/protected', (c) => {
         const user = getAuthUser(c);
@@ -309,7 +309,7 @@ describe('Authentication System (TDD)', () => {
       const invalidToken = 'invalid.jwt.token';
 
       // Act
-      const testApp = new Hono();
+      const testApp = new Hono<{ Variables: Variables }>();
       testApp.use('/protected', authMiddleware);
       testApp.get('/protected', (c) => c.json({ success: true }));
 
@@ -338,7 +338,7 @@ describe('Authentication System (TDD)', () => {
       const expiredToken = await sign(expiredPayload, 'development-secret-key');
 
       // Act
-      const testApp = new Hono();
+      const testApp = new Hono<{ Variables: Variables }>();
       testApp.use('/protected', authMiddleware);
       testApp.get('/protected', (c) => c.json({ success: true }));
 
@@ -357,7 +357,7 @@ describe('Authentication System (TDD)', () => {
   describe('Development Environment Fallbacks', () => {
     it('should allow X-User-ID header in development', async () => {
       // Arrange
-      const testApp = new Hono();
+      const testApp = new Hono<{ Variables: Variables }>();
       testApp.use('/protected', authMiddleware);
       testApp.get('/protected', (c) => {
         const user = c.get('authUser');
@@ -381,7 +381,7 @@ describe('Authentication System (TDD)', () => {
 
     it('should allow anonymous users in development', async () => {
       // Arrange
-      const testApp = new Hono();
+      const testApp = new Hono<{ Variables: Variables }>();
       testApp.use('/protected', authMiddleware);
       testApp.get('/protected', (c) => {
         const user = c.get('authUser');
@@ -405,7 +405,7 @@ describe('Authentication System (TDD)', () => {
     it('should create test user in development environment', async () => {
       // Arrange
       mockPrisma.user.deleteMany.mockResolvedValue({ count: 0 });
-      vi.mocked(bcrypt.hash).mockResolvedValue('hashed-test-password');
+      vi.mocked(bcrypt.hash).mockResolvedValue('hashed-test-password' as never);
       mockPrisma.user.create.mockResolvedValue({
         ...mockUser,
         email: 'test@example.com',
