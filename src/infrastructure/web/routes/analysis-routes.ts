@@ -23,7 +23,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         analysisRepository
       );
 
-      const result = await analyzeStudyData.execute(userId);
+      const result = await analyzeStudyData.execute(userId ? parseInt(userId) : undefined);
 
       return c.json({
         success: true,
@@ -47,7 +47,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       const userId = c.req.query("userId");
       const analysisRepository = new AnalysisRepository(prisma);
 
-      const result = await analysisRepository.findLatest(userId);
+      const result = await analysisRepository.findLatest(userId ? parseInt(userId) : undefined);
 
       if (!result) {
         return c.json(
@@ -99,7 +99,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       const results = await analysisRepository.findByDateRange(
         startDate,
         endDate,
-        userId
+        userId ? parseInt(userId) : undefined
       );
 
       return c.json({
@@ -134,7 +134,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         analysisRepository
       );
 
-      const result = await predictExamResults.execute(examDate, userId);
+      const result = await predictExamResults.execute(examDate, userId ? parseInt(userId) : undefined);
 
       return c.json({
         success: true,
@@ -158,7 +158,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       const userId = c.req.query("userId");
       const predictionRepository = new PredictionRepository(prisma);
 
-      const result = await predictionRepository.findLatest(userId);
+      const result = await predictionRepository.findLatest(userId ? parseInt(userId) : undefined);
 
       if (!result) {
         return c.json(
@@ -197,7 +197,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
 
       const results = await predictionRepository.findByExamDate(
         examDate,
-        userId
+        userId ? parseInt(userId) : undefined
       );
 
       return c.json({
@@ -228,7 +228,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         studyLogRepository
       );
 
-      const reviewItems = await generateReviewSchedule.execute(userId);
+      const reviewItems = await generateReviewSchedule.execute(userId ? parseInt(userId) : undefined);
 
       return c.json({
         success: true,
@@ -255,7 +255,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const dueItems = await reviewRepository.findDueReviewItems(today, userId);
+      const dueItems = await reviewRepository.findDueReviewItems(today, userId ? parseInt(userId) : undefined);
 
       return c.json({
         success: true,

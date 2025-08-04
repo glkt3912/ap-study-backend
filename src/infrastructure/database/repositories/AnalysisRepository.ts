@@ -7,11 +7,11 @@ export class AnalysisRepository implements IAnalysisRepository {
 
   async save(analysisResult: AnalysisResult): Promise<AnalysisResult> {
     const data = {
-      userId: analysisResult.userId || 0,
+      userId: Number(analysisResult.userId) || 0,
       analysisDate: analysisResult.analysisDate,
-      studyPattern: analysisResult.studyPattern,
-      weaknessAnalysis: analysisResult.weaknessAnalysis,
-      studyRecommendation: analysisResult.studyRecommendation,
+      studyPattern: JSON.stringify(analysisResult.studyPattern),
+      weaknessAnalysis: JSON.stringify(analysisResult.weaknessAnalysis),
+      studyRecommendation: JSON.stringify(analysisResult.studyRecommendation),
       overallScore: analysisResult.overallScore
     };
 
@@ -29,7 +29,7 @@ export class AnalysisRepository implements IAnalysisRepository {
     }
   }
 
-  async findLatest(userId?: string): Promise<AnalysisResult | null> {
+  async findLatest(userId?: number): Promise<AnalysisResult | null> {
     const result = await this.prisma.analysisResult.findFirst({
       where: userId ? { userId } : undefined,
       orderBy: { analysisDate: 'desc' }
@@ -38,7 +38,7 @@ export class AnalysisRepository implements IAnalysisRepository {
     return result ? this.mapToEntity(result) : null;
   }
 
-  async findByDateRange(startDate: Date, endDate: Date, userId?: string): Promise<AnalysisResult[]> {
+  async findByDateRange(startDate: Date, endDate: Date, userId?: number): Promise<AnalysisResult[]> {
     const results = await this.prisma.analysisResult.findMany({
       where: {
         userId: userId ? userId : undefined,

@@ -7,7 +7,7 @@ export class ReviewRepository implements IReviewRepository {
 
   async saveReviewItem(item: ReviewItem): Promise<ReviewItem> {
     const data = {
-      userId: item.userId || 0,
+      userId: Number(item.userId) || 0,
       subject: item.subject,
       topic: item.topic,
       lastStudyDate: item.lastStudyDate,
@@ -42,7 +42,7 @@ export class ReviewRepository implements IReviewRepository {
     return item ? this.mapReviewItemToEntity(item) : null;
   }
 
-  async findReviewItemsByUser(userId?: string): Promise<ReviewItem[]> {
+  async findReviewItemsByUser(userId?: number): Promise<ReviewItem[]> {
     const items = await this.prisma.reviewItem.findMany({
       where: userId ? { userId } : undefined,
       orderBy: { priority: 'desc' }
@@ -50,7 +50,7 @@ export class ReviewRepository implements IReviewRepository {
     return items.map(item => this.mapReviewItemToEntity(item));
   }
 
-  async findDueReviewItems(date: Date, userId?: string): Promise<ReviewItem[]> {
+  async findDueReviewItems(date: Date, userId?: number): Promise<ReviewItem[]> {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
@@ -83,7 +83,7 @@ export class ReviewRepository implements IReviewRepository {
 
   async saveReviewSession(session: ReviewSession): Promise<ReviewSession> {
     const data = {
-      userId: session.userId || 0,
+      userId: Number(session.userId) || 0,
       sessionDate: session.sessionDate,
       totalItems: session.totalItems,
       completedItems: session.completedItems,
@@ -105,7 +105,7 @@ export class ReviewRepository implements IReviewRepository {
     }
   }
 
-  async findReviewSessionsByUser(userId?: string): Promise<ReviewSession[]> {
+  async findReviewSessionsByUser(userId?: number): Promise<ReviewSession[]> {
     const sessions = await this.prisma.reviewSession.findMany({
       where: userId ? { userId } : undefined,
       orderBy: { sessionDate: 'desc' }
@@ -113,7 +113,7 @@ export class ReviewRepository implements IReviewRepository {
     return sessions.map(session => this.mapSessionToEntity(session));
   }
 
-  async findRecentReviewSessions(days: number, userId?: string): Promise<ReviewSession[]> {
+  async findRecentReviewSessions(days: number, userId?: number): Promise<ReviewSession[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 

@@ -18,7 +18,7 @@ export class GenerateReviewSchedule {
     private studyLogRepository: IStudyLogRepository
   ) {}
 
-  async execute(userId?: string): Promise<ReviewItem[]> {
+  async execute(userId?: number): Promise<ReviewItem[]> {
     // 過去の学習記録から復習項目を抽出
     const endDate = new Date();
     const startDate = new Date();
@@ -84,13 +84,13 @@ export class GenerateReviewSchedule {
     return await this.reviewRepository.updateReviewItem(itemId, updates);
   }
 
-  private createReviewItem(studyLog: any, topic: string, userId?: string): ReviewItem {
+  private createReviewItem(studyLog: any, topic: string, userId?: number): ReviewItem {
     const now = new Date();
     const nextReviewDate = new Date();
     nextReviewDate.setDate(now.getDate() + this.forgettingCurve.stage1);
 
     return {
-      userId,
+      userId: userId || 0,
       subject: studyLog.subject,
       topic,
       lastStudyDate: new Date(studyLog.date),

@@ -37,7 +37,7 @@ export interface StudyRecommendation {
 
 export interface AnalysisResult {
   id?: number;
-  userId?: string;
+  userId?: number;
   analysisDate: Date;
   studyPattern: StudyPattern;
   weaknessAnalysis: WeaknessAnalysis;

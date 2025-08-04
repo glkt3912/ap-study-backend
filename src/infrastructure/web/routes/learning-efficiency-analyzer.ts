@@ -9,7 +9,7 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
   router.get('/user/:userId', async (c) => {
     try {
       const userId = c.req.param('userId')
-      const analyses = await useCase.getAnalysesByUser(userId)
+      const analyses = await useCase.getAnalysesByUser(userId ? parseInt(userId) : 0)
       return c.json({ success: true, data: analyses })
     } catch (error: any) {
       return c.json({ success: false, error: error.message }, 500)
@@ -45,7 +45,7 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
   router.get('/latest/:userId', async (c) => {
     try {
       const userId = c.req.param('userId')
-      const analysis = await useCase.getLatestAnalysis(userId)
+      const analysis = await useCase.getLatestAnalysis(userId ? parseInt(userId) : 0)
       if (!analysis) {
         return c.json({ success: false, error: 'No analysis found for user' }, 404)
       }
@@ -59,7 +59,7 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
   router.get('/predict/:userId', async (c) => {
     try {
       const userId = c.req.param('userId')
-      const prediction = await useCase.generatePredictiveAnalysis(userId)
+      const prediction = await useCase.generatePredictiveAnalysis(userId ? parseInt(userId) : 0)
       return c.json({ success: true, data: prediction })
     } catch (error: any) {
       return c.json({ success: false, error: error.message }, 500)
@@ -70,7 +70,7 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
   router.get('/recommendations/:userId', async (c) => {
     try {
       const userId = c.req.param('userId')
-      const recommendations = await useCase.generatePersonalizedRecommendations(userId)
+      const recommendations = await useCase.generatePersonalizedRecommendations(userId ? parseInt(userId) : 0)
       return c.json({ success: true, data: recommendations })
     } catch (error: any) {
       return c.json({ success: false, error: error.message }, 500)

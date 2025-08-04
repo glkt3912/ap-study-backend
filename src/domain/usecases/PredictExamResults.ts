@@ -16,7 +16,7 @@ export class PredictExamResults {
     private analysisRepository: IAnalysisRepository
   ) {}
 
-  async execute(examDate: Date, userId?: string): Promise<PredictionResult> {
+  async execute(examDate: Date, userId?: number): Promise<PredictionResult> {
     // 過去のデータを取得
     const endDate = new Date();
     const startDate = new Date();
@@ -47,7 +47,7 @@ export class PredictExamResults {
     );
 
     const predictionResult: PredictionResult = {
-      userId,
+      userId: userId || 0,
       predictionDate: new Date(),
       examDate,
       passProbability,

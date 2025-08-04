@@ -40,7 +40,7 @@ export interface ExamReadiness {
 
 export interface PredictionResult {
   id?: number;
-  userId?: string;
+  userId?: number;
   predictionDate: Date;
   examDate: Date; // 試験日
   passProbability: PassProbability;

@@ -63,16 +63,16 @@ export class LearningEfficiencyAnalysisUseCase {
     return await this.repository.findById(id)
   }
 
-  async getAnalysesByUser(userId: string): Promise<LearningEfficiencyAnalysis[]> {
+  async getAnalysesByUser(userId: number): Promise<LearningEfficiencyAnalysis[]> {
     return await this.repository.findByUserId(userId)
   }
 
-  async getLatestAnalysis(userId: string): Promise<LearningEfficiencyAnalysis | null> {
+  async getLatestAnalysis(userId: number): Promise<LearningEfficiencyAnalysis | null> {
     const analyses = await this.repository.findByUserId(userId)
     return analyses.length > 0 ? analyses[analyses.length - 1] : null
   }
 
-  async generatePredictiveAnalysis(userId: string): Promise<{
+  async generatePredictiveAnalysis(userId: number): Promise<{
     predictedPerformance: number,
     improvementSuggestions: string[],
     riskFactors: string[],
@@ -100,7 +100,7 @@ export class LearningEfficiencyAnalysisUseCase {
     }
   }
 
-  async generatePersonalizedRecommendations(userId: string): Promise<{
+  async generatePersonalizedRecommendations(userId: number): Promise<{
     dailySchedule: { time: string, activity: string, duration: number }[],
     weeklyGoals: string[],
     studyTechniques: string[]

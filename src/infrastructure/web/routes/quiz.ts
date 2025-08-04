@@ -68,8 +68,8 @@ export function createQuizRoutes() {
       // choicesをJSONパース
       const parsedQuestions = finalQuestions.map(q => ({
         ...q,
-        choices: JSON.parse(q.choices),
-        tags: q.tags ? JSON.parse(q.tags) : [],
+        choices: typeof q.choices === "string" ? JSON.parse(q.choices) : q.choices,
+        tags: q.tags && typeof q.tags === 'string' ? JSON.parse(q.tags) : (q.tags || []),
       }));
 
       return c.json({
@@ -172,8 +172,8 @@ export function createQuizRoutes() {
         // choicesをJSONパース
         const parsedQuestions = finalQuestions.map(q => ({
           ...q,
-          choices: JSON.parse(q.choices),
-          tags: q.tags ? JSON.parse(q.tags) : [],
+          choices: typeof q.choices === "string" ? JSON.parse(q.choices) : q.choices,
+          tags: q.tags && typeof q.tags === 'string' ? JSON.parse(q.tags) : (q.tags || []),
         }));
 
         return c.json({
@@ -343,7 +343,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/sessions - セッション履歴取得
   app.get("/sessions", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
       const limit = parseInt(c.req.query("limit") || "20");
 
       const sessions = await prisma.quizSession.findMany({
@@ -373,7 +374,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/stats - 統計情報取得
   app.get("/stats", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
 
       // 全体統計
       const totalSessions = await prisma.quizSession.count({
@@ -397,11 +399,11 @@ export function createQuizRoutes() {
         success: true,
         data: {
           totalSessions,
-          averageScore: Math.round(averageScore._avg.score || 0),
+          averageScore: Math.round(averageScore._avg?.score || 0),
           categoryStats: categoryStats.map(stat => ({
             category: stat.category,
-            sessionCount: stat._count.category,
-            averageScore: Math.round(stat._avg.score || 0),
+            sessionCount: stat._count?.category || 0,
+            averageScore: Math.round(stat._avg?.score || 0),
           })),
         },
       });
@@ -419,7 +421,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/weak-points - 苦手分野分析
   app.get("/weak-points", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
       const limit = parseInt(c.req.query("limit") || "5");
 
       // カテゴリ別の正答率を計算
@@ -458,7 +461,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/recommendations - 学習推奨問題
   app.get("/recommendations", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
       const limit = parseInt(c.req.query("limit") || "10");
 
       // 苦手カテゴリを取得
@@ -496,8 +500,8 @@ export function createQuizRoutes() {
             reason: "general_practice",
             questions: randomQuestions.map(q => ({
               ...q,
-              choices: JSON.parse(q.choices),
-              tags: q.tags ? JSON.parse(q.tags) : [],
+              choices: typeof q.choices === "string" ? JSON.parse(q.choices) : q.choices,
+              tags: q.tags && typeof q.tags === "string" ? JSON.parse(q.tags) : (q.tags || []),
             })),
           },
         });
@@ -538,8 +542,8 @@ export function createQuizRoutes() {
           weakCategories: categoryList,
           questions: recommendedQuestions.map(q => ({
             ...q,
-            choices: JSON.parse(q.choices),
-            tags: q.tags ? JSON.parse(q.tags) : [],
+            choices: typeof q.choices === "string" ? JSON.parse(q.choices) : q.choices,
+            tags: q.tags && typeof q.tags === "string" ? JSON.parse(q.tags) : (q.tags || []),
           })),
         },
       });
@@ -557,7 +561,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/progress - 学習進捗取得
   app.get("/progress", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
 
       // 全問題数
       const totalQuestions = await prisma.question.count();
@@ -625,7 +630,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/detailed-analysis - 詳細分析
   app.get("/detailed-analysis", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
       const category = c.req.query("category");
       const period = parseInt(c.req.query("period") || "30");
 
@@ -732,7 +738,8 @@ export function createQuizRoutes() {
   // GET /api/quiz/learning-trends - 学習トレンド分析
   app.get("/learning-trends", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
       const days = parseInt(c.req.query("days") || "14");
 
       // 日別トレンド
@@ -804,7 +811,8 @@ export function createQuizRoutes() {
   // POST /api/quiz/export - 学習データエクスポート
   app.post("/export", async (c) => {
     try {
-      const userId = c.req.header("X-User-ID") || "anonymous";
+      const userIdHeader = c.req.header("X-User-ID") || "0";
+      const userId = parseInt(userIdHeader) || 0;
       const body = await c.req.json();
       const { format = "json", period = 30, categories = [] } = body;
 

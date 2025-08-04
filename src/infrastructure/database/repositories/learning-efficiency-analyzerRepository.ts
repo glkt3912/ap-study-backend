@@ -14,7 +14,7 @@ export class LearningEfficiencyAnalysisRepository implements ILearningEfficiency
     return null
   }
 
-  async findByUserId(userId: string): Promise<LearningEfficiencyAnalysis[]> {
+  async findByUserId(userId: number): Promise<LearningEfficiencyAnalysis[]> {
     // TODO: Add Prisma query when model is ready
     return []
   }

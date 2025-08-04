@@ -13,7 +13,7 @@ export class AnalyzeStudyData {
     private analysisRepository: IAnalysisRepository
   ) {}
 
-  async execute(userId?: string): Promise<AnalysisResult> {
+  async execute(userId?: number): Promise<AnalysisResult> {
     // 過去30日の学習データを取得
     const endDate = new Date();
     const startDate = new Date();
@@ -43,7 +43,7 @@ export class AnalyzeStudyData {
     );
 
     const analysisResult: AnalysisResult = {
-      userId,
+      userId: userId || 0,
       analysisDate: new Date(),
       studyPattern,
       weaknessAnalysis,

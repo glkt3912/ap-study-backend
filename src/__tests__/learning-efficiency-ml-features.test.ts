@@ -30,7 +30,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should predict exam readiness based on study patterns', async () => {
       // Arrange: Good study pattern
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'high-performer',
+        userId: 1,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -75,7 +75,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should identify weak subjects accurately', async () => {
       // Arrange: Mixed performance data
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'mixed-performer',
+        userId: 2,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -141,7 +141,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should generate personalized study time recommendations', async () => {
       // Arrange: Low consistency study pattern
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'inconsistent-learner',
+        userId: 3,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -191,7 +191,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should detect high burnout risk from excessive study time', async () => {
       // Arrange: Excessive study pattern
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'overworked-student',
+        userId: 4,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -231,7 +231,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should detect declining efficiency patterns', async () => {
       // Arrange: Declining performance over time
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'declining-student',
+        userId: 5,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -276,7 +276,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should handle empty study logs gracefully', async () => {
       // Arrange
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'no-data-user',
+        userId: 6,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -292,7 +292,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should handle single day of data without crashing', async () => {
       // Arrange
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'single-day-user',
+        userId: 7,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-01'),
@@ -334,7 +334,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
     it('should handle extreme understanding values', async () => {
       // Arrange: Test boundary values
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'extreme-values-user',
+        userId: 8,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-03'),

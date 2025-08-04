@@ -53,7 +53,7 @@ export class StudyLogRepository implements IStudyLogRepository {
     return studyLogs.map(log => this.toDomainEntity(log))
   }
 
-  async findByUserAndDateRange(userId: string, startDate: Date, endDate: Date): Promise<StudyLogEntity[]> {
+  async findByUserAndDateRange(userId: number, startDate: Date, endDate: Date): Promise<StudyLogEntity[]> {
     // For now, ignore userId and use findByDateRange (as we don't have user separation yet)
     return this.findByDateRange(startDate, endDate)
   }

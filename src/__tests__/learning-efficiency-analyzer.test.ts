@@ -30,7 +30,7 @@ describe('LearningEfficiencyAnalysisUseCase', () => {
     it('should fail when no study logs exist (Red phase)', async () => {
       // Arrange
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'user123',
+        userId: 123,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -46,7 +46,7 @@ describe('LearningEfficiencyAnalysisUseCase', () => {
     it('should calculate hourly efficiency correctly', async () => {
       // Arrange
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'user123',
+        userId: 123,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),
@@ -98,7 +98,7 @@ describe('LearningEfficiencyAnalysisUseCase', () => {
 
     it('should generate meaningful recommendations', async () => {
       const input: CreateLearningEfficiencyAnalysisInput = {
-        userId: 'user123',
+        userId: 123,
         timeRange: {
           startDate: new Date('2025-01-01'),
           endDate: new Date('2025-01-31'),

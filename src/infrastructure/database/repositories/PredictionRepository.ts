@@ -7,13 +7,13 @@ export class PredictionRepository implements IPredictionRepository {
 
   async save(predictionResult: PredictionResult): Promise<PredictionResult> {
     const data = {
-      userId: predictionResult.userId || 0,
+      userId: Number(predictionResult.userId) || 0,
       predictionDate: predictionResult.predictionDate,
       examDate: predictionResult.examDate,
-      passProbability: predictionResult.passProbability,
-      studyTimePrediction: predictionResult.studyTimePrediction,
-      scorePrediction: predictionResult.scorePrediction,
-      examReadiness: predictionResult.examReadiness,
+      passProbability: JSON.stringify(predictionResult.passProbability),
+      studyTimePrediction: JSON.stringify(predictionResult.studyTimePrediction),
+      scorePrediction: JSON.stringify(predictionResult.scorePrediction),
+      examReadiness: JSON.stringify(predictionResult.examReadiness),
       modelVersion: predictionResult.modelVersion
     };
 
@@ -31,7 +31,7 @@ export class PredictionRepository implements IPredictionRepository {
     }
   }
 
-  async findLatest(userId?: string): Promise<PredictionResult | null> {
+  async findLatest(userId?: number): Promise<PredictionResult | null> {
     const result = await this.prisma.predictionResult.findFirst({
       where: userId ? { userId } : undefined,
       orderBy: { predictionDate: 'desc' }
@@ -40,7 +40,7 @@ export class PredictionRepository implements IPredictionRepository {
     return result ? this.mapToEntity(result) : null;
   }
 
-  async findByDateRange(startDate: Date, endDate: Date, userId?: string): Promise<PredictionResult[]> {
+  async findByDateRange(startDate: Date, endDate: Date, userId?: number): Promise<PredictionResult[]> {
     const results = await this.prisma.predictionResult.findMany({
       where: {
         userId: userId ? userId : undefined,
@@ -55,7 +55,7 @@ export class PredictionRepository implements IPredictionRepository {
     return results.map(result => this.mapToEntity(result));
   }
 
-  async findByExamDate(examDate: Date, userId?: string): Promise<PredictionResult[]> {
+  async findByExamDate(examDate: Date, userId?: number): Promise<PredictionResult[]> {
     const results = await this.prisma.predictionResult.findMany({
       where: {
         userId: userId ? userId : undefined,

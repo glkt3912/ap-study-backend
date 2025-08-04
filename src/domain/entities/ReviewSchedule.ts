@@ -1,7 +1,7 @@
 // 復習スケジュールエンティティ
 export interface ReviewItem {
   id?: number;
-  userId?: string;
+  userId?: number;
   subject: string;
   topic: string;
   lastStudyDate: Date;
@@ -19,7 +19,7 @@ export interface ReviewItem {
 
 export interface ReviewSession {
   id?: number;
-  userId?: string;
+  userId?: number;
   sessionDate: Date;
   reviewItems: ReviewItem[];
   totalItems: number;
