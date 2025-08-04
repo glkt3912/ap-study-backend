@@ -21,11 +21,13 @@ logger.info(
 // リポジトリ
 import { StudyRepository } from "src/infrastructure/database/repositories/StudyRepository.js";
 import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
+import { LearningEfficiencyAnalysisRepository } from "src/infrastructure/database/repositories/learning-efficiency-analyzerRepository.js";
 
 // ユースケース
 import { GetStudyPlanUseCase } from "src/domain/usecases/GetStudyPlan.js";
 import { UpdateStudyProgressUseCase } from "src/domain/usecases/UpdateStudyProgress.js";
 import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
+import { LearningEfficiencyAnalysisUseCase } from "src/domain/usecases/learning-efficiency-analyzer.js";
 
 // ルート
 import { createStudyRoutes } from "src/infrastructure/web/routes/study.js";
@@ -33,6 +35,7 @@ import { createStudyLogRoutes } from "src/infrastructure/web/routes/studylog.js"
 import { createTestRoutes } from "src/infrastructure/web/routes/test.js";
 import { createAnalysisRoutes } from "src/infrastructure/web/routes/analysis-routes.js";
 import { createQuizRoutes } from "src/infrastructure/web/routes/quiz.js";
+import { createLearningEfficiencyAnalysisRoutes } from "src/infrastructure/web/routes/learning-efficiency-analyzer.js";
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -40,9 +43,11 @@ class DIContainer {
   private _prisma: PrismaClient;
   private _studyRepository: StudyRepository;
   private _studyLogRepository: StudyLogRepository;
+  private _learningEfficiencyAnalysisRepository: LearningEfficiencyAnalysisRepository;
   private _getStudyPlanUseCase: GetStudyPlanUseCase;
   private _updateStudyProgressUseCase: UpdateStudyProgressUseCase;
   private _createStudyLogUseCase: CreateStudyLogUseCase;
+  private _learningEfficiencyAnalysisUseCase: LearningEfficiencyAnalysisUseCase;
 
   private constructor() {
     // Prisma Client
@@ -51,6 +56,7 @@ class DIContainer {
     // Repository
     this._studyRepository = new StudyRepository(this._prisma);
     this._studyLogRepository = new StudyLogRepository(this._prisma);
+    this._learningEfficiencyAnalysisRepository = new LearningEfficiencyAnalysisRepository(this._prisma);
 
     // Use Cases
     this._getStudyPlanUseCase = new GetStudyPlanUseCase(this._studyRepository);
@@ -58,6 +64,10 @@ class DIContainer {
       this._studyRepository
     );
     this._createStudyLogUseCase = new CreateStudyLogUseCase(
+      this._studyLogRepository
+    );
+    this._learningEfficiencyAnalysisUseCase = new LearningEfficiencyAnalysisUseCase(
+      this._learningEfficiencyAnalysisRepository,
       this._studyLogRepository
     );
   }
@@ -86,6 +96,9 @@ class DIContainer {
   }
   get createStudyLogUseCase() {
     return this._createStudyLogUseCase;
+  }
+  get learningEfficiencyAnalysisUseCase() {
+    return this._learningEfficiencyAnalysisUseCase;
   }
 }
 
@@ -177,6 +190,9 @@ app.route("/api/analysis", createAnalysisRoutes(container.prisma));
 // Quiz API
 app.route("/api/quiz", createQuizRoutes());
 
+// Learning Efficiency Analysis API
+app.route("/api/learning-efficiency-analysis", createLearningEfficiencyAnalysisRoutes(container.learningEfficiencyAnalysisUseCase));
+
 // エラーハンドリング
 app.onError((err, c) => {
   logger.error("Error:", err);
@@ -238,6 +254,7 @@ async function startServer() {
   logger.info(`📋 問題演習API: http://localhost:${port}/api/test`);
   logger.info(`📊 分析API: http://localhost:${port}/api/analysis`);
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
+  logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");
