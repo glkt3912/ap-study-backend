@@ -33,7 +33,7 @@ export interface SubjectEfficiency {
 }
 
 export interface LearningRecommendation {
-  type: 'time_optimization' | 'subject_focus' | 'schedule_adjustment'
+  type: 'time_optimization' | 'subject_focus' | 'schedule_adjustment' | 'schedule_optimization' | 'subject_improvement' | 'consistency'
   priority: 'high' | 'medium' | 'low'
   title: string
   description: string

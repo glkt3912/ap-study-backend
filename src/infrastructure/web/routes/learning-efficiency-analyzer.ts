@@ -41,5 +41,41 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
     }
   })
 
+  // GET /latest/:userId
+  router.get('/latest/:userId', async (c) => {
+    try {
+      const userId = c.req.param('userId')
+      const analysis = await useCase.getLatestAnalysis(userId)
+      if (!analysis) {
+        return c.json({ success: false, error: 'No analysis found for user' }, 404)
+      }
+      return c.json({ success: true, data: analysis })
+    } catch (error: any) {
+      return c.json({ success: false, error: error.message }, 500)
+    }
+  })
+
+  // GET /predict/:userId
+  router.get('/predict/:userId', async (c) => {
+    try {
+      const userId = c.req.param('userId')
+      const prediction = await useCase.generatePredictiveAnalysis(userId)
+      return c.json({ success: true, data: prediction })
+    } catch (error: any) {
+      return c.json({ success: false, error: error.message }, 500)
+    }
+  })
+
+  // GET /recommendations/:userId
+  router.get('/recommendations/:userId', async (c) => {
+    try {
+      const userId = c.req.param('userId')
+      const recommendations = await useCase.generatePersonalizedRecommendations(userId)
+      return c.json({ success: true, data: recommendations })
+    } catch (error: any) {
+      return c.json({ success: false, error: error.message }, 500)
+    }
+  })
+
   return router
 }

@@ -8,6 +8,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ユーザーモデル
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("user") // user, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // リレーション
+  studyLogs          StudyLog[]
+  morningTests       MorningTest[]
+  afternoonTests     AfternoonTest[]
+  analysisResults    AnalysisResult[]
+  predictionResults  PredictionResult[]
+  reviewItems        ReviewItem[]
+  reviewSessions     ReviewSession[]
+  userAnswers        UserAnswer[]
+  quizSessions       QuizSession[]
+
+  @@map("users")
+}
+
 // 学習週モデル
 model StudyWeek {
   id         Int      @id @default(autoincrement())
@@ -48,6 +72,7 @@ model StudyDay {
 // 学習記録モデル
 model StudyLog {
   id            Int      @id @default(autoincrement())
+  userId        String
   date          DateTime
   subject       String
   topics        String // JSON配列として保存
@@ -57,12 +82,16 @@ model StudyLog {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("study_logs")
 }
 
 // 午前問題記録モデル
 model MorningTest {
   id             Int      @id @default(autoincrement())
+  userId         String
   date           DateTime
   category       String
   totalQuestions Int
@@ -72,12 +101,16 @@ model MorningTest {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("morning_tests")
 }
 
 // 午後問題記録モデル
 model AfternoonTest {
   id           Int      @id @default(autoincrement())
+  userId       String
   date         DateTime
   category     String   // questionType → category に統一
   score        Int // 点数
@@ -86,13 +119,16 @@ model AfternoonTest {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("afternoon_tests")
 }
 
 // 学習分析結果モデル
 model AnalysisResult {
   id              Int      @id @default(autoincrement())
-  userId          String?
+  userId          String
   analysisDate    DateTime
   studyPattern    String   // JSON形式で保存
   weaknessAnalysis String  // JSON形式で保存
@@ -101,13 +137,16 @@ model AnalysisResult {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("analysis_results")
 }
 
 // 予測結果モデル
 model PredictionResult {
   id                Int      @id @default(autoincrement())
-  userId            String?
+  userId            String
   predictionDate    DateTime
   examDate          DateTime
   passProbability   String   // JSON形式で保存
@@ -118,13 +157,16 @@ model PredictionResult {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("prediction_results")
 }
 
 // 復習項目モデル
 model ReviewItem {
   id                    Int      @id @default(autoincrement())
-  userId                String?
+  userId                String
   subject               String
   topic                 String
   lastStudyDate         DateTime
@@ -139,13 +181,16 @@ model ReviewItem {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@map("review_items")
 }
 
 // 復習セッションモデル
 model ReviewSession {
   id                   Int      @id @default(autoincrement())
-  userId               String?
+  userId               String
   sessionDate          DateTime
   totalItems           Int
   completedItems       Int      @default(0)
@@ -153,6 +198,9 @@ model ReviewSession {
   averageUnderstanding Float    @default(0)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("review_sessions")
 }
@@ -184,7 +232,7 @@ model Question {
 // ユーザー回答記録モデル
 model UserAnswer {
   id            Int      @id @default(autoincrement())
-  userId        String?
+  userId        String
   questionId    String
   userAnswer    String   // ユーザーの回答
   isCorrect     Boolean  // 正解フラグ
@@ -193,6 +241,7 @@ model UserAnswer {
   createdAt     DateTime @default(now())
 
   // リレーション
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@map("user_answers")
@@ -201,7 +250,7 @@ model UserAnswer {
 // Quizセッションモデル
 model QuizSession {
   id              Int      @id @default(autoincrement())
-  userId          String?
+  userId          String
   sessionType     String   // category/random/review/weak_points
   category        String?  // セッションの対象カテゴリ
   totalQuestions  Int      // 出題数
@@ -214,6 +263,9 @@ model QuizSession {
   isCompleted     Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  // 外部キー
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("quiz_sessions")
 }

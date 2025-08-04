@@ -36,6 +36,10 @@ import { createTestRoutes } from "src/infrastructure/web/routes/test.js";
 import { createAnalysisRoutes } from "src/infrastructure/web/routes/analysis-routes.js";
 import { createQuizRoutes } from "src/infrastructure/web/routes/quiz.js";
 import { createLearningEfficiencyAnalysisRoutes } from "src/infrastructure/web/routes/learning-efficiency-analyzer.js";
+import authRoutes from "src/infrastructure/web/routes/auth.js";
+
+// ミドルウェア
+import { authMiddleware, optionalAuthMiddleware } from "src/infrastructure/web/middleware/auth.js";
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -108,10 +112,62 @@ const container = DIContainer.getInstance();
 
 // ミドルウェア
 app.use("*", honoLogger());
-// CORS設定
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((origin) =>
-  origin.trim()
-) || ["http://localhost:3000", "http://localhost:3001"];
+
+// セキュリティヘッダー
+app.use("*", async (c, next) => {
+  // 基本セキュリティヘッダー
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("X-XSS-Protection", "1; mode=block");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  
+  // 本番環境追加セキュリティ
+  if (process.env.NODE_ENV === "production") {
+    // HSTS（HTTPS強制）
+    c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+    
+    // CSP（Content Security Policy）
+    c.header("Content-Security-Policy", 
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+      "style-src 'self' 'unsafe-inline' https:; " +
+      "img-src 'self' data: https:; " +
+      "font-src 'self' https:; " +
+      "connect-src 'self' https:; " +
+      "frame-ancestors 'none';"
+    );
+    
+    // 追加セキュリティヘッダー
+    c.header("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+    c.header("Cross-Origin-Embedder-Policy", "require-corp");
+    c.header("Cross-Origin-Opener-Policy", "same-origin");
+    c.header("Cross-Origin-Resource-Policy", "cross-origin");
+  }
+  
+  await next();
+});
+
+// CORS設定 - 環境別許可オリジン
+const getProductionOrigins = () => {
+  return [
+    'https://ap-study-app.vercel.app',
+    'https://ap-study-backend.railway.app',
+    'https://ap-study-backend.up.railway.app'
+  ]
+}
+
+const getDevelopmentOrigins = () => {
+  return [
+    'http://localhost:3000', 
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001'
+  ]
+}
+
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? process.env.ALLOWED_ORIGINS?.split(",").map(origin => origin.trim()) || getProductionOrigins()
+  : process.env.ALLOWED_ORIGINS?.split(",").map(origin => origin.trim()) || getDevelopmentOrigins()
 
 app.use(
   "*",
@@ -147,6 +203,7 @@ app.use(
       "X-Requested-With",
       "Accept",
       "Origin",
+      "X-User-ID", // 移行期間中の簡易認証用
     ],
     credentials: true, // 認証情報を含むリクエストを許可
     maxAge: 86400, // プリフライトリクエストのキャッシュ時間（24時間）
@@ -162,6 +219,17 @@ app.get("/", (c) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// 認証API（認証不要）
+app.route("/api/auth", authRoutes);
+
+// 認証が必要なAPIエンドポイント
+app.use("/api/study/*", authMiddleware);
+app.use("/api/studylog/*", authMiddleware);
+app.use("/api/test/*", authMiddleware);
+app.use("/api/analysis/*", optionalAuthMiddleware); // 分析は読み取り専用なのでオプショナル認証
+app.use("/api/quiz/*", authMiddleware);
+app.use("/api/learning-efficiency-analysis/*", optionalAuthMiddleware);
 
 // API ルート
 app.route(
@@ -255,6 +323,7 @@ async function startServer() {
   logger.info(`📊 分析API: http://localhost:${port}/api/analysis`);
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
+  logger.info(`🔐 Authentication API: http://localhost:${port}/api/auth`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");
