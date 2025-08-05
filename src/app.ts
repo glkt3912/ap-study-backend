@@ -37,9 +37,11 @@ import { createAnalysisRoutes } from "src/infrastructure/web/routes/analysis-rou
 import { createQuizRoutes } from "src/infrastructure/web/routes/quiz.js";
 import { createLearningEfficiencyAnalysisRoutes } from "src/infrastructure/web/routes/learning-efficiency-analyzer.js";
 import authRoutes from "src/infrastructure/web/routes/auth.js";
+import monitoring from "src/infrastructure/web/routes/monitoring.js";
 
 // ミドルウェア
 import { authMiddleware, optionalAuthMiddleware } from "src/infrastructure/web/middleware/auth.js";
+import { loggingMiddleware, errorLoggingMiddleware } from "src/infrastructure/web/middleware/logging.js";
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -112,6 +114,8 @@ const container = DIContainer.getInstance();
 
 // ミドルウェア
 app.use("*", honoLogger());
+app.use("*", loggingMiddleware);
+app.use("*", errorLoggingMiddleware);
 
 // セキュリティヘッダー
 app.use("*", async (c, next) => {
@@ -223,6 +227,9 @@ app.get("/", (c) => {
 // 認証API（認証不要）
 app.route("/api/auth", authRoutes);
 
+// 監視API（認証不要 - 開発環境のみ一部機能制限）
+app.route("/api/monitoring", monitoring);
+
 // 認証が必要なAPIエンドポイント
 app.use("/api/study/*", authMiddleware);
 app.use("/api/studylog/*", authMiddleware);
@@ -324,6 +331,7 @@ async function startServer() {
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
   logger.info(`🔐 Authentication API: http://localhost:${port}/api/auth`);
+  logger.info(`📊 Monitoring API: http://localhost:${port}/api/monitoring`);
 
   // Node.js環境でサーバー起動
   const { serve } = await import("@hono/node-server");
