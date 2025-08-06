@@ -59,8 +59,16 @@ async function seedQuestions() {
           },
         });
       } catch (insertError) {
-        logger.error(`問題 ${questionData.id} の挿入に失敗:`, insertError);
-        logger.error('問題データ:', JSON.stringify(questionData, null, 2));
+        const errorMessage = `問題 ${questionData.id} の挿入に失敗:`;
+        const errorDetails = `問題データ: ${JSON.stringify(questionData, null, 2)}`;
+        
+        if (insertError instanceof Error) {
+          logger.error(errorMessage, insertError);
+          logger.error(errorDetails);
+        } else {
+          logger.error(errorMessage, new Error(String(insertError)));
+          logger.error(errorDetails);
+        }
         throw insertError;
       }
     }
@@ -81,12 +89,17 @@ async function seedQuestions() {
     });
 
   } catch (error) {
-    logger.error('❌ シード実行中にエラーが発生しました:');
+    const mainErrorMessage = '❌ シード実行中にエラーが発生しました:';
+    
     if (error instanceof Error) {
-      logger.error('Error message:', error.message);
-      logger.error('Error stack:', error.stack);
+      logger.error(mainErrorMessage, error);
+      logger.error(`Error message: ${error.message}`);
+      if (error.stack) {
+        logger.error(`Error stack: ${error.stack}`);
+      }
     } else {
-      logger.error('Unknown error:', error);
+      logger.error(mainErrorMessage, new Error(String(error)));
+      logger.error(`Unknown error: ${String(error)}`);
     }
     throw error;
   } finally {
