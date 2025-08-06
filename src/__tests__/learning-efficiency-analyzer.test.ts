@@ -91,7 +91,7 @@ describe('LearningEfficiencyAnalysisUseCase', () => {
 
       // Assert
       expect(result).toBeDefined();
-      expect(result.userId).toBe('user123');
+      expect(result.userId).toBe(123);
       expect(result.hourlyEfficiency).toHaveLength(24);
       expect(result.subjectEfficiency.length).toBeGreaterThan(0);
     });
