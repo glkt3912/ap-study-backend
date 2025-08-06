@@ -9,10 +9,19 @@
     "subcategory": "2進数",
     "difficulty": 2,
     "question": "2進数1110と1011の積を10進数で表したものはどれか。",
-    "choices": ["154", "162", "168", "176"],
+    "choices": [
+      "154",
+      "162",
+      "168",
+      "176"
+    ],
     "answer": "A",
     "explanation": "2進数1110は10進数で14、2進数1011は10進数で11。14 × 11 = 154",
-    "tags": ["2進数", "計算", "基礎"]
+    "tags": [
+      "2進数",
+      "計算",
+      "基礎"
+    ]
   },
   {
     "id": "ap2025spring_am_02",
@@ -24,10 +33,19 @@
     "subcategory": "論理演算",
     "difficulty": 3,
     "question": "ド・モルガンの法則を適用して ¬(A ∧ B) と等価な論理式はどれか。",
-    "choices": ["¬A ∧ ¬B", "¬A ∨ ¬B", "A ∨ B", "A ∧ ¬B"],
+    "choices": [
+      "¬A ∧ ¬B",
+      "¬A ∨ ¬B",
+      "A ∨ B",
+      "A ∧ ¬B"
+    ],
     "answer": "B",
     "explanation": "ド・モルガンの法則により ¬(A ∧ B) = ¬A ∨ ¬B が成り立つ",
-    "tags": ["論理演算", "ド・モルガン", "論理式"]
+    "tags": [
+      "論理演算",
+      "ド・モルガン",
+      "論理式"
+    ]
   },
   {
     "id": "ap2025spring_am_03",
@@ -39,10 +57,19 @@
     "subcategory": "確率",
     "difficulty": 2,
     "question": "確率の計算で、A、Bが独立事象のとき、P(A∩B) = 0.12、P(A) = 0.3である。P(B)はいくつか。",
-    "choices": ["0.36", "0.4", "0.42", "0.48"],
+    "choices": [
+      "0.36",
+      "0.4",
+      "0.42",
+      "0.48"
+    ],
     "answer": "B",
     "explanation": "独立事象では P(A∩B) = P(A) × P(B)。0.12 = 0.3 × P(B) より P(B) = 0.12 ÷ 0.3 = 0.4",
-    "tags": ["確率", "独立事象", "数学"]
+    "tags": [
+      "確率",
+      "独立事象",
+      "数学"
+    ]
   },
   {
     "id": "ap2025spring_am_04",
@@ -54,10 +81,20 @@
     "subcategory": "CPU",
     "difficulty": 3,
     "question": "パイプライン処理において、CPI（Clock cycles Per Instruction）が1.5、クロック周波数が2GHzのプロセッサがある。1秒間に実行できる命令数（MIPS）はおよそいくつか。",
-    "choices": ["1333", "1500", "2000", "3000"],
+    "choices": [
+      "1333",
+      "1500",
+      "2000",
+      "3000"
+    ],
     "answer": "A",
     "explanation": "MIPS = クロック周波数(MHz) ÷ CPI = 2000MHz ÷ 1.5 = 1333 MIPS",
-    "tags": ["CPU", "パイプライン", "MIPS", "性能"]
+    "tags": [
+      "CPU",
+      "パイプライン",
+      "MIPS",
+      "性能"
+    ]
   },
   {
     "id": "ap2025spring_am_05",
@@ -69,10 +106,20 @@
     "subcategory": "メモリ",
     "difficulty": 2,
     "question": "キャッシュメモリのヒット率が90%、キャッシュアクセス時間が10ns、メインメモリアクセス時間が100nsの場合、平均アクセス時間はどれか。",
-    "choices": ["19ns", "28ns", "55ns", "90ns"],
+    "choices": [
+      "19ns",
+      "28ns",
+      "55ns",
+      "90ns"
+    ],
     "answer": "A",
     "explanation": "平均アクセス時間 = ヒット率×キャッシュ時間 + ミス率×メモリ時間 = 0.9×10 + 0.1×100 = 9 + 10 = 19ns",
-    "tags": ["キャッシュ", "メモリ", "性能", "計算"]
+    "tags": [
+      "キャッシュ",
+      "メモリ",
+      "性能",
+      "計算"
+    ]
   },
   {
     "id": "ap2025spring_am_06",
@@ -86,13 +133,18 @@
     "question": "関係データベースにおいて、テーブルAとテーブルBの内部結合（INNER JOIN）を行った結果について、正しい説明はどれか。",
     "choices": [
       "テーブルAの全てのレコードが結果に含まれる",
-      "テーブルBの全てのレコードが結果に含まれる", 
+      "テーブルBの全てのレコードが結果に含まれる",
       "両テーブルで結合条件を満たすレコードのみが結果に含まれる",
       "テーブルAとテーブルBの全てのレコードが結果に含まれる"
     ],
     "answer": "C",
     "explanation": "内部結合（INNER JOIN）では、両テーブルで結合条件を満たすレコードのみが結果に含まれる",
-    "tags": ["データベース", "SQL", "結合", "INNER JOIN"]
+    "tags": [
+      "データベース",
+      "SQL",
+      "結合",
+      "INNER JOIN"
+    ]
   },
   {
     "id": "ap2025spring_am_07",
@@ -104,10 +156,20 @@
     "subcategory": "ネットワーク",
     "difficulty": 2,
     "question": "TCP/IPのOSI参照モデルにおいて、IPアドレスが動作する層はどれか。",
-    "choices": ["物理層", "データリンク層", "ネットワーク層", "トランスポート層"],
+    "choices": [
+      "物理層",
+      "データリンク層",
+      "ネットワーク層",
+      "トランスポート層"
+    ],
     "answer": "C",
     "explanation": "IPアドレスはネットワーク層（第3層）で動作し、パケットの経路制御を行う",
-    "tags": ["ネットワーク", "OSI参照モデル", "IP", "プロトコル"]
+    "tags": [
+      "ネットワーク",
+      "OSI参照モデル",
+      "IP",
+      "プロトコル"
+    ]
   },
   {
     "id": "ap2025spring_am_08",
@@ -127,7 +189,12 @@
     ],
     "answer": "C",
     "explanation": "公開鍵暗号方式では、暗号化に公開鍵、復号に秘密鍵を使用する",
-    "tags": ["セキュリティ", "暗号化", "公開鍵", "秘密鍵"]
+    "tags": [
+      "セキュリティ",
+      "暗号化",
+      "公開鍵",
+      "秘密鍵"
+    ]
   },
   {
     "id": "ap2025spring_am_09",
@@ -147,7 +214,11 @@
     ],
     "answer": "C",
     "explanation": "ウォーターフォールモデルは各工程を順次実施し、基本的に前の工程に戻らない開発手法",
-    "tags": ["ソフトウェア工学", "開発手法", "ウォーターフォール"]
+    "tags": [
+      "ソフトウェア工学",
+      "開発手法",
+      "ウォーターフォール"
+    ]
   },
   {
     "id": "ap2025spring_am_10",
@@ -159,107 +230,171 @@
     "subcategory": "プログラミング",
     "difficulty": 3,
     "question": "以下のアルゴリズムの時間計算量として正しいものはどれか。\n配列の要素を先頭から順に検索する線形探索。",
-    "choices": ["O(1)", "O(log n)", "O(n)", "O(n²)"],
+    "choices": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n²)"
+    ],
     "answer": "C",
     "explanation": "線形探索は配列の要素を先頭から順に検索するため、最悪の場合n回の比較が必要でO(n)の時間計算量",
-    "tags": ["アルゴリズム", "計算量", "線形探索", "ビッグO記法"]
+    "tags": [
+      "アルゴリズム",
+      "計算量",
+      "線形探索",
+      "ビッグO記法"
+    ]
   },
   {
     "id": "ap2025spring_am_11",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 4,
+    "number": 11,
     "category": "基礎理論",
     "subcategory": "データ構造",
     "difficulty": 3,
     "question": "スタックに順次1, 2, 3, 4をプッシュした後、2回ポップし、5をプッシュした場合のスタックの状態はどれか。",
-    "choices": ["1, 2, 5（下から順）", "1, 5, 2（下から順）", "1, 2, 5（上から順）", "5, 2, 1（上から順）"],
+    "choices": [
+      "1, 2, 5（下から順）",
+      "1, 5, 2（下から順）",
+      "1, 2, 5（上から順）",
+      "5, 2, 1（上から順）"
+    ],
     "answer": "A",
     "explanation": "スタックはLIFO。1,2,3,4プッシュ後、4,3をポップ。残り1,2に5をプッシュで1,2,5（下から順）",
-    "tags": ["スタック", "LIFO", "データ構造"]
+    "tags": [
+      "スタック",
+      "LIFO",
+      "データ構造"
+    ]
   },
   {
-    "id": "ap2025spring_am_05",
+    "id": "ap2025spring_am_12",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 5,
+    "number": 12,
     "category": "コンピュータシステム",
     "subcategory": "プロセッサ",
     "difficulty": 3,
     "question": "パイプライン処理において、5段階のパイプラインで10個の命令を実行するとき、全体の実行時間は何クロックか。ただし、1段階の処理に1クロックを要するものとする。",
-    "choices": ["14", "15", "16", "50"],
+    "choices": [
+      "14",
+      "15",
+      "16",
+      "50"
+    ],
     "answer": "A",
     "explanation": "パイプライン処理では、最初の命令が5クロックで完了し、その後は毎クロック1命令ずつ完了。5 + (10-1) = 14クロック",
-    "tags": ["パイプライン", "プロセッサ", "クロック"]
+    "tags": [
+      "パイプライン",
+      "プロセッサ",
+      "クロック"
+    ]
   },
   {
-    "id": "ap2025spring_am_06",
+    "id": "ap2025spring_am_13",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 6,
+    "number": 13,
     "category": "コンピュータシステム",
     "subcategory": "メモリ",
     "difficulty": 2,
     "question": "仮想記憶方式で、ページサイズが4KB、論理アドレス空間が32bitのとき、ページテーブルのエントリ数は最大でいくつか。",
-    "choices": ["1024", "1048576", "4194304", "16777216"],
+    "choices": [
+      "1024",
+      "1048576",
+      "4194304",
+      "16777216"
+    ],
     "answer": "B",
     "explanation": "32bitアドレス空間は2^32 = 4GB。ページサイズ4KB = 2^12なので、ページ数は 2^32 / 2^12 = 2^20 = 1048576",
-    "tags": ["仮想記憶", "ページング", "メモリ管理"]
+    "tags": [
+      "仮想記憶",
+      "ページング",
+      "メモリ管理"
+    ]
   },
   {
-    "id": "ap2025spring_am_07",
+    "id": "ap2025spring_am_14",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 7,
+    "number": 14,
     "category": "コンピュータシステム",
     "subcategory": "OS",
     "difficulty": 3,
     "question": "ラウンドロビンスケジューリングで、プロセスA（実行時間8ms）、B（実行時間3ms）、C（実行時間6ms）をタイムクォンタム2msで実行した場合、プロセスBの応答時間は何msか。",
-    "choices": ["4", "6", "8", "10"],
+    "choices": [
+      "4",
+      "6",
+      "8",
+      "10"
+    ],
     "answer": "A",
     "explanation": "Aが2ms実行→Bが2ms実行→Cが2ms実行→Aが2ms実行→Bが1ms完了。Bの開始は2ms後、完了は7ms後なので応答時間は7-2=5msではなく、最初の実行開始が2ms後なので4ms",
-    "tags": ["スケジューリング", "ラウンドロビン", "OS"]
+    "tags": [
+      "スケジューリング",
+      "ラウンドロビン",
+      "OS"
+    ]
   },
   {
-    "id": "ap2025spring_am_08",
+    "id": "ap2025spring_am_15",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 8,
+    "number": 15,
     "category": "コンピュータシステム",
     "subcategory": "ファイルシステム",
     "difficulty": 2,
     "question": "ディスクのシーク時間が平均8ms、回転待ち時間が平均4ms、データ転送時間が2msのとき、1回のディスクアクセス時間は何msか。",
-    "choices": ["10", "12", "14", "16"],
+    "choices": [
+      "10",
+      "12",
+      "14",
+      "16"
+    ],
     "answer": "C",
     "explanation": "ディスクアクセス時間 = シーク時間 + 回転待ち時間 + データ転送時間 = 8 + 4 + 2 = 14ms",
-    "tags": ["ディスク", "アクセス時間", "ストレージ"]
+    "tags": [
+      "ディスク",
+      "アクセス時間",
+      "ストレージ"
+    ]
   },
   {
-    "id": "ap2025spring_am_09",
+    "id": "ap2025spring_am_16",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 9,
+    "number": 16,
     "category": "技術要素",
     "subcategory": "ネットワーク",
     "difficulty": 3,
     "question": "IPv4のサブネットマスク255.255.255.192（/26）のネットワークで利用可能なホスト数はいくつか。",
-    "choices": ["62", "64", "126", "128"],
+    "choices": [
+      "62",
+      "64",
+      "126",
+      "128"
+    ],
     "answer": "A",
     "explanation": "/26は26bitがネットワーク部、6bitがホスト部。ホスト数は2^6 - 2 = 64 - 2 = 62（ネットワークアドレスとブロードキャストアドレスを除く）",
-    "tags": ["IPv4", "サブネット", "ネットワーク"]
+    "tags": [
+      "IPv4",
+      "サブネット",
+      "ネットワーク"
+    ]
   },
   {
-    "id": "ap2025spring_am_10",
+    "id": "ap2025spring_am_17",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 10,
+    "number": 17,
     "category": "技術要素",
     "subcategory": "TCP/IP",
     "difficulty": 2,
@@ -272,14 +407,18 @@
     ],
     "answer": "B",
     "explanation": "TCPコネクション確立の3ウェイハンドシェイクは、①クライアントがSYN送信 ②サーバがSYN+ACK送信 ③クライアントがACK送信",
-    "tags": ["TCP", "3ウェイハンドシェイク", "プロトコル"]
+    "tags": [
+      "TCP",
+      "3ウェイハンドシェイク",
+      "プロトコル"
+    ]
   },
   {
-    "id": "ap2025spring_am_11",
+    "id": "ap2025spring_am_18",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 11,
+    "number": 18,
     "category": "技術要素",
     "subcategory": "データベース",
     "difficulty": 3,
@@ -292,29 +431,42 @@
     ],
     "answer": "C",
     "explanation": "第3正規形の条件は、第2正規形かつ推移的関数従属が存在しないこと。第1正規形は原子値、第2正規形は部分関数従属なし",
-    "tags": ["データベース", "正規化", "第3正規形"]
+    "tags": [
+      "データベース",
+      "正規化",
+      "第3正規形"
+    ]
   },
   {
-    "id": "ap2025spring_am_12",
+    "id": "ap2025spring_am_19",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 12,
+    "number": 19,
     "category": "技術要素",
     "subcategory": "SQL",
     "difficulty": 2,
     "question": "SQLのSELECT文で、NULLを含む列の値を0に変換する関数はどれか。",
-    "choices": ["ISNULL", "COALESCE", "NVZERO", "IFNULL"],
+    "choices": [
+      "ISNULL",
+      "COALESCE",
+      "NVZERO",
+      "IFNULL"
+    ],
     "answer": "B",
     "explanation": "COALESCEは最初の非NULL値を返す標準SQL関数。COALESCE(列名, 0)でNULLを0に変換できる",
-    "tags": ["SQL", "NULL処理", "COALESCE"]
+    "tags": [
+      "SQL",
+      "NULL処理",
+      "COALESCE"
+    ]
   },
   {
-    "id": "ap2025spring_am_13",
+    "id": "ap2025spring_am_20",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 13,
+    "number": 20,
     "category": "技術要素",
     "subcategory": "暗号化",
     "difficulty": 3,
@@ -327,14 +479,18 @@
     ],
     "answer": "C",
     "explanation": "RSA暗号は公開鍵暗号であり、一般的に共通鍵暗号より処理速度が遅い。大容量データは共通鍵暗号で暗号化し、その鍵をRSAで暗号化するハイブリッド方式が使われる",
-    "tags": ["RSA", "公開鍵暗号", "暗号化"]
+    "tags": [
+      "RSA",
+      "公開鍵暗号",
+      "暗号化"
+    ]
   },
   {
-    "id": "ap2025spring_am_14",
+    "id": "ap2025spring_am_21",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 14,
+    "number": 21,
     "category": "技術要素",
     "subcategory": "Webテクノロジ",
     "difficulty": 2,
@@ -347,14 +503,18 @@
     ],
     "answer": "B",
     "explanation": "TLS（Transport Layer Security）は通信の暗号化、認証、改ざん検知を提供するプロトコル。HTTPSはHTTP over TLSの略",
-    "tags": ["TLS", "HTTPS", "暗号化"]
+    "tags": [
+      "TLS",
+      "HTTPS",
+      "暗号化"
+    ]
   },
   {
-    "id": "ap2025spring_am_15",
+    "id": "ap2025spring_am_22",
     "year": 2025,
     "season": "spring",
     "section": "morning",
-    "number": 15,
+    "number": 22,
     "category": "マネジメント",
     "subcategory": "プロジェクト管理",
     "difficulty": 2,
@@ -367,7 +527,11 @@
     ],
     "answer": "C",
     "explanation": "アジャイル開発では「包括的なドキュメントよりも動くソフトウェアを」重視し、詳細な計画書作成より変化への対応を優先する",
-    "tags": ["アジャイル", "開発手法", "プロジェクト管理"]
+    "tags": [
+      "アジャイル",
+      "開発手法",
+      "プロジェクト管理"
+    ]
   },
   {
     "id": "ap2025spring_pm_01",
@@ -387,7 +551,11 @@
     ],
     "answer": "D",
     "explanation": "24時間365日稼働とリアルタイム更新要件から、システムの可用性確保が最重要。冗長化とロードバランシングにより単一障害点を排除し、高可用性を実現する必要がある。",
-    "tags": ["システム設計", "高可用性", "要件定義"]
+    "tags": [
+      "システム設計",
+      "高可用性",
+      "要件定義"
+    ]
   },
   {
     "id": "ap2025spring_pm_02",
@@ -401,13 +569,17 @@
     "question": "配列[5, 2, 8, 1, 9, 3]をクイックソートで昇順にソートする場合、最初のピボット要素を5として分割した後の配列の状態はどれか。",
     "choices": [
       "[2, 1, 3, 5, 9, 8]",
-      "[1, 2, 3, 5, 8, 9]", 
+      "[1, 2, 3, 5, 8, 9]",
       "[2, 1, 3, 5, 8, 9]",
       "[3, 2, 1, 5, 8, 9]"
     ],
     "answer": "A",
     "explanation": "クイックソートでピボット5を基準に分割すると、5より小さい要素[2,1,3]が左側、5より大きい要素[8,9]が右側に配置される。並び順は[2,1,3,5,9,8]となる。",
-    "tags": ["クイックソート", "アルゴリズム", "配列"]
+    "tags": [
+      "クイックソート",
+      "アルゴリズム",
+      "配列"
+    ]
   },
   {
     "id": "ap2025spring_pm_03",
@@ -421,13 +593,17 @@
     "question": "図書管理システムのER図を作成する。以下の業務要件において、「貸出」エンティティと他のエンティティとの関係性で適切なものはどれか。\n\n【業務要件】\n・1冊の本は複数回貸出可能\n・1人の利用者は複数冊同時に借りられる\n・貸出には貸出日、返却予定日、返却日を記録\n・同じ本を同時に複数人が借りることはできない",
     "choices": [
       "利用者(1) : 貸出(多)、本(1) : 貸出(多)",
-      "利用者(多) : 貸出(多)、本(多) : 貸出(多)", 
+      "利用者(多) : 貸出(多)、本(多) : 貸出(多)",
       "利用者(1) : 貸出(1)、本(1) : 貸出(1)",
       "利用者(多) : 貸出(1)、本(多) : 貸出(1)"
     ],
     "answer": "A",
     "explanation": "1人の利用者は複数の貸出記録を持てる（1:多）、1冊の本も複数の貸出記録を持てる（1:多）。貸出エンティティが利用者と本の多対多関係を解決する中間エンティティとして機能する。",
-    "tags": ["ER図", "データベース設計", "エンティティ関係"]
+    "tags": [
+      "ER図",
+      "データベース設計",
+      "エンティティ関係"
+    ]
   },
   {
     "id": "ap2025spring_pm_04",
@@ -442,54 +618,72 @@
     "choices": [
       "インターネット→DMZ（全ポート許可）→内部NW（制限あり）",
       "インターネット→DMZ（HTTP/HTTPS/SMTP許可）→内部NW（管理用のみ許可）",
-      "インターネット→内部NW（制限あり）→DMZ（HTTP/HTTPS許可）", 
+      "インターネット→内部NW（制限あり）→DMZ（HTTP/HTTPS許可）",
       "インターネット→DMZ（HTTP/HTTPS許可）→内部NW（DMZ→内部NWへの接続禁止）"
     ],
     "answer": "D",
     "explanation": "DMZのサーバが侵害されても内部ネットワークへの侵入を防ぐため、DMZから内部ネットワークへの接続は禁止すべき。必要な通信（HTTP/HTTPS）のみ許可し、DMZ→内部NWの接続を遮断するのが最も安全。",
-    "tags": ["DMZ", "ファイアウォール", "ネットワークセキュリティ"]
+    "tags": [
+      "DMZ",
+      "ファイアウォール",
+      "ネットワークセキュリティ"
+    ]
   },
   {
     "id": "ap2025spring_pm_05",
     "year": 2025,
-    "season": "spring", 
+    "season": "spring",
     "section": "afternoon",
     "number": 5,
     "category": "プロジェクト管理",
     "subcategory": "スケジュール管理",
     "difficulty": 4,
     "question": "以下のタスクでプロジェクトを実行する場合、クリティカルパスの所要時間は何日か。\n\nタスクA：3日（先行タスクなし）\nタスクB：5日（先行タスクA）\nタスクC：4日（先行タスクA）\nタスクD：2日（先行タスクB、C）\nタスクE：3日（先行タスクD）",
-    "choices": ["13日", "14日", "15日", "17日"],
+    "choices": [
+      "13日",
+      "14日",
+      "15日",
+      "17日"
+    ],
     "answer": "A",
     "explanation": "クリティカルパスを求める。A→B→D→E（3+5+2+3=13日）とA→C→D→E（3+4+2+3=12日）を比較すると、最長パスはA→B→D→Eの13日となる。",
-    "tags": ["クリティカルパス", "PERT", "プロジェクト管理"]
+    "tags": [
+      "クリティカルパス",
+      "PERT",
+      "プロジェクト管理"
+    ]
   },
   {
-    "id": "ap2025spring_pm_01",
+    "id": "ap2025spring_pm_06",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 1,
+    "number": 6,
     "category": "システム開発技術",
     "subcategory": "要件定義",
     "difficulty": 4,
     "question": "Webショッピングサイトの在庫管理システムにおいて、在庫数が一定値を下回った際に自動発注を行う機能を実装する。この機能の非機能要件として最も重要なものはどれか。",
     "choices": [
       "発注処理の応答時間が1秒以内であること",
-      "同時に複数の発注が実行されないよう排他制御を行うこと", 
+      "同時に複数の発注が実行されないよう排他制御を行うこと",
       "発注履歴を10年間保存すること",
       "発注メール送信の文字エンコーディングがUTF-8であること"
     ],
     "answer": "B",
     "explanation": "在庫管理では二重発注を防ぐための排他制御が最重要。同時アクセスによる在庫数の競合状態を防ぐ必要がある",
-    "tags": ["システム開発", "排他制御", "非機能要件", "在庫管理"]
+    "tags": [
+      "システム開発",
+      "排他制御",
+      "非機能要件",
+      "在庫管理"
+    ]
   },
   {
-    "id": "ap2025spring_pm_02",
+    "id": "ap2025spring_pm_07",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 2,
+    "number": 7,
     "category": "データベース技術",
     "subcategory": "正規化",
     "difficulty": 4,
@@ -502,14 +696,19 @@
     ],
     "answer": "C",
     "explanation": "第3正規形では推移的関数従属を除去する。金額は単価×数量で計算できるため除去し、商品情報は商品テーブルに分離する",
-    "tags": ["データベース", "正規化", "第3正規形", "推移的関数従属"]
+    "tags": [
+      "データベース",
+      "正規化",
+      "第3正規形",
+      "推移的関数従属"
+    ]
   },
   {
-    "id": "ap2025spring_pm_03",
+    "id": "ap2025spring_pm_08",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 3,
+    "number": 8,
     "category": "ネットワーク技術",
     "subcategory": "セキュリティ設計",
     "difficulty": 4,
@@ -522,44 +721,69 @@
     ],
     "answer": "B",
     "explanation": "DMZのWebサーバには外部からHTTP/HTTPSのみ許可し、内部ネットワークへはDB接続など必要最小限の通信のみ許可するのが適切",
-    "tags": ["ネットワーク", "セキュリティ", "DMZ", "ファイアウォール"]
+    "tags": [
+      "ネットワーク",
+      "セキュリティ",
+      "DMZ",
+      "ファイアウォール"
+    ]
   },
   {
-    "id": "ap2025spring_pm_04",
+    "id": "ap2025spring_pm_09",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 4,
+    "number": 9,
     "category": "プロジェクトマネジメント",
     "subcategory": "工程管理",
     "difficulty": 3,
     "question": "システム開発プロジェクトで、計画時の工数が200人日、実績工数が250人日、完了率が80%の場合、このプロジェクトの最終予想工数はおよそ何人日か。",
-    "choices": ["250人日", "300人日", "313人日", "400人日"],
+    "choices": [
+      "250人日",
+      "300人日",
+      "313人日",
+      "400人日"
+    ],
     "answer": "C",
     "explanation": "EAC(完了時総工数予測) = 実績工数 ÷ 完了率 = 250 ÷ 0.8 = 312.5 ≒ 313人日",
-    "tags": ["プロジェクトマネジメント", "EVM", "工数管理", "進捗管理"]
+    "tags": [
+      "プロジェクトマネジメント",
+      "EVM",
+      "工数管理",
+      "進捗管理"
+    ]
   },
   {
-    "id": "ap2025spring_pm_05",
+    "id": "ap2025spring_pm_10",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 5,
+    "number": 10,
     "category": "サービスマネジメント",
     "subcategory": "SLA",
     "difficulty": 3,
     "question": "Webサービスの可用性SLA（Service Level Agreement）において、年間稼働率99.9%を保証する場合、年間の許容ダウンタイムはおよそどれか。",
-    "choices": ["8.77時間", "43.8分", "4.38時間", "87.7時間"],
+    "choices": [
+      "8.77時間",
+      "43.8分",
+      "4.38時間",
+      "87.7時間"
+    ],
     "answer": "A",
     "explanation": "年間時間数365×24=8760時間。ダウンタイム=8760×(1-0.999)=8760×0.001=8.76時間≒8.77時間",
-    "tags": ["サービスマネジメント", "SLA", "可用性", "ダウンタイム"]
+    "tags": [
+      "サービスマネジメント",
+      "SLA",
+      "可用性",
+      "ダウンタイム"
+    ]
   },
   {
-    "id": "ap2025spring_pm_06",
+    "id": "ap2025spring_pm_11",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 6,
+    "number": 11,
     "category": "システム監査",
     "subcategory": "リスク評価",
     "difficulty": 4,
@@ -572,14 +796,19 @@
     ],
     "answer": "A",
     "explanation": "リスクアセスメントでは、まず脅威と脆弱性を特定し、その後影響度と発生確率を評価してリスク値を算出する",
-    "tags": ["システム監査", "リスクアセスメント", "個人情報保護", "情報セキュリティ"]
+    "tags": [
+      "システム監査",
+      "リスクアセスメント",
+      "個人情報保護",
+      "情報セキュリティ"
+    ]
   },
   {
-    "id": "ap2025spring_pm_07",
+    "id": "ap2025spring_pm_12",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 7,
+    "number": 12,
     "category": "システム戦略",
     "subcategory": "システム企画",
     "difficulty": 3,
@@ -592,14 +821,19 @@
     ],
     "answer": "B",
     "explanation": "DX推進では既存システムとの連携が重要。API連携により段階的にシステムを近代化できる",
-    "tags": ["DX", "システム企画", "API連携", "システム戦略"]
+    "tags": [
+      "DX",
+      "システム企画",
+      "API連携",
+      "システム戦略"
+    ]
   },
   {
-    "id": "ap2025spring_pm_08",
+    "id": "ap2025spring_pm_13",
     "year": 2025,
     "season": "spring",
     "section": "afternoon",
-    "number": 8,
+    "number": 13,
     "category": "経営戦略・企業と法務",
     "subcategory": "知的財産",
     "difficulty": 2,
@@ -612,6 +846,501 @@
     ],
     "answer": "B",
     "explanation": "GPL（General Public License）では、改変したソースコードも同じGPLライセンスで公開する必要がある（コピーレフト条項）",
-    "tags": ["知的財産", "オープンソース", "GPL", "ライセンス"]
+    "tags": [
+      "知的財産",
+      "オープンソース",
+      "GPL",
+      "ライセンス"
+    ]
+  },
+  {
+    "id": "ap2025autumn_am_01",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 1,
+    "category": "基礎理論",
+    "subcategory": "情報量",
+    "difficulty": 3,
+    "question": "情報理論において、4個の記号が等確率で出現する情報源のエントロピーはおよそいくつか。",
+    "choices": ["1ビット", "2ビット", "3ビット", "4ビット"],
+    "answer": "B",
+    "explanation": "エントロピー H = -Σ p(x) log₂ p(x)。等確率(1/4)で4個の記号なので H = log₂ 4 = 2ビット",
+    "tags": ["情報理論", "エントロピー", "確率"]
+  },
+  {
+    "id": "ap2025autumn_am_02",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 2,
+    "category": "基礎理論",
+    "subcategory": "離散数学",
+    "difficulty": 2,
+    "question": "集合A={1,2,3}、B={2,3,4}のとき、A∪B（和集合）の要素数はいくつか。",
+    "choices": ["3", "4", "5", "6"],
+    "answer": "B",
+    "explanation": "A∪B = {1,2,3,4}なので、要素数は4個",
+    "tags": ["集合", "和集合", "離散数学"]
+  },
+  {
+    "id": "ap2025autumn_am_03",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 3,
+    "category": "コンピュータシステム",
+    "subcategory": "仮想化技術",
+    "difficulty": 3,
+    "question": "コンテナ技術の特徴として適切でないものはどれか。",
+    "choices": [
+      "ホストOSのカーネルを共有する",
+      "ハイパーバイザーが必要",
+      "軽量で高速な起動が可能",
+      "アプリケーションレベルでの分離"
+    ],
+    "answer": "B",
+    "explanation": "コンテナ技術はハイパーバイザーを使用せず、ホストOSのカーネルを直接共有する軽量な仮想化技術",
+    "tags": ["コンテナ", "仮想化", "Docker"]
+  },
+  {
+    "id": "ap2025autumn_am_04",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 4,
+    "category": "コンピュータシステム",
+    "subcategory": "並列処理",
+    "difficulty": 4,
+    "question": "GPU（Graphics Processing Unit）がCPUと比較して並列処理に優れている理由はどれか。",
+    "choices": [
+      "クロック周波数が高い",
+      "キャッシュメモリが大きい",
+      "多数の単純な演算コアを持つ",
+      "分岐予測機能が優秀"
+    ],
+    "answer": "C",
+    "explanation": "GPUは数千個の単純な演算コアを持ち、同じ処理を大量のデータに並列実行できるアーキテクチャを持つ",
+    "tags": ["GPU", "並列処理", "SIMD"]
+  },
+  {
+    "id": "ap2025autumn_am_05",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 5,
+    "category": "技術要素",
+    "subcategory": "AI・機械学習",
+    "difficulty": 3,
+    "question": "機械学習における教師あり学習の例として適切なものはどれか。",
+    "choices": [
+      "クラスタリング",
+      "画像分類",
+      "主成分分析",
+      "異常検知"
+    ],
+    "answer": "B",
+    "explanation": "画像分類は正解ラベル付きの訓練データを用いて学習する教師あり学習の典型例",
+    "tags": ["機械学習", "教師あり学習", "AI"]
+  },
+  {
+    "id": "ap2025autumn_am_06",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 6,
+    "category": "技術要素",
+    "subcategory": "IoT",
+    "difficulty": 2,
+    "question": "IoT（Internet of Things）システムの構成要素として適切でないものはどれか。",
+    "choices": [
+      "センサーデバイス",
+      "通信ネットワーク",
+      "クラウドプラットフォーム",
+      "3Dプリンター"
+    ],
+    "answer": "D",
+    "explanation": "IoTシステムはセンサー、通信、データ処理が基本構成。3Dプリンターは製造技術でIoTの直接的構成要素ではない",
+    "tags": ["IoT", "システム構成", "センサー"]
+  },
+  {
+    "id": "ap2025autumn_am_07",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 7,
+    "category": "技術要素",
+    "subcategory": "ブロックチェーン",
+    "difficulty": 3,
+    "question": "ブロックチェーン技術の特徴として適切でないものはどれか。",
+    "choices": [
+      "分散型台帳技術",
+      "改ざん耐性が高い",
+      "中央管理機関が必要",
+      "暗号化ハッシュ値で接続"
+    ],
+    "answer": "C",
+    "explanation": "ブロックチェーンは分散型技術で、中央管理機関を必要としない非中央集権的システム",
+    "tags": ["ブロックチェーン", "分散システム", "暗号化"]
+  },
+  {
+    "id": "ap2025autumn_am_08",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 8,
+    "category": "技術要素",
+    "subcategory": "エッジコンピューティング",
+    "difficulty": 3,
+    "question": "エッジコンピューティングの利点として最も適切なものはどれか。",
+    "choices": [
+      "計算コストの削減",
+      "レイテンシ（遅延）の削減",
+      "セキュリティの向上",
+      "ストレージ容量の拡大"
+    ],
+    "answer": "B",
+    "explanation": "エッジコンピューティングは端末近くでデータ処理を行うため、クラウドとの通信遅延を大幅に削減できる",
+    "tags": ["エッジコンピューティング", "レイテンシ", "分散処理"]
+  },
+  {
+    "id": "ap2025autumn_am_09",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 9,
+    "category": "技術要素",
+    "subcategory": "5G通信",
+    "difficulty": 2,
+    "question": "5G通信の特徴として適切でないものはどれか。",
+    "choices": [
+      "高速大容量通信",
+      "低遅延通信",
+      "多数同時接続",
+      "長距離通信専用"
+    ],
+    "answer": "D",
+    "explanation": "5Gは高速・低遅延・多接続が特徴で、長距離専用ではなく様々な用途に対応",
+    "tags": ["5G", "通信技術", "モバイル"]
+  },
+  {
+    "id": "ap2025autumn_am_10",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 10,
+    "category": "技術要素",
+    "subcategory": "量子コンピュータ",
+    "difficulty": 4,
+    "question": "量子コンピュータの基本単位である量子ビット（qubit）の特徴はどれか。",
+    "choices": [
+      "0または1の二進状態のみ表現可能",
+      "0と1の重ね合わせ状態を表現可能",
+      "従来のビットより高速処理が可能",
+      "メモリ容量を2倍に拡張可能"
+    ],
+    "answer": "B",
+    "explanation": "量子ビットは量子力学の重ね合わせ原理により0と1の状態を同時に表現でき、並列計算を可能にする",
+    "tags": ["量子コンピュータ", "量子ビット", "量子力学"]
+  },
+  {
+    "id": "ap2025autumn_am_11",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 11,
+    "category": "技術要素",
+    "subcategory": "DevOps",
+    "difficulty": 3,
+    "question": "DevOpsの実践として適切でないものはどれか。",
+    "choices": [
+      "継続的インテグレーション（CI）",
+      "継続的デリバリー（CD）",
+      "インフラストラクチャ as Code（IaC）",
+      "ウォーターフォール開発の徹底"
+    ],
+    "answer": "D",
+    "explanation": "DevOpsはアジャイル開発と親和性が高く、ウォーターフォールの固定的アプローチとは対照的",
+    "tags": ["DevOps", "CI/CD", "アジャイル"]
+  },
+  {
+    "id": "ap2025autumn_am_12",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 12,
+    "category": "技術要素",
+    "subcategory": "API設計",
+    "difficulty": 3,
+    "question": "RESTful APIの設計原則として適切でないものはどれか。",
+    "choices": [
+      "ステートレスな通信",
+      "HTTPメソッドの適切な使用",
+      "セッション情報をサーバで保持",
+      "リソース指向のURL設計"
+    ],
+    "answer": "C",
+    "explanation": "RESTはステートレス原則に従い、サーバはクライアントのセッション情報を保持しない",
+    "tags": ["REST API", "HTTP", "ステートレス"]
+  },
+  {
+    "id": "ap2025autumn_am_13",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 13,
+    "category": "技術要素",
+    "subcategory": "GraphQL",
+    "difficulty": 3,
+    "question": "GraphQLの特徴として適切なものはどれか。",
+    "choices": [
+      "固定的なデータ構造の返却",
+      "クライアントが必要なデータを選択可能",
+      "HTTP GETメソッドのみ使用",
+      "XML形式でのデータ交換"
+    ],
+    "answer": "B",
+    "explanation": "GraphQLはクライアントが必要なフィールドを指定してデータを取得できるクエリ言語",
+    "tags": ["GraphQL", "API", "データクエリ"]
+  },
+  {
+    "id": "ap2025autumn_am_14",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 14,
+    "category": "技術要素",
+    "subcategory": "マイクロサービス",
+    "difficulty": 4,
+    "question": "マイクロサービスアーキテクチャの利点として適切でないものはどれか。",
+    "choices": [
+      "独立したデプロイが可能",
+      "技術スタックの多様性",
+      "サービス間通信のシンプルさ",
+      "障害の局所化"
+    ],
+    "answer": "C",
+    "explanation": "マイクロサービスではサービス間通信が複雑になるのが課題の一つ。ネットワーク通信やAPI管理が必要",
+    "tags": ["マイクロサービス", "アーキテクチャ", "分散システム"]
+  },
+  {
+    "id": "ap2025autumn_am_15",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 15,
+    "category": "技術要素",
+    "subcategory": "NoSQL",
+    "difficulty": 3,
+    "question": "NoSQLデータベースの分類で、MongoDBが属するタイプはどれか。",
+    "choices": [
+      "キーバリューストア",
+      "ドキュメントストア", 
+      "カラムファミリー",
+      "グラフデータベース"
+    ],
+    "answer": "B",
+    "explanation": "MongoDBはJSONライクなドキュメント形式でデータを格納するドキュメントストア型NoSQL",
+    "tags": ["NoSQL", "MongoDB", "ドキュメントストア"]
+  },
+  {
+    "id": "ap2025autumn_am_16",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 16,
+    "category": "技術要素",
+    "subcategory": "サーバーレス",
+    "difficulty": 2,
+    "question": "サーバーレスコンピューティングの特徴として適切なものはどれか。",
+    "choices": [
+      "サーバーが不要",
+      "イベント駆動で実行",
+      "常時起動が必要",
+      "物理サーバーを直接管理"
+    ],
+    "answer": "B",
+    "explanation": "サーバーレスは必要時にのみイベント駆動で関数が実行され、サーバー管理は不要（サーバーは存在する）",
+    "tags": ["サーバーレス", "FaaS", "イベント駆動"]
+  },
+  {
+    "id": "ap2025autumn_am_17",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 17,
+    "category": "マネジメント",
+    "subcategory": "アジャイル開発",
+    "difficulty": 3,
+    "question": "スクラム開発におけるスプリントの適切な期間はどれか。",
+    "choices": [
+      "1日～1週間",
+      "1週間～4週間",
+      "1ヶ月～3ヶ月",
+      "期間の制限なし"
+    ],
+    "answer": "B",
+    "explanation": "スクラムガイドでは、スプリント期間は1週間から4週間の間で設定することを推奨",
+    "tags": ["スクラム", "スプリント", "アジャイル"]
+  },
+  {
+    "id": "ap2025autumn_am_18",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 18,
+    "category": "マネジメント",
+    "subcategory": "ITサービス管理",
+    "difficulty": 3,
+    "question": "ITIL 4におけるサービスバリューシステムの中心概念はどれか。",
+    "choices": [
+      "プロセス管理",
+      "バリューストリーム",
+      "インシデント管理",
+      "構成管理"
+    ],
+    "answer": "B",
+    "explanation": "ITIL 4ではバリューストリーム（価値の流れ）を中心とした価値創出に焦点を当てている",
+    "tags": ["ITIL", "サービス管理", "バリューストリーム"]
+  },
+  {
+    "id": "ap2025autumn_am_19",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 19,
+    "category": "マネジメント",
+    "subcategory": "情報セキュリティ管理",
+    "difficulty": 3,
+    "question": "ゼロトラストセキュリティの基本原則として適切なものはどれか。",
+    "choices": [
+      "ネットワーク境界での防御を重視",
+      "内部ネットワークを信頼",
+      "すべてのアクセスを検証",
+      "物理的セキュリティのみに依存"
+    ],
+    "answer": "C",
+    "explanation": "ゼロトラストは「何も信頼せず、すべてを検証する」という原則で、すべてのアクセス要求を検証",
+    "tags": ["ゼロトラスト", "セキュリティ", "アクセス制御"]
+  },
+  {
+    "id": "ap2025autumn_am_20",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 20,
+    "category": "基礎理論",
+    "subcategory": "関数型プログラミング",
+    "difficulty": 3,
+    "question": "関数型プログラミングの特徴として適切なものはどれか。",
+    "choices": [
+      "変数の値を頻繁に変更する",
+      "副作用のない純粋関数を重視",
+      "オブジェクトの継承を中心とする",
+      "手続き型の制御構造を主に使用"
+    ],
+    "answer": "B",
+    "explanation": "関数型プログラミングは純粋関数（副作用がない関数）を中心とし、不変性を重視する",
+    "tags": ["関数型プログラミング", "純粋関数", "不変性"]
+  },
+  {
+    "id": "ap2025autumn_am_21",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 21,
+    "category": "基礎理論",
+    "subcategory": "フーリエ変換",
+    "difficulty": 4,
+    "question": "デジタル信号処理におけるFFT（Fast Fourier Transform）の主な用途はどれか。",
+    "choices": [
+      "時間領域の信号を周波数領域に変換",
+      "アナログ信号をデジタル信号に変換",
+      "デジタル信号を圧縮",
+      "ノイズを除去"
+    ],
+    "answer": "A",
+    "explanation": "FFTは時間領域の信号を周波数領域に高速変換するアルゴリズム。音声・画像処理で頻繁に使用",
+    "tags": ["FFT", "信号処理", "フーリエ変換"]
+  },
+  {
+    "id": "ap2025autumn_am_22",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 22,
+    "category": "コンピュータシステム",
+    "subcategory": "リアルタイムシステム",
+    "difficulty": 3,
+    "question": "リアルタイムシステムの応答時間制約として適切なものはどれか。",
+    "choices": [
+      "平均応答時間の最小化",
+      "最悪応答時間の保証",
+      "スループットの最大化",
+      "CPU使用率の均等化"
+    ],
+    "answer": "B",
+    "explanation": "リアルタイムシステムでは最悪ケースでも決められた時間内に応答することが重要",
+    "tags": ["リアルタイムシステム", "応答時間", "制約"]
+  },
+  {
+    "id": "ap2025autumn_am_23",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 23,
+    "category": "技術要素",
+    "subcategory": "機械学習・深層学習",
+    "difficulty": 4,
+    "question": "深層学習（Deep Learning）におけるバックプロパゲーションの目的はどれか。",
+    "choices": [
+      "入力データの前処理",
+      "ニューラルネットワークの重みの更新",
+      "過学習の防止",
+      "データの次元削減"
+    ],
+    "answer": "B",
+    "explanation": "バックプロパゲーションは誤差を逆伝播させてニューラルネットワークの重みを最適化する学習アルゴリズム",
+    "tags": ["深層学習", "バックプロパゲーション", "ニューラルネットワーク"]
+  },
+  {
+    "id": "ap2025autumn_am_24",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 24,
+    "category": "技術要素",
+    "subcategory": "自然言語処理",
+    "difficulty": 3,
+    "question": "自然言語処理におけるトークン化（tokenization）の目的はどれか。",
+    "choices": [
+      "文章の意味を理解する",
+      "文章を単語やフレーズに分割する",
+      "文章の感情を分析する",
+      "文章を他言語に翻訳する"
+    ],
+    "answer": "B",
+    "explanation": "トークン化は自然言語の文章を意味のある単位（トークン）に分割する前処理",
+    "tags": ["自然言語処理", "トークン化", "前処理"]
+  },
+  {
+    "id": "ap2025autumn_am_25",
+    "year": 2025,
+    "season": "autumn",
+    "section": "morning",
+    "number": 25,
+    "category": "経営戦略・企業と法務",
+    "subcategory": "DX推進",
+    "difficulty": 2,
+    "question": "DX（デジタルトランスフォーメーション）の実現において最も重要な要素はどれか。",
+    "choices": [
+      "最新技術の導入",
+      "コスト削減",
+      "ビジネスモデルの変革",
+      "システムの統合"
+    ],
+    "answer": "C",
+    "explanation": "DXは単なる技術導入ではなく、デジタル技術を活用したビジネスモデルや企業文化の根本的変革",
+    "tags": ["DX", "デジタル変革", "ビジネスモデル"]
   }
 ]
