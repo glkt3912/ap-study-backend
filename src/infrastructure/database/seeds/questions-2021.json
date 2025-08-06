@@ -1,0 +1,1332 @@
+[
+  {
+    "id": "ap2021autumn_am_01",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 1,
+    "category": "基礎理論",
+    "subcategory": "8進数",
+    "difficulty": 2,
+    "question": "8進数の27を10進数に変換したものはどれか。",
+    "choices": [
+      "21",
+      "23",
+      "25",
+      "27"
+    ],
+    "answer": "B",
+    "explanation": "8進数の27は、2×8¹ + 7×8⁰ = 16 + 7 = 23となる。"
+  },
+  {
+    "id": "ap2021spring_am_01",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 1,
+    "category": "基礎理論",
+    "subcategory": "数値表現",
+    "difficulty": 2,
+    "question": "負の数を2の補数で表現する8ビットシステムにおいて、-5を表現したものはどれか。",
+    "choices": [
+      "11111010",
+      "11111011",
+      "11111100",
+      "11111101"
+    ],
+    "answer": "B",
+    "explanation": "-5の2の補数表現は、5(00000101)のビット反転(11111010)に1を加えた11111011となる。"
+  },
+  {
+    "id": "ap2021autumn_am_02",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 2,
+    "category": "基礎理論",
+    "subcategory": "論理演算",
+    "difficulty": 1,
+    "question": "ド・モルガンの法則によって、論理式 ¬(A∧B) を変形したものはどれか。",
+    "choices": [
+      "¬A∧¬B",
+      "¬A∨¬B",
+      "A∨¬B",
+      "¬A∧B"
+    ],
+    "answer": "B",
+    "explanation": "ド・モルガンの法則により、¬(A∧B) = ¬A∨¬B となる。"
+  },
+  {
+    "id": "ap2021spring_am_02",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 2,
+    "category": "基礎理論",
+    "subcategory": "論理演算",
+    "difficulty": 2,
+    "question": "論理式 (A∨B)∧(¬A∨C) を簡単化したものはどれか。",
+    "choices": [
+      "A∧C",
+      "B∧C",
+      "(A∧C)∨(B∧¬A)",
+      "(A∧C)∨B"
+    ],
+    "answer": "D",
+    "explanation": "分配法則を適用すると、(A∨B)∧(¬A∨C) = (A∧C)∨(B∧¬A)∨(B∧C) = (A∧C)∨B となる。"
+  },
+  {
+    "id": "ap2021autumn_am_03",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 3,
+    "category": "基礎理論",
+    "subcategory": "確率統計",
+    "difficulty": 3,
+    "question": "確率変数Xが正規分布N(100, 16)に従うとき、P(96≤X≤104)に最も近い値はどれか。ただし、標準正規分布において、P(0≤Z≤1) = 0.34とする。",
+    "choices": [
+      "0.34",
+      "0.48",
+      "0.68",
+      "0.84"
+    ],
+    "answer": "C",
+    "explanation": "標準化すると、P(-1≤Z≤1) = 2×0.34 = 0.68となる。"
+  },
+  {
+    "id": "ap2021spring_am_03",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 3,
+    "category": "基礎理論",
+    "subcategory": "組み合わせ",
+    "difficulty": 2,
+    "question": "5人の中から3人を選ぶ組み合わせの数はどれか。",
+    "choices": [
+      "6",
+      "10",
+      "15",
+      "20"
+    ],
+    "answer": "B",
+    "explanation": "組み合わせC(5,3) = 5!/(3!×2!) = (5×4×3!)/(3!×2×1) = 20/2 = 10"
+  },
+  {
+    "id": "ap2021autumn_am_04",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 4,
+    "category": "基礎理論",
+    "subcategory": "アルゴリズム",
+    "difficulty": 4,
+    "question": "クイックソートの最悪計算時間はどれか。ここで、nはデータ数とする。",
+    "choices": [
+      "O(n)",
+      "O(n log n)",
+      "O(n²)",
+      "O(n³)"
+    ],
+    "answer": "C",
+    "explanation": "クイックソートの最悪の場合（既にソートされたデータなど）は、毎回最小または最大要素を選んでしまい、O(n²)となる。"
+  },
+  {
+    "id": "ap2021spring_am_04",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 4,
+    "category": "コンピュータシステム",
+    "subcategory": "プロセッサ",
+    "difficulty": 3,
+    "question": "キャッシュメモリのライトバック方式の特徴として適切なものはどれか。",
+    "choices": [
+      "書き込み時に即座に主記憶も更新する",
+      "書き込み時はキャッシュのみ更新し、後で主記憶に反映する",
+      "読み出し専用のキャッシュとして動作する",
+      "書き込み時にキャッシュをバイパスする"
+    ],
+    "answer": "B",
+    "explanation": "ライトバック方式では、書き込み時はキャッシュのみを更新し、そのブロックがキャッシュから追い出される時に主記憶に書き戻す。これにより書き込み性能が向上する。"
+  },
+  {
+    "id": "ap2021autumn_am_05",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 5,
+    "category": "基礎理論",
+    "subcategory": "データ構造",
+    "difficulty": 2,
+    "question": "スタック（LIFO）に対して、要素A、B、C、Dをこの順序でプッシュし、その後2回ポップしたとき、スタックに残る要素を上から順に示したものはどれか。",
+    "choices": [
+      "A、B",
+      "B、A",
+      "C、D",
+      "D、C"
+    ],
+    "answer": "B",
+    "explanation": "プッシュ後の状態：D(上)、C、B、A(下)。2回ポップ後：B(上)、A(下)。"
+  },
+  {
+    "id": "ap2021spring_am_05",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 5,
+    "category": "コンピュータシステム",
+    "subcategory": "メモリ管理",
+    "difficulty": 3,
+    "question": "仮想記憶におけるLRU（Least Recently Used）アルゴリズムの説明として適切なものはどれか。",
+    "choices": [
+      "最も古くロードされたページを置き換える",
+      "最も最近使用されていないページを置き換える",
+      "ランダムにページを選んで置き換える",
+      "最も頻繁に使用されるページを置き換える"
+    ],
+    "answer": "B",
+    "explanation": "LRU（Least Recently Used）は、最も最近使用されていないページを置き換えるアルゴリズムである。局所性の原理により、最近使用されたページは再度使用される可能性が高いという考えに基づく。"
+  },
+  {
+    "id": "ap2021autumn_am_06",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 6,
+    "category": "基礎理論",
+    "subcategory": "グラフ理論",
+    "difficulty": 3,
+    "question": "5つの頂点と6つの辺からなる連結グラフの最小全域木の辺数はどれか。",
+    "choices": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "answer": "B",
+    "explanation": "n個の頂点を持つ連結グラフの最小全域木の辺数は常にn-1個。5個の頂点なら4本の辺。"
+  },
+  {
+    "id": "ap2021spring_am_06",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 6,
+    "category": "技術要素",
+    "subcategory": "データベース",
+    "difficulty": 3,
+    "question": "関係データベースにおけるACID特性の「C」が表すものはどれか。",
+    "choices": [
+      "原子性（Atomicity）",
+      "一貫性（Consistency）",
+      "独立性（Isolation）",
+      "永続性（Durability）"
+    ],
+    "answer": "B",
+    "explanation": "ACID特性は、Atomicity（原子性）、Consistency（一貫性）、Isolation（独立性）、Durability（永続性）を表す。「C」は一貫性（Consistency）を意味する。"
+  },
+  {
+    "id": "ap2021autumn_am_07",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 7,
+    "category": "基礎理論",
+    "subcategory": "線形代数",
+    "difficulty": 3,
+    "question": "2×2行列[[a,b],[c,d]]の行列式の値はどれか。",
+    "choices": [
+      "a+d-b-c",
+      "ac-bd",
+      "ad-bc",
+      "ab-cd"
+    ],
+    "answer": "C",
+    "explanation": "2×2行列の行列式は ad - bc で計算される。"
+  },
+  {
+    "id": "ap2021spring_am_07",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 7,
+    "category": "技術要素",
+    "subcategory": "ネットワーク",
+    "difficulty": 2,
+    "question": "TCP/IPプロトコルスタックにおいて、データの誤り検出と再送制御を行う層はどれか。",
+    "choices": [
+      "アプリケーション層",
+      "トランスポート層",
+      "ネットワーク層",
+      "データリンク層"
+    ],
+    "answer": "B",
+    "explanation": "TCP/IPのトランスポート層（TCP）が、データの誤り検出、再送制御、フロー制御などの信頼性確保機能を提供する。"
+  },
+  {
+    "id": "ap2021autumn_am_08",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 8,
+    "category": "基礎理論",
+    "subcategory": "集合論",
+    "difficulty": 1,
+    "question": "集合A={1,2,3,4,5}、B={3,4,5,6,7}のとき、A∪B（AとBの和集合）の要素数はどれか。",
+    "choices": [
+      "5",
+      "7",
+      "8",
+      "10"
+    ],
+    "answer": "B",
+    "explanation": "A∪B = {1,2,3,4,5,6,7}なので、要素数は7個。"
+  },
+  {
+    "id": "ap2021spring_am_08",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 8,
+    "category": "技術要素",
+    "subcategory": "セキュリティ",
+    "difficulty": 3,
+    "question": "ハッシュ関数の特性として適切でないものはどれか。",
+    "choices": [
+      "入力データが少し変わっても出力は大きく変わる",
+      "出力から入力を逆算することは困難である",
+      "異なる入力に対して同じ出力となることがある",
+      "入力データのサイズに関係なく出力サイズは一定である"
+    ],
+    "answer": "C",
+    "explanation": "理想的なハッシュ関数では、異なる入力に対して同じ出力となること（ハッシュ衝突）は極めて稀であるべきで、これは適切でない特性とされる。ただし、完全に避けることは不可能である。"
+  },
+  {
+    "id": "ap2021autumn_am_09",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 9,
+    "category": "コンピュータシステム",
+    "subcategory": "プロセッサ",
+    "difficulty": 2,
+    "question": "CPUのパイプライン処理において、ハザードが発生する原因として適切でないものはどれか。",
+    "choices": [
+      "データハザード（データ依存性）",
+      "制御ハザード（分岐予測失敗）",
+      "構造ハザード（リソース競合）",
+      "メモリハザード（キャッシュヒット率向上）"
+    ],
+    "answer": "D",
+    "explanation": "メモリハザードという用語は一般的でなく、キャッシュヒット率向上はハザードの原因にならない。"
+  },
+  {
+    "id": "ap2021spring_am_09",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 9,
+    "category": "プログラミング",
+    "subcategory": "データ構造",
+    "difficulty": 3,
+    "question": "スタック（LIFO）とキュー（FIFO）の説明として適切なものはどれか。",
+    "choices": [
+      "スタックは最初に入れたデータを最初に取り出す",
+      "キューは最後に入れたデータを最初に取り出す",
+      "スタックは最後に入れたデータを最初に取り出す",
+      "スタックとキューは同じデータ構造である"
+    ],
+    "answer": "C",
+    "explanation": "スタックはLIFO（Last In, First Out）で最後に入れたデータを最初に取り出す。キューはFIFO（First In, First Out）で最初に入れたデータを最初に取り出す。"
+  },
+  {
+    "id": "ap2021autumn_am_10",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 10,
+    "category": "コンピュータシステム",
+    "subcategory": "メモリ",
+    "difficulty": 3,
+    "question": "仮想記憶システムにおけるTLB（Translation Lookaside Buffer）の役割として正しいものはどれか。",
+    "choices": [
+      "ページフォルトの発生を防ぐ",
+      "アドレス変換の高速化",
+      "メモリ容量の拡張",
+      "スワッピングの制御"
+    ],
+    "answer": "B",
+    "explanation": "TLBは仮想アドレスから物理アドレスへの変換情報をキャッシュし、アドレス変換を高速化する。"
+  },
+  {
+    "id": "ap2021spring_am_10",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 10,
+    "category": "マネジメント",
+    "subcategory": "プロジェクト管理",
+    "difficulty": 2,
+    "question": "ガントチャートの説明として適切なものはどれか。",
+    "choices": [
+      "プロジェクトの費用対効果を分析する図",
+      "組織構造を表現する図",
+      "作業の開始日と終了日を時系列で表現する図",
+      "システムの機能を階層化して表現する図"
+    ],
+    "answer": "C",
+    "explanation": "ガントチャートは、プロジェクトの各作業について、開始日と終了日を横軸の時間軸上に棒グラフで表現したスケジュール管理ツールである。"
+  },
+  {
+    "id": "ap2021autumn_am_11",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 11,
+    "category": "コンピュータシステム",
+    "subcategory": "記憶装置",
+    "difficulty": 2,
+    "question": "SSD（Solid State Drive）の特徴として適切でないものはどれか。",
+    "choices": [
+      "HDDに比べて消費電力が少ない",
+      "機械的な可動部分がない",
+      "データの書き換え回数に制限がない",
+      "ランダムアクセス性能が高い"
+    ],
+    "answer": "C",
+    "explanation": "SSDはNAND型フラッシュメモリを使用しており、書き換え回数には制限がある（書き換え寿命）。"
+  },
+  {
+    "id": "ap2021spring_am_11",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 11,
+    "category": "基礎理論",
+    "subcategory": "確率",
+    "difficulty": 2,
+    "question": "2つのサイコロを同時に投げるとき、目の和が7になる確率はどれか。",
+    "choices": [
+      "1/6",
+      "1/9",
+      "1/12",
+      "1/18"
+    ],
+    "answer": "A",
+    "explanation": "目の和が7になる組み合わせは(1,6),(2,5),(3,4),(4,3),(5,2),(6,1)の6通り。全事象は6×6=36通りなので、確率は6/36=1/6である。"
+  },
+  {
+    "id": "ap2021autumn_am_12",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 12,
+    "category": "コンピュータシステム",
+    "subcategory": "入出力装置",
+    "difficulty": 1,
+    "question": "USBの規格で、USB 3.0の最大転送速度はどれか。",
+    "choices": [
+      "480 Mbps",
+      "5 Gbps",
+      "10 Gbps",
+      "20 Gbps"
+    ],
+    "answer": "B",
+    "explanation": "USB 3.0（SuperSpeed USB）の最大転送速度は5 Gbpsである。"
+  },
+  {
+    "id": "ap2021spring_am_12",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 12,
+    "category": "基礎理論",
+    "subcategory": "集合",
+    "difficulty": 1,
+    "question": "集合A={1,2,3,4}、集合B={3,4,5,6}について、A∩Bはどれか。",
+    "choices": [
+      "{1,2}",
+      "{3,4}",
+      "{5,6}",
+      "{1,2,3,4,5,6}"
+    ],
+    "answer": "B",
+    "explanation": "A∩B（AとBの積集合）は、AとBの両方に含まれる要素の集合である。AとBの両方に含まれるのは3と4なので、A∩B={3,4}である。"
+  },
+  {
+    "id": "ap2021autumn_am_13",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 13,
+    "category": "コンピュータシステム",
+    "subcategory": "システム構成",
+    "difficulty": 3,
+    "question": "負荷分散装置（ロードバランサー）において、アクティブ-スタンバイ構成の説明として正しいものはどれか。",
+    "choices": [
+      "全てのサーバが同時に処理を行う",
+      "一台が稼働し、他は待機している",
+      "処理能力に応じて負荷を分散する",
+      "地理的に分散したサーバに負荷を分散する"
+    ],
+    "answer": "B",
+    "explanation": "アクティブ-スタンバイ構成では、1台のサーバ（アクティブ）が稼働し、他のサーバ（スタンバイ）は待機状態にある。"
+  },
+  {
+    "id": "ap2021spring_am_13",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 13,
+    "category": "基礎理論",
+    "subcategory": "情報理論",
+    "difficulty": 3,
+    "question": "情報量の単位として正しいものはどれか。",
+    "choices": [
+      "ビット（bit）",
+      "バイト（byte）",
+      "ヘルツ（Hz）",
+      "デシベル（dB）"
+    ],
+    "answer": "A",
+    "explanation": "情報量の単位はビット（bit）である。1ビットは確率1/2で起こる事象の情報量を表す。バイトはデータ量の単位、ヘルツは周波数の単位、デシベルは音量等の単位である。"
+  },
+  {
+    "id": "ap2021autumn_am_14",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 14,
+    "category": "コンピュータシステム",
+    "subcategory": "OS",
+    "difficulty": 2,
+    "question": "マルチタスクOSにおけるプリエンプティブスケジューリングの特徴として正しいものはどれか。",
+    "choices": [
+      "実行中のタスクが自発的にCPUを手放す",
+      "OSが強制的にタスクを切り替える",
+      "優先度の低いタスクが常に後回しになる",
+      "一つのタスクが終了するまで他のタスクは実行されない"
+    ],
+    "answer": "B",
+    "explanation": "プリエンプティブスケジューリングでは、OSがタイムスライスに基づいて強制的にタスクを切り替える。"
+  },
+  {
+    "id": "ap2021spring_am_14",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 14,
+    "category": "基礎理論",
+    "subcategory": "グラフ理論",
+    "difficulty": 3,
+    "question": "無向グラフにおいて、すべての頂点を一度ずつ通る閉路を何と呼ぶか。",
+    "choices": [
+      "ハミルトン閉路",
+      "オイラー閉路",
+      "最短経路",
+      "最小全域木"
+    ],
+    "answer": "A",
+    "explanation": "ハミルトン閉路は、グラフのすべての頂点を一度ずつ通って元の頂点に戻る閉路である。オイラー閉路はすべての辺を一度ずつ通る閉路である。"
+  },
+  {
+    "id": "ap2021autumn_am_15",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 15,
+    "category": "コンピュータシステム",
+    "subcategory": "ファイルシステム",
+    "difficulty": 2,
+    "question": "RAIDレベルの中で、データの冗長性を持ちながら最も記憶効率が良いものはどれか。",
+    "choices": [
+      "RAID 0",
+      "RAID 1",
+      "RAID 5",
+      "RAID 6"
+    ],
+    "answer": "C",
+    "explanation": "RAID 5はパリティ情報により冗長性を確保し、n-1台分の容量を利用できるため記憶効率が良い。"
+  },
+  {
+    "id": "ap2021spring_am_15",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 15,
+    "category": "基礎理論",
+    "subcategory": "アルゴリズム",
+    "difficulty": 4,
+    "question": "クイックソートの平均時間計算量はどれか。",
+    "choices": [
+      "O(n)",
+      "O(n log n)",
+      "O(n²)",
+      "O(2ⁿ)"
+    ],
+    "answer": "B",
+    "explanation": "クイックソートの平均時間計算量はO(n log n)である。最悪の場合はO(n²)だが、ランダムな入力では平均的にO(n log n)の性能を示す。"
+  },
+  {
+    "id": "ap2021autumn_am_16",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 16,
+    "category": "コンピュータシステム",
+    "subcategory": "仮想化",
+    "difficulty": 4,
+    "question": "コンテナ型仮想化とハイパーバイザ型仮想化の主な違いとして正しいものはどれか。",
+    "choices": [
+      "コンテナ型はOSカーネルを共有する",
+      "ハイパーバイザ型はメモリ使用量が少ない",
+      "コンテナ型は完全な分離を提供する",
+      "ハイパーバイザ型の方が起動が早い"
+    ],
+    "answer": "A",
+    "explanation": "コンテナ型仮想化では、ホストOSのカーネルを複数のコンテナで共有する。ハイパーバイザ型では各VMが独自のOSを持つ。"
+  },
+  {
+    "id": "ap2021spring_am_16",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 16,
+    "category": "コンピュータシステム",
+    "subcategory": "CPU性能",
+    "difficulty": 2,
+    "question": "CPUの性能を表すIPC（Instructions Per Cycle）の意味として正しいものはどれか。",
+    "choices": [
+      "1クロックサイクルあたりに実行される命令数",
+      "1秒あたりに実行される命令数",
+      "1命令を実行するのに必要なクロックサイクル数",
+      "CPUの動作周波数"
+    ],
+    "answer": "A",
+    "explanation": "IPC（Instructions Per Cycle）は1クロックサイクルあたりに実行される命令数を表す。IPCが高いほど効率的なCPUである。"
+  },
+  {
+    "id": "ap2021autumn_am_17",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 17,
+    "category": "技術要素",
+    "subcategory": "ネットワーク",
+    "difficulty": 2,
+    "question": "TCP/IPプロトコルスタックにおいて、IPアドレスからMACアドレスを取得するプロトコルはどれか。",
+    "choices": [
+      "ARP",
+      "DHCP",
+      "DNS",
+      "ICMP"
+    ],
+    "answer": "A",
+    "explanation": "ARP（Address Resolution Protocol）は、IPアドレスから対応するMACアドレスを取得するプロトコル。"
+  },
+  {
+    "id": "ap2021spring_am_17",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 17,
+    "category": "コンピュータシステム",
+    "subcategory": "割り込み処理",
+    "difficulty": 3,
+    "question": "割り込み処理において、割り込み要求が発生してから実際に割り込み処理が開始されるまでの時間を何と呼ぶか。",
+    "choices": [
+      "応答時間",
+      "待機時間",
+      "割り込み応答時間",
+      "実行時間"
+    ],
+    "answer": "C",
+    "explanation": "割り込み応答時間（interrupt response time）は、割り込み要求が発生してから実際に割り込み処理が開始されるまでの時間を指す。リアルタイムシステムでは重要な性能指標である。"
+  },
+  {
+    "id": "ap2021autumn_am_18",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 18,
+    "category": "技術要素",
+    "subcategory": "セキュリティ",
+    "difficulty": 3,
+    "question": "リモートワークの普及に伴い重要性が増している、ゼロトラストセキュリティの基本概念として正しいものはどれか。",
+    "choices": [
+      "企業内ネットワークを完全に信頼する",
+      "VPNによる接続を前提とする",
+      "全てのアクセスを疑い、常に検証する",
+      "ファイアウォールによる境界防御に依存する"
+    ],
+    "answer": "C",
+    "explanation": "ゼロトラストセキュリティは「信頼しない、常に検証する」が基本原則で、全てのアクセスを疑い検証する。"
+  },
+  {
+    "id": "ap2021spring_am_18",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 18,
+    "category": "コンピュータシステム",
+    "subcategory": "並列処理",
+    "difficulty": 3,
+    "question": "並列処理において、複数のプロセッサが同一のメモリ空間を共有するアーキテクチャを何と呼ぶか。",
+    "choices": [
+      "SIMD",
+      "MIMD",
+      "SMP",
+      "NUMA"
+    ],
+    "answer": "C",
+    "explanation": "SMP（Symmetric Multi-Processing）は、複数のプロセッサが同一のメモリ空間を共有し、対称的に処理を行うアーキテクチャである。"
+  },
+  {
+    "id": "ap2021autumn_am_19",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 19,
+    "category": "技術要素",
+    "subcategory": "データベース",
+    "difficulty": 2,
+    "question": "関係データベースにおける正規化の目的として適切でないものはどれか。",
+    "choices": [
+      "データの冗長性を排除する",
+      "データの整合性を保つ",
+      "検索速度を向上させる",
+      "更新異常を防ぐ"
+    ],
+    "answer": "C",
+    "explanation": "正規化は冗長性排除、整合性確保、更新異常防止が目的。検索速度向上は必ずしも目的ではなく、むしろ低下する場合もある。"
+  },
+  {
+    "id": "ap2021spring_am_19",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 19,
+    "category": "コンピュータシステム",
+    "subcategory": "記憶階層",
+    "difficulty": 2,
+    "question": "記憶階層において、アクセス速度が最も速いものはどれか。",
+    "choices": [
+      "ハードディスク",
+      "主記憶（RAM）",
+      "キャッシュメモリ",
+      "SSD"
+    ],
+    "answer": "C",
+    "explanation": "記憶階層において、CPUに最も近いキャッシュメモリが最もアクセス速度が速い。一般的に、レジスタ > キャッシュ > 主記憶 > 補助記憶の順で速度が低下する。"
+  },
+  {
+    "id": "ap2021autumn_am_20",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 20,
+    "category": "技術要素",
+    "subcategory": "暗号化",
+    "difficulty": 3,
+    "question": "公開鍵暗号方式の利用例として適切でないものはどれか。",
+    "choices": [
+      "デジタル署名",
+      "鍵配送",
+      "大容量データの暗号化",
+      "本人認証"
+    ],
+    "answer": "C",
+    "explanation": "公開鍵暗号は処理が重いため、大容量データには共通鍵暗号を使用し、鍵配送にのみ公開鍵暗号を使うのが一般的。"
+  },
+  {
+    "id": "ap2021spring_am_20",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 20,
+    "category": "コンピュータシステム",
+    "subcategory": "入出力制御",
+    "difficulty": 3,
+    "question": "DMA（Direct Memory Access）の特徴として正しいものはどれか。",
+    "choices": [
+      "CPUがすべての入出力処理を制御する",
+      "入出力装置が直接メモリにアクセスできる",
+      "データ転送速度が遅い",
+      "メモリ容量が制限される"
+    ],
+    "answer": "B",
+    "explanation": "DMA（Direct Memory Access）は、入出力装置がCPUを介さずに直接メモリにアクセスする方式である。これによりCPUの負荷を軽減し、高速なデータ転送が可能になる。"
+  },
+  {
+    "id": "ap2021autumn_am_21",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 21,
+    "category": "技術要素",
+    "subcategory": "クラウドコンピューティング",
+    "difficulty": 2,
+    "question": "クラウドサービスの提供形態で、IaaS（Infrastructure as a Service）の特徴として正しいものはどれか。",
+    "choices": [
+      "アプリケーションソフトウェアを提供する",
+      "OS、ミドルウェアまでを含む開発環境を提供する",
+      "仮想マシンやストレージなどの基盤を提供する",
+      "ビジネスプロセス全体を提供する"
+    ],
+    "answer": "C",
+    "explanation": "IaaSは仮想マシン、ストレージ、ネットワークなどのITインフラストラクチャを提供するサービス。"
+  },
+  {
+    "id": "ap2021spring_am_21",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 21,
+    "category": "技術要素",
+    "subcategory": "クラウドコンピューティング",
+    "difficulty": 2,
+    "question": "クラウドサービスのSaaS（Software as a Service）の特徴として正しいものはどれか。",
+    "choices": [
+      "仮想サーバーを提供する",
+      "開発プラットフォームを提供する",
+      "アプリケーションソフトウェアを提供する",
+      "物理的なハードウェアを提供する"
+    ],
+    "answer": "C",
+    "explanation": "SaaS（Software as a Service）は、アプリケーションソフトウェアをクラウド経由で提供するサービス形態である。ユーザーはWebブラウザ等を通じてソフトウェアを利用する。"
+  },
+  {
+    "id": "ap2021autumn_am_22",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 22,
+    "category": "技術要素",
+    "subcategory": "AI・機械学習",
+    "difficulty": 4,
+    "question": "機械学習において、過学習（オーバーフィッティング）を防ぐ手法として適切でないものはどれか。",
+    "choices": [
+      "正則化（Regularization）",
+      "交差検証（Cross Validation）",
+      "早期停止（Early Stopping）",
+      "特徴量増加（Feature Addition）"
+    ],
+    "answer": "D",
+    "explanation": "特徴量の増加は過学習を促進する可能性がある。過学習防止には正則化、交差検証、早期停止などが有効。"
+  },
+  {
+    "id": "ap2021spring_am_22",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 22,
+    "category": "技術要素",
+    "subcategory": "人工知能",
+    "difficulty": 2,
+    "question": "機械学習における教師あり学習の説明として正しいものはどれか。",
+    "choices": [
+      "正解データなしで学習する",
+      "正解データありで学習する",
+      "報酬に基づいて学習する",
+      "データの次元削減を行う"
+    ],
+    "answer": "B",
+    "explanation": "教師あり学習は、入力データと正解データ（教師データ）のペアを使って学習する手法である。分類や回帰問題で使用される。"
+  },
+  {
+    "id": "ap2021autumn_am_23",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 23,
+    "category": "技術要素",
+    "subcategory": "Web技術",
+    "difficulty": 2,
+    "question": "HTTPSによる通信において、サーバの正当性を確認するために使用されるものはどれか。",
+    "choices": [
+      "セッションID",
+      "クッキー",
+      "SSL/TLS証明書",
+      "OAuth トークン"
+    ],
+    "answer": "C",
+    "explanation": "HTTPSではSSL/TLS証明書によってサーバの正当性を確認し、暗号化通信を行う。"
+  },
+  {
+    "id": "ap2021spring_am_23",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 23,
+    "category": "技術要素",
+    "subcategory": "暗号化技術",
+    "difficulty": 3,
+    "question": "公開鍵暗号方式の特徴として正しいものはどれか。",
+    "choices": [
+      "暗号化と復号化に同じ鍵を使用する",
+      "暗号化と復号化に異なる鍵を使用する",
+      "鍵の配布が不要である",
+      "処理速度が共通鍵暗号より速い"
+    ],
+    "answer": "B",
+    "explanation": "公開鍵暗号方式は、暗号化に公開鍵、復号化に秘密鍵という異なる鍵を使用する。これにより安全な鍵配布が可能になる。"
+  },
+  {
+    "id": "ap2021autumn_am_24",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 24,
+    "category": "技術要素",
+    "subcategory": "マルチメディア",
+    "difficulty": 1,
+    "question": "動画の圧縮方式であるMPEG-4の特徴として正しいものはどれか。",
+    "choices": [
+      "音声のみの圧縮が可能",
+      "可逆圧縮方式である",
+      "ストリーミング配信に適している",
+      "静止画のみ対応している"
+    ],
+    "answer": "C",
+    "explanation": "MPEG-4は動画・音声の圧縮規格で、低ビットレートでの配信やストリーミングに適している。"
+  },
+  {
+    "id": "ap2021spring_am_24",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 24,
+    "category": "技術要素",
+    "subcategory": "Webテクノロジー",
+    "difficulty": 2,
+    "question": "HTTP通信においてセッション状態を維持するために使用される技術はどれか。",
+    "choices": [
+      "Cookie",
+      "DNS",
+      "DHCP",
+      "FTP"
+    ],
+    "answer": "A",
+    "explanation": "CookieはWebブラウザとWebサーバー間でセッション状態を維持するために使用される仕組みである。サーバーからクライアントに送信され、次回アクセス時に送り返される。"
+  },
+  {
+    "id": "ap2021autumn_am_25",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 25,
+    "category": "技術要素",
+    "subcategory": "IoT",
+    "difficulty": 3,
+    "question": "IoT（Internet of Things）システムにおけるエッジコンピューティングの主な利点はどれか。",
+    "choices": [
+      "クラウドのストレージ容量を削減できる",
+      "レスポンス時間を短縮し、リアルタイム処理が可能",
+      "デバイス間の通信を完全に排除できる",
+      "セキュリティリスクを完全に回避できる"
+    ],
+    "answer": "B",
+    "explanation": "エッジコンピューティングはデータ発生地点近くで処理することで、レスポンス時間短縮とリアルタイム処理を実現する。"
+  },
+  {
+    "id": "ap2021spring_am_25",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 25,
+    "category": "技術要素",
+    "subcategory": "リモートワーク技術",
+    "difficulty": 2,
+    "question": "リモートワークにおいて、社内ネットワークへ安全にアクセスするために使用される技術はどれか。",
+    "choices": [
+      "VPN",
+      "LAN",
+      "WAN",
+      "MAN"
+    ],
+    "answer": "A",
+    "explanation": "VPN（Virtual Private Network）は、インターネット上に暗号化された仮想的な専用回線を構築し、リモート地点から社内ネットワークへ安全にアクセスするための技術である。"
+  },
+  {
+    "id": "ap2021autumn_am_26",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 26,
+    "category": "技術要素",
+    "subcategory": "ソフトウェア工学",
+    "difficulty": 2,
+    "question": "アジャイル開発手法の特徴として適切でないものはどれか。",
+    "choices": [
+      "短期間での反復開発",
+      "顧客との密接な協力",
+      "詳細な文書作成を重視",
+      "変化への対応を重視"
+    ],
+    "answer": "C",
+    "explanation": "アジャイル開発では「動くソフトウェアを包括的ドキュメントよりも重視する」という価値観を持つ。"
+  },
+  {
+    "id": "ap2021spring_am_26",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 26,
+    "category": "プログラミング",
+    "subcategory": "オブジェクト指向",
+    "difficulty": 3,
+    "question": "オブジェクト指向プログラミングにおけるカプセル化の説明として正しいものはどれか。",
+    "choices": [
+      "既存のクラスから新しいクラスを作成すること",
+      "データとメソッドを一つのオブジェクトにまとめること",
+      "同じインターフェースで異なる処理を実行すること",
+      "抽象的なクラスから具象クラスを作成すること"
+    ],
+    "answer": "B",
+    "explanation": "カプセル化（encapsulation）は、関連するデータ（属性）とメソッド（操作）を一つのオブジェクトにまとめ、内部の詳細を隠蔽することである。"
+  },
+  {
+    "id": "ap2021autumn_am_27",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 27,
+    "category": "技術要素",
+    "subcategory": "DevOps",
+    "difficulty": 4,
+    "question": "CI/CD（Continuous Integration/Continuous Deployment）パイプラインの構成要素として適切でないものはどれか。",
+    "choices": [
+      "ソースコード管理",
+      "自動化テスト",
+      "手動承認プロセス",
+      "自動デプロイ"
+    ],
+    "answer": "C",
+    "explanation": "CI/CDは自動化が重要な要素であり、手動承認プロセスは継続的なデプロイメントの妨げとなる可能性がある。"
+  },
+  {
+    "id": "ap2021spring_am_27",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 27,
+    "category": "プログラミング",
+    "subcategory": "ソートアルゴリズム",
+    "difficulty": 3,
+    "question": "バブルソートの時間計算量として正しいものはどれか。",
+    "choices": [
+      "O(n)",
+      "O(n log n)",
+      "O(n²)",
+      "O(2ⁿ)"
+    ],
+    "answer": "C",
+    "explanation": "バブルソートは隣接する要素を比較して交換を繰り返すアルゴリズムで、時間計算量はO(n²)である。n個の要素をソートするのにn×nの比較が必要になる。"
+  },
+  {
+    "id": "ap2021autumn_am_28",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 28,
+    "category": "技術要素",
+    "subcategory": "ビッグデータ",
+    "difficulty": 3,
+    "question": "ビッグデータの3Vと呼ばれる特性に含まれないものはどれか。",
+    "choices": [
+      "Volume（量）",
+      "Velocity（速度）",
+      "Variety（多様性）",
+      "Vision（洞察）"
+    ],
+    "answer": "D",
+    "explanation": "ビッグデータの3Vは Volume（量）、Velocity（速度）、Variety（多様性）。Visionは含まれない。"
+  },
+  {
+    "id": "ap2021spring_am_28",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 28,
+    "category": "システム設計",
+    "subcategory": "設計手法",
+    "difficulty": 3,
+    "question": "DFD（Data Flow Diagram）の目的として正しいものはどれか。",
+    "choices": [
+      "プログラムの制御構造を表現する",
+      "データベースの構造を表現する",
+      "データの流れを表現する",
+      "システムの物理構成を表現する"
+    ],
+    "answer": "C",
+    "explanation": "DFD（Data Flow Diagram）は、システム内でのデータの流れを視覚的に表現する図式表現法である。プロセス、データストア、外部エンティティ、データフローで構成される。"
+  },
+  {
+    "id": "ap2021autumn_am_29",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 29,
+    "category": "プログラミング",
+    "subcategory": "プログラム設計",
+    "difficulty": 3,
+    "question": "オブジェクト指向プログラミングにおけるポリモーフィズムの説明として正しいものはどれか。",
+    "choices": [
+      "データと処理を一つにまとめる",
+      "内部実装を隠蔽する",
+      "同一のインタフェースで異なる処理を実現する",
+      "既存クラスの機能を引き継ぐ"
+    ],
+    "answer": "C",
+    "explanation": "ポリモーフィズムは同じメソッド名で異なるクラスごとに異なる処理を実現する概念。"
+  },
+  {
+    "id": "ap2021spring_am_29",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 29,
+    "category": "システム設計",
+    "subcategory": "モジュール設計",
+    "difficulty": 4,
+    "question": "モジュールの独立性を高めるために重要な概念はどれか。",
+    "choices": [
+      "高い結合度と低い凝集度",
+      "低い結合度と高い凝集度",
+      "高い結合度と高い凝集度",
+      "低い結合度と低い凝集度"
+    ],
+    "answer": "B",
+    "explanation": "モジュールの独立性を高めるには、モジュール間の結合度を低く（疎結合）し、モジュール内の凝集度を高く（強凝集）することが重要である。"
+  },
+  {
+    "id": "ap2021autumn_am_30",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 30,
+    "category": "プログラミング",
+    "subcategory": "データ型",
+    "difficulty": 2,
+    "question": "配列の要素にアクセスする際の時間計算量として正しいものはどれか。",
+    "choices": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n²)"
+    ],
+    "answer": "A",
+    "explanation": "配列はインデックスによる直接アクセスが可能なため、要素へのアクセス時間は定数時間O(1)。"
+  },
+  {
+    "id": "ap2021spring_am_30",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 30,
+    "category": "マネジメント",
+    "subcategory": "品質管理",
+    "difficulty": 2,
+    "question": "QC7つ道具に含まれないものはどれか。",
+    "choices": [
+      "パレート図",
+      "特性要因図",
+      "ガントチャート",
+      "ヒストグラム"
+    ],
+    "answer": "C",
+    "explanation": "QC7つ道具は、パレート図、特性要因図、ヒストグラム、管理図、散布図、グラフ、チェックシートである。ガントチャートはプロジェクト管理のツールでQC7つ道具には含まれない。"
+  },
+  {
+    "id": "ap2021autumn_am_31",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 31,
+    "category": "プログラミング",
+    "subcategory": "例外処理",
+    "difficulty": 1,
+    "question": "プログラムの例外処理の目的として適切でないものはどれか。",
+    "choices": [
+      "プログラムの異常終了を防ぐ",
+      "エラーメッセージをユーザに提供する",
+      "プログラムの実行速度を向上させる",
+      "システムの安定性を保つ"
+    ],
+    "answer": "C",
+    "explanation": "例外処理の目的は異常終了防止、エラー情報提供、システム安定性確保。実行速度向上は目的ではない。"
+  },
+  {
+    "id": "ap2021spring_am_31",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 31,
+    "category": "マネジメント",
+    "subcategory": "リスク管理",
+    "difficulty": 3,
+    "question": "プロジェクトリスク管理プロセスの正しい順序はどれか。",
+    "choices": [
+      "識別→分析→対応→監視",
+      "分析→識別→監視→対応",
+      "対応→識別→分析→監視",
+      "監視→対応→識別→分析"
+    ],
+    "answer": "A",
+    "explanation": "リスク管理の基本プロセスは、①リスクの識別、②リスクの分析・評価、③リスク対応策の立案・実施、④リスクの監視・制御の順序で行われる。"
+  },
+  {
+    "id": "ap2021autumn_am_32",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 32,
+    "category": "システム設計",
+    "subcategory": "アーキテクチャ",
+    "difficulty": 4,
+    "question": "マイクロサービスアーキテクチャの特徴として適切でないものはどれか。",
+    "choices": [
+      "サービス間は疎結合である",
+      "独立したデプロイが可能",
+      "単一のデータベースを共有する",
+      "異なる技術スタックを使用できる"
+    ],
+    "answer": "C",
+    "explanation": "マイクロサービスでは各サービスが独自のデータベースを持つことが原則。単一データベース共有は密結合を招く。"
+  },
+  {
+    "id": "ap2021spring_am_32",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 32,
+    "category": "経営戦略・企業と法務",
+    "subcategory": "知的財産権",
+    "difficulty": 2,
+    "question": "著作権の保護期間として正しいものはどれか。",
+    "choices": [
+      "著作者の死後50年",
+      "著作者の死後70年",
+      "公表後50年",
+      "登録後20年"
+    ],
+    "answer": "B",
+    "explanation": "日本の著作権法では、著作権の保護期間は原則として著作者の死後70年（2018年改正）である。法人著作の場合は公表後70年である。"
+  },
+  {
+    "id": "ap2021autumn_am_33",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 33,
+    "category": "システム設計",
+    "subcategory": "性能設計",
+    "difficulty": 5,
+    "question": "Webアプリケーションにおけるスケーラビリティ向上の手法として、効果が最も限定的なものはどれか。",
+    "choices": [
+      "ロードバランサーによる水平スケーリング",
+      "データベースのレプリケーション",
+      "CDNによるコンテンツ配信",
+      "単一サーバのスペック向上（垂直スケーリング）"
+    ],
+    "answer": "D",
+    "explanation": "垂直スケーリングは物理的限界があり、コスト効率も悪い。水平スケーリングの方がスケーラビリティ向上に効果的。"
+  },
+  {
+    "id": "ap2021spring_am_33",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 33,
+    "category": "技術要素",
+    "subcategory": "ゼロトラストセキュリティ",
+    "difficulty": 3,
+    "question": "ゼロトラストセキュリティモデルの基本原則として正しいものはどれか。",
+    "choices": [
+      "社内ネットワークは信頼できる",
+      "すべてのアクセスを検証する",
+      "境界防御に重点を置く",
+      "VPNで十分なセキュリティを確保する"
+    ],
+    "answer": "B",
+    "explanation": "ゼロトラストセキュリティモデルは「何も信頼せず、すべてを検証する」が基本原則である。社内外を問わず、すべてのアクセスを検証し、最小権限の原則に基づいてアクセス制御を行う。"
+  },
+  {
+    "id": "ap2021autumn_am_34",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 34,
+    "category": "マネジメント",
+    "subcategory": "プロジェクト管理",
+    "difficulty": 3,
+    "question": "プロジェクトのスケジュール管理において、クリティカルパスの説明として正しいものはどれか。",
+    "choices": [
+      "最も重要度の高い作業の経路",
+      "最も多くの人員を投入する作業の経路",
+      "遅れが発生するとプロジェクト全体に影響する経路",
+      "最も難易度の高い作業の経路"
+    ],
+    "answer": "C",
+    "explanation": "クリティカルパスは、所要時間が最も長い経路であり、この経路の遅れがプロジェクト全体の遅れに直結する。"
+  },
+  {
+    "id": "ap2021spring_am_34",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 34,
+    "category": "技術要素",
+    "subcategory": "API設計",
+    "difficulty": 2,
+    "question": "RESTful APIの設計原則として正しいものはどれか。",
+    "choices": [
+      "状態を保持する（ステートフル）",
+      "状態を保持しない（ステートレス）",
+      "独自プロトコルを使用する",
+      "バイナリ形式でデータを送信する"
+    ],
+    "answer": "B",
+    "explanation": "RESTful APIの重要な制約の一つは「ステートレス」である。各リクエストは完全に独立しており、サーバーはクライアントの状態を保持しない。"
+  },
+  {
+    "id": "ap2021autumn_am_35",
+    "year": 2021,
+    "season": "autumn",
+    "section": "morning",
+    "number": 35,
+    "category": "マネジメント",
+    "subcategory": "リスク管理",
+    "difficulty": 2,
+    "question": "ITプロジェクトのリスク対応戦略として、「リスクの発生確率は変えられないが、影響度を軽減する」対応はどれか。",
+    "choices": [
+      "リスク回避",
+      "リスク軽減",
+      "リスク転嫁",
+      "リスク受容"
+    ],
+    "answer": "B",
+    "explanation": "リスク軽減は、リスクの発生確率や影響度を下げる対応戦略。影響度を軽減する対応はリスク軽減に該当する。"
+  },
+  {
+    "id": "ap2021spring_am_35",
+    "year": 2021,
+    "season": "spring",
+    "section": "morning",
+    "number": 35,
+    "category": "技術要素",
+    "subcategory": "コンテナ技術",
+    "difficulty": 2,
+    "question": "Dockerなどのコンテナ技術の特徴として正しいものはどれか。",
+    "choices": [
+      "仮想マシンより重い",
+      "OSカーネルを共有する",
+      "ハードウェアを仮想化する",
+      "起動に時間がかかる"
+    ],
+    "answer": "B",
+    "explanation": "コンテナ技術は、ホストOSのカーネルを共有し、アプリケーション実行環境を軽量に仮想化する技術である。仮想マシンと比較して軽量で高速起動が可能である。"
+  }
+]

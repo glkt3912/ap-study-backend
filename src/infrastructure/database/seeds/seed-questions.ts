@@ -37,24 +37,40 @@ async function seedQuestions() {
     logger.info(`📚 総読み込み問題数: ${allQuestionsData.length}問`);
 
     // データベースに挿入
-    for (const questionData of allQuestionsData) {
-      await prisma.question.create({
-        data: {
-          id: questionData.id,
-          year: questionData.year,
-          season: questionData.season,
-          section: questionData.section,
-          number: questionData.number,
-          category: questionData.category,
-          subcategory: questionData.subcategory,
-          difficulty: questionData.difficulty,
-          question: questionData.question,
-          choices: JSON.stringify(questionData.choices),
-          answer: questionData.answer,
-          explanation: questionData.explanation,
-          tags: JSON.stringify(questionData.tags),
-        },
-      });
+    for (let i = 0; i < allQuestionsData.length; i++) {
+      const questionData = allQuestionsData[i];
+      try {
+        logger.info(`挿入中: ${i + 1}/${allQuestionsData.length} - ${questionData.id}`);
+        await prisma.question.create({
+          data: {
+            id: questionData.id,
+            year: questionData.year,
+            season: questionData.season,
+            section: questionData.section,
+            number: questionData.number,
+            category: questionData.category,
+            subcategory: questionData.subcategory,
+            difficulty: questionData.difficulty,
+            question: questionData.question,
+            choices: JSON.stringify(questionData.choices),
+            answer: questionData.answer,
+            explanation: questionData.explanation,
+            tags: JSON.stringify(questionData.tags),
+          },
+        });
+      } catch (insertError) {
+        const errorMessage = `問題 ${questionData.id} の挿入に失敗:`;
+        const errorDetails = `問題データ: ${JSON.stringify(questionData, null, 2)}`;
+        
+        if (insertError instanceof Error) {
+          logger.error(errorMessage, insertError);
+          logger.error(errorDetails);
+        } else {
+          logger.error(errorMessage, new Error(String(insertError)));
+          logger.error(errorDetails);
+        }
+        throw insertError;
+      }
     }
 
     logger.info(`✅ ${allQuestionsData.length}件の過去問データを投入しました`);
@@ -73,7 +89,18 @@ async function seedQuestions() {
     });
 
   } catch (error) {
-    logger.error('❌ シード実行中にエラーが発生しました:', error);
+    const mainErrorMessage = '❌ シード実行中にエラーが発生しました:';
+    
+    if (error instanceof Error) {
+      logger.error(mainErrorMessage, error);
+      logger.error(`Error message: ${error.message}`);
+      if (error.stack) {
+        logger.error(`Error stack: ${error.stack}`);
+      }
+    } else {
+      logger.error(mainErrorMessage, new Error(String(error)));
+      logger.error(`Unknown error: ${String(error)}`);
+    }
     throw error;
   } finally {
     await prisma.$disconnect();
