@@ -1,9 +1,9 @@
-/**
+/*  */ /**
  * ログミドルウェア - 全てのHTTPリクエストを監視・記録
  */
 
 import { Context, Next } from 'hono';
-import { logger, generateRequestId, getUserIdFromContext, getClientIp } from '../../../utils/logger';
+import { logger, generateRequestId, getUserIdFromContext, getClientIp } from '../../../utils/logger.js';
 
 /**
  * リクエスト・レスポンスロギングミドルウェア
@@ -35,7 +35,7 @@ export const loggingMiddleware = async (c: Context, next: Next) => {
     await next();
   } catch (error) {
     const duration = Date.now() - startTime;
-    
+
     // エラーログ
     logger.logError('Request failed with unhandled error', {
       requestId,
@@ -95,9 +95,7 @@ export const errorLoggingMiddleware = async (c: Context, next: Next) => {
     // 標準化されたエラーレスポンス
     const errorResponse = {
       success: false,
-      error: process.env.NODE_ENV === 'production' 
-        ? 'Internal server error' 
-        : (error as Error).message,
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error as Error).message,
       requestId,
       timestamp: new Date().toISOString(),
     };
@@ -109,22 +107,18 @@ export const errorLoggingMiddleware = async (c: Context, next: Next) => {
 /**
  * データベース操作ロギング用のヘルパー
  */
-export const logDatabaseOperation = async <T>(
-  operation: string,
-  table: string,
-  fn: () => Promise<T>
-): Promise<T> => {
+export const logDatabaseOperation = async <T>(operation: string, table: string, fn: () => Promise<T>): Promise<T> => {
   const startTime = Date.now();
-  
+
   try {
     const result = await fn();
     const duration = Date.now() - startTime;
-    
+
     logger.logDatabase(operation, table, duration);
     return result;
   } catch (error) {
     const duration = Date.now() - startTime;
-    
+
     logger.logDatabase(operation, table, duration, error as Error);
     throw error;
   }
@@ -141,10 +135,10 @@ export const logBusinessEvent = (event: string, metadata?: Record<string, any>) 
  * セキュリティイベントログ用のヘルパー
  */
 export const logSecurityEvent = (
-  c: Context, 
-  event: string, 
+  c: Context,
+  event: string,
   severity: 'low' | 'medium' | 'high' | 'critical',
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ) => {
   const ip = getClientIp(c);
   const userAgent = c.req.header('user-agent');

@@ -3,8 +3,8 @@
  */
 
 import { Hono } from 'hono';
-import { logger } from '../../../utils/logger';
-import { logBusinessEvent, logSecurityEvent } from '../middleware/logging';
+import { logger } from '../../../utils/logger.js';
+import { logBusinessEvent, logSecurityEvent } from '../middleware/logging.js';
 
 const monitoring = new Hono();
 
