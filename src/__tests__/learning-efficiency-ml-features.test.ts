@@ -248,7 +248,9 @@ describe('Learning Efficiency ML Features (TDD)', () => {
         understanding: Math.max(1, 5 - (i * 0.2)), // 5 to 1 over time
         memo: i > 10 ? 'Getting harder' : 'OK',
         completed: i < 10, // Less completion over time
-        createdAt: new Date(`2025-01-${String(i + 1).padStart(2, '0')}T${String(9 + (i % 12)).padStart(2, '0')}:00:00Z`),
+        createdAt: new Date(
+          `2025-01-${String(i + 1).padStart(2, '0')}T${String(9 + (i % 12)).padStart(2, '0')}:00:00Z`,
+        ),
       }));
 
       vi.mocked(mockStudyLogRepository.findByUserAndDateRange).mockResolvedValue(decliningStudyLogs as any);
@@ -324,7 +326,7 @@ describe('Learning Efficiency ML Features (TDD)', () => {
 
       // Assert: Should not crash and provide meaningful output
       expect(result).toBeDefined();
-      expect(result.userId).toBe('single-day-user');
+      expect(result.userId).toBe(7);
       expect(result.hourlyEfficiency).toHaveLength(24);
       expect(result.subjectEfficiency.length).toBeGreaterThan(0);
       expect(result.overallScore).toBeGreaterThanOrEqual(0);

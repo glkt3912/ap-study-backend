@@ -115,7 +115,9 @@ class Logger {
     metadata?: Record<string, any>;
     error?: Error;
   }): void {
-    if (!this.shouldLog(level)) return;
+    if (!this.shouldLog(level)) {
+      return;
+    }
 
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
