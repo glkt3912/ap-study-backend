@@ -38,7 +38,9 @@
     "quality:docs": "./scripts/documentation-check.sh",
     "quality:all": "./scripts/pr-quality-check.sh all",
     "quality:critical": "./scripts/pr-quality-check.sh critical",
-    "pr:check": "./scripts/pr-quality-check.sh all"
+    "pr:check": "./scripts/pr-quality-check.sh all",
+    "pr:collect-data": "./scripts/collect-pr-data.sh",
+    "pr:claude": "./scripts/generate-pr-with-claude.sh"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.0.0",
