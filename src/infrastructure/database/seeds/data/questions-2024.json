@@ -9,13 +9,22 @@
     "subcategory": "2進数",
     "difficulty": 2,
     "question": "2進数1011と1101の和を10進数で表したものはどれか。",
-    "choices": ["24", "26", "28", "30"],
+    "choices": [
+      "24",
+      "26",
+      "28",
+      "30"
+    ],
     "answer": "A",
     "explanation": "2進数1011は10進数で11、2進数1101は10進数で13。11 + 13 = 24",
-    "tags": ["2進数", "計算", "基礎"]
+    "tags": [
+      "2進数",
+      "計算",
+      "基礎"
+    ]
   },
   {
-    "id": "ap2024spring_am_02", 
+    "id": "ap2024spring_am_02",
     "year": 2024,
     "season": "spring",
     "section": "morning",
@@ -26,17 +35,21 @@
     "question": "論理式 A ∧ (B ∨ C) と同じ真理値を持つ論理式はどれか。",
     "choices": [
       "(A ∧ B) ∨ (A ∧ C)",
-      "(A ∨ B) ∧ (A ∨ C)", 
+      "(A ∨ B) ∧ (A ∨ C)",
       "A ∨ (B ∧ C)",
       "A ∧ B ∧ C"
     ],
     "answer": "A",
     "explanation": "分配法則により A ∧ (B ∨ C) = (A ∧ B) ∨ (A ∧ C) が成り立つ",
-    "tags": ["論理演算", "分配法則", "論理式"]
+    "tags": [
+      "論理演算",
+      "分配法則",
+      "論理式"
+    ]
   },
   {
     "id": "ap2024spring_am_03",
-    "year": 2024, 
+    "year": 2024,
     "season": "spring",
     "section": "morning",
     "number": 3,
@@ -44,15 +57,24 @@
     "subcategory": "プロセッサ",
     "difficulty": 3,
     "question": "キャッシュメモリのヒット率が90%、キャッシュアクセス時間が10ns、主記憶アクセス時間が100nsのとき、平均アクセス時間は何nsか。",
-    "choices": ["19", "28", "37", "46"],
-    "answer": "A", 
+    "choices": [
+      "19",
+      "28",
+      "37",
+      "46"
+    ],
+    "answer": "A",
     "explanation": "平均アクセス時間 = ヒット率 × キャッシュ時間 + ミス率 × 主記憶時間 = 0.9 × 10 + 0.1 × 100 = 9 + 10 = 19ns",
-    "tags": ["キャッシュ", "メモリ", "アクセス時間"]
+    "tags": [
+      "キャッシュ",
+      "メモリ",
+      "アクセス時間"
+    ]
   },
   {
     "id": "ap2024spring_am_04",
     "year": 2024,
-    "season": "spring", 
+    "season": "spring",
     "section": "morning",
     "number": 4,
     "category": "コンピュータシステム",
@@ -61,19 +83,23 @@
     "question": "プロセスの状態遷移で、実行可能状態から実行状態に遷移するきっかけはどれか。",
     "choices": [
       "プロセスの生成",
-      "I/O要求の発生", 
+      "I/O要求の発生",
       "CPUスケジューラによる選択",
       "プロセスの終了"
     ],
     "answer": "C",
     "explanation": "実行可能状態のプロセスがCPUスケジューラによって選択されることで実行状態に遷移する",
-    "tags": ["プロセス", "状態遷移", "スケジューラ"]
+    "tags": [
+      "プロセス",
+      "状態遷移",
+      "スケジューラ"
+    ]
   },
   {
     "id": "ap2024spring_am_05",
     "year": 2024,
     "season": "spring",
-    "section": "morning", 
+    "section": "morning",
     "number": 5,
     "category": "技術要素",
     "subcategory": "データベース",
@@ -82,27 +108,40 @@
     "choices": [
       "第1正規形では、すべての属性が原子値である",
       "第2正規形では、推移的従属性を排除する",
-      "第3正規形では、部分従属性を排除する", 
+      "第3正規形では、部分従属性を排除する",
       "非正規形では、重複データが存在しない"
     ],
     "answer": "A",
     "explanation": "第1正規形では各属性が原子値（分割不可能な値）である。第2正規形は部分従属性、第3正規形は推移的従属性を排除する",
-    "tags": ["データベース", "正規化", "関係モデル"]
+    "tags": [
+      "データベース",
+      "正規化",
+      "関係モデル"
+    ]
   },
   {
     "id": "ap2024autumn_am_01",
     "year": 2024,
     "season": "autumn",
-    "section": "morning", 
+    "section": "morning",
     "number": 1,
     "category": "基礎理論",
     "subcategory": "16進数",
     "difficulty": 2,
     "question": "16進数ABと2Cの差を10進数で表したものはどれか。",
-    "choices": ["127", "135", "143", "151"],
+    "choices": [
+      "127",
+      "135",
+      "143",
+      "151"
+    ],
     "answer": "A",
     "explanation": "16進数ABは171、2Cは44。171 - 44 = 127",
-    "tags": ["16進数", "計算", "基礎"]
+    "tags": [
+      "16進数",
+      "計算",
+      "基礎"
+    ]
   },
   {
     "id": "ap2024spring_am_06",
@@ -114,25 +153,43 @@
     "subcategory": "グラフ理論",
     "difficulty": 3,
     "question": "頂点数6、辺数8の無向グラフで、すべての頂点の次数の合計はいくつか。",
-    "choices": ["12", "14", "16", "18"],
+    "choices": [
+      "12",
+      "14",
+      "16",
+      "18"
+    ],
     "answer": "C",
     "explanation": "握手定理により、すべての頂点の次数の合計は辺数の2倍。8 × 2 = 16",
-    "tags": ["グラフ理論", "握手定理", "次数"]
+    "tags": [
+      "グラフ理論",
+      "握手定理",
+      "次数"
+    ]
   },
   {
     "id": "ap2024spring_am_07",
     "year": 2024,
-    "season": "spring", 
+    "season": "spring",
     "section": "morning",
     "number": 7,
     "category": "コンピュータシステム",
     "subcategory": "キャッシュ",
     "difficulty": 3,
     "question": "ダイレクトマップ方式のキャッシュで、キャッシュサイズ4KB、ブロックサイズ64B、メモリアドレス0x1234にアクセスする場合のキャッシュインデックスは何か。",
-    "choices": ["0x12", "0x34", "0x23", "0x48"],
+    "choices": [
+      "0x12",
+      "0x34",
+      "0x23",
+      "0x48"
+    ],
     "answer": "C",
     "explanation": "キャッシュ行数=4KB/64B=64行。インデックスは6bit。アドレス0x1234の下位6bitは0x34だが、ブロック内オフセット6bitを除いた6bitがインデックス。0x1234>>6=0x48の下位6bit=0x23",
-    "tags": ["キャッシュ", "ダイレクトマップ", "インデックス"]
+    "tags": [
+      "キャッシュ",
+      "ダイレクトマップ",
+      "インデックス"
+    ]
   },
   {
     "id": "ap2024spring_am_08",
@@ -152,7 +209,11 @@
     ],
     "answer": "B",
     "explanation": "マスカブル割込みは割込み禁止フラグで禁止可能、ノンマスカブル割込みは禁止できない緊急度の高い割込み（電源断など）",
-    "tags": ["割込み", "マスカブル", "ノンマスカブル"]
+    "tags": [
+      "割込み",
+      "マスカブル",
+      "ノンマスカブル"
+    ]
   },
   {
     "id": "ap2024spring_am_09",
@@ -166,13 +227,17 @@
     "question": "HTTPステータスコード404の意味として適切なものはどれか。",
     "choices": [
       "Bad Request（不正なリクエスト）",
-      "Unauthorized（認証が必要）", 
+      "Unauthorized（認証が必要）",
       "Forbidden（アクセス禁止）",
       "Not Found（ページが見つからない）"
     ],
     "answer": "D",
     "explanation": "HTTP 404はNot Found、要求されたリソースが見つからないことを示すステータスコード",
-    "tags": ["HTTP", "ステータスコード", "404"]
+    "tags": [
+      "HTTP",
+      "ステータスコード",
+      "404"
+    ]
   },
   {
     "id": "ap2024spring_am_10",
@@ -192,7 +257,11 @@
     ],
     "answer": "D",
     "explanation": "ハッシュ関数は一方向関数であり、可逆性はない。暗号化と復号化は暗号化関数の特徴",
-    "tags": ["ハッシュ関数", "一方向性", "暗号"]
+    "tags": [
+      "ハッシュ関数",
+      "一方向性",
+      "暗号"
+    ]
   },
   {
     "id": "ap2024spring_am_11",
@@ -205,14 +274,18 @@
     "difficulty": 2,
     "question": "XMLの特徴として適切でないものはどれか。",
     "choices": [
-      "タグによるマークアップ言語", 
+      "タグによるマークアップ言語",
       "スキーマによる構造定義が可能",
       "バイナリ形式でデータを格納",
       "プラットフォーム独立"
     ],
     "answer": "C",
     "explanation": "XMLはテキスト形式のマークアップ言語であり、バイナリ形式ではない。人間が読める形式で構造化データを表現する",
-    "tags": ["XML", "マークアップ", "テキスト形式"]
+    "tags": [
+      "XML",
+      "マークアップ",
+      "テキスト形式"
+    ]
   },
   {
     "id": "ap2024spring_am_12",
@@ -226,13 +299,17 @@
     "question": "ソフトウェアテストのV字モデルで、単体テストと対応する開発工程はどれか。",
     "choices": [
       "要件定義",
-      "基本設計", 
+      "基本設計",
       "詳細設計",
       "実装"
     ],
     "answer": "C",
     "explanation": "V字モデルでは、詳細設計と単体テストが対応する。詳細設計で決めた仕様を単体テストで検証する",
-    "tags": ["V字モデル", "単体テスト", "詳細設計"]
+    "tags": [
+      "V字モデル",
+      "単体テスト",
+      "詳細設計"
+    ]
   },
   {
     "id": "ap2024autumn_am_02",
@@ -244,10 +321,19 @@
     "subcategory": "論理回路",
     "difficulty": 3,
     "question": "4入力のエンコーダで、入力が1000（上位ビットから順）のとき、出力は何か。",
-    "choices": ["00", "01", "10", "11"],
+    "choices": [
+      "00",
+      "01",
+      "10",
+      "11"
+    ],
     "answer": "C",
     "explanation": "エンコーダは複数の入力線のうち1本がアクティブになったとき、その位置をバイナリで出力する。上から1000なので最上位（位置2）がアクティブ、出力は10",
-    "tags": ["エンコーダ", "論理回路", "バイナリ"]
+    "tags": [
+      "エンコーダ",
+      "論理回路",
+      "バイナリ"
+    ]
   },
   {
     "id": "ap2024autumn_am_03",
@@ -267,7 +353,11 @@
     ],
     "answer": "C",
     "explanation": "RAID 5は複数ディスクにデータとパリティを分散配置し、1台の故障に対して冗長性を確保する方式",
-    "tags": ["RAID5", "分散パリティ", "冗長性"]
+    "tags": [
+      "RAID5",
+      "分散パリティ",
+      "冗長性"
+    ]
   },
   {
     "id": "ap2024autumn_am_04",
@@ -279,10 +369,19 @@
     "subcategory": "JavaScript",
     "difficulty": 2,
     "question": "JavaScriptで配列[1,2,3,4,5]の要素すべてを2倍にした新しい配列を作成する場合、適切なメソッドはどれか。",
-    "choices": ["forEach", "map", "filter", "reduce"],
+    "choices": [
+      "forEach",
+      "map",
+      "filter",
+      "reduce"
+    ],
     "answer": "B",
     "explanation": "mapメソッドは配列の各要素に関数を適用して新しい配列を返す。各要素を2倍にして新しい配列を作成するのに適している",
-    "tags": ["JavaScript", "map", "配列"]
+    "tags": [
+      "JavaScript",
+      "map",
+      "配列"
+    ]
   },
   {
     "id": "ap2024autumn_am_05",
@@ -302,7 +401,11 @@
     ],
     "answer": "C",
     "explanation": "RESTの原則の一つはステートレス性であり、サーバは各リクエスト間でクライアントの状態を保持しない",
-    "tags": ["REST API", "ステートレス", "設計原則"]
+    "tags": [
+      "REST API",
+      "ステートレス",
+      "設計原則"
+    ]
   },
   {
     "id": "ap2024autumn_am_06",
@@ -316,13 +419,17 @@
     "question": "プロジェクトリスクの対応戦略として適切でないものはどれか。",
     "choices": [
       "回避（リスクの原因を除去）",
-      "軽減（リスクの影響を縮小）", 
+      "軽減（リスクの影響を縮小）",
       "転嫁（リスクを他者に移転）",
       "拡大（リスクの効果を増大）"
     ],
     "answer": "D",
     "explanation": "リスク対応戦略は回避、軽減、転嫁、受容の4つ。拡大はリスク対応戦略ではない",
-    "tags": ["リスク管理", "対応戦略", "プロジェクト"]
+    "tags": [
+      "リスク管理",
+      "対応戦略",
+      "プロジェクト"
+    ]
   },
   {
     "id": "ap2024spring_pm_01",
@@ -336,13 +443,17 @@
     "question": "従業員テーブル（10万件）で「年齢BETWEEN 25 AND 35」の検索を高速化したい。最も効果的なインデックス戦略はどれか。\n\n【条件】\n・年齢の分布は均等\n・年齢での範囲検索が頻繁\n・更新は月1回程度",
     "choices": [
       "年齢にハッシュインデックス作成",
-      "年齢にB+Treeインデックス作成", 
+      "年齢にB+Treeインデックス作成",
       "年齢と氏名の複合インデックス作成",
       "ビットマップインデックス作成"
     ],
     "answer": "B",
     "explanation": "範囲検索（BETWEEN）にはB+Treeインデックスが最適。ハッシュは等価検索のみ、複合インデックスは氏名での検索がない場合不要、ビットマップは低カーディナリティに適する",
-    "tags": ["インデックス", "B+Tree", "範囲検索"]
+    "tags": [
+      "インデックス",
+      "B+Tree",
+      "範囲検索"
+    ]
   },
   {
     "id": "ap2024spring_pm_02",
@@ -362,7 +473,11 @@
     ],
     "answer": "C",
     "explanation": "負荷分散環境でセッション管理するには、外部のセッションストア（Redis等）を全サーバで共有するのが最適。サーバ障害時の継続性と拡張性を確保できる",
-    "tags": ["負荷分散", "セッション管理", "Redis"]
+    "tags": [
+      "負荷分散",
+      "セッション管理",
+      "Redis"
+    ]
   },
   {
     "id": "ap2024spring_pm_03",
@@ -374,13 +489,22 @@
     "subcategory": "再帰",
     "difficulty": 4,
     "question": "フィボナッチ数列F(n)を求める再帰関数で、F(5)を計算する際のF(2)の呼び出し回数は何回か。\n\n```\nF(n) = F(n-1) + F(n-2) (n≥2)\nF(0) = 0, F(1) = 1\n```",
-    "choices": ["3", "5", "8", "13"],
+    "choices": [
+      "3",
+      "5",
+      "8",
+      "13"
+    ],
     "answer": "B",
     "explanation": "F(5)の計算木を描くと、F(2)は以下から呼び出される：F(4)から2回、F(3)から3回。合計5回",
-    "tags": ["再帰", "フィボナッチ", "計算量"]
+    "tags": [
+      "再帰",
+      "フィボナッチ",
+      "計算量"
+    ]
   },
   {
-    "id": "ap2024autumn_pm_01", 
+    "id": "ap2024autumn_pm_01",
     "year": 2024,
     "season": "autumn",
     "section": "afternoon",
@@ -397,12 +521,16 @@
     ],
     "answer": "B",
     "explanation": "VLAN間ルーティングを行うレイヤ3スイッチでACL（Access Control List）を設定することで、部門間の通信を柔軟に制御できる",
-    "tags": ["VLAN", "ACL", "レイヤ3スイッチ"]
+    "tags": [
+      "VLAN",
+      "ACL",
+      "レイヤ3スイッチ"
+    ]
   },
   {
     "id": "ap2024autumn_pm_02",
     "year": 2024,
-    "season": "autumn", 
+    "season": "autumn",
     "section": "afternoon",
     "number": 2,
     "category": "セキュリティ",
@@ -412,18 +540,22 @@
     "choices": [
       "①ユーザ認証 ②トークン発行 ③サービス認可 ④アクセス許可",
       "①サービス要求 ②IdPリダイレクト ③ユーザ認証 ④アサーション返却",
-      "①パスワード入力 ②ハッシュ計算 ③データベース照合 ④ログイン完了", 
+      "①パスワード入力 ②ハッシュ計算 ③データベース照合 ④ログイン完了",
       "①証明書要求 ②秘密鍵署名 ③公開鍵検証 ④通信確立"
     ],
     "answer": "B",
     "explanation": "SAML SSOフローは、①SPでサービス要求 ②IdPへリダイレクト ③IdPでユーザ認証 ④SPにSAMLアサーション返却の順序",
-    "tags": ["SAML", "SSO", "認証フロー"]
+    "tags": [
+      "SAML",
+      "SSO",
+      "認証フロー"
+    ]
   },
   {
     "id": "ap2024autumn_pm_03",
     "year": 2024,
     "season": "autumn",
-    "section": "afternoon", 
+    "section": "afternoon",
     "number": 3,
     "category": "プロジェクト管理",
     "subcategory": "EVM",
@@ -432,34 +564,47 @@
     "choices": [
       "スケジュール遅れ、コスト超過",
       "スケジュール遅れ、コスト削減",
-      "スケジュール順調、コスト超過", 
+      "スケジュール順調、コスト超過",
       "スケジュール順調、コスト削減"
     ],
     "answer": "B",
     "explanation": "SV=EV-PV=80-100=-20（スケジュール遅れ）、CV=EV-AC=80-90=-10（コスト超過）。ただし問題の選択肢では「コスト削減」が近い",
-    "tags": ["EVM", "スケジュール", "コスト"]
+    "tags": [
+      "EVM",
+      "スケジュール",
+      "コスト"
+    ]
   },
   {
-    "id": "ap2024spring_am_25",
+    "id": "ap2024spring_am_13",
     "year": 2024,
     "season": "spring",
     "section": "morning",
-    "number": 25,
+    "number": 13,
     "category": "技術要素",
     "subcategory": "クラウドコンピューティング",
     "difficulty": 2,
     "question": "クラウドサービスモデルで、プラットフォーム（OS、ミドルウェア）をサービスとして提供するものはどれか。",
-    "choices": ["SaaS", "PaaS", "IaaS", "DaaS"],
+    "choices": [
+      "SaaS",
+      "PaaS",
+      "IaaS",
+      "DaaS"
+    ],
     "answer": "B",
     "explanation": "PaaS（Platform as a Service）はOS、ミドルウェア、開発環境をサービスとして提供するクラウドサービスモデル",
-    "tags": ["クラウド", "PaaS", "サービスモデル"]
+    "tags": [
+      "クラウド",
+      "PaaS",
+      "サービスモデル"
+    ]
   },
   {
-    "id": "ap2024spring_am_26",
+    "id": "ap2024spring_am_14",
     "year": 2024,
     "season": "spring",
     "section": "morning",
-    "number": 26,
+    "number": 14,
     "category": "マネジメント",
     "subcategory": "ITIL",
     "difficulty": 3,
@@ -472,29 +617,42 @@
     ],
     "answer": "C",
     "explanation": "インシデント管理の主目的は、サービス中断を最小限にし、できるだけ迅速にサービスを正常状態に復旧すること",
-    "tags": ["ITIL", "インシデント管理", "サービス復旧"]
+    "tags": [
+      "ITIL",
+      "インシデント管理",
+      "サービス復旧"
+    ]
   },
   {
-    "id": "ap2024spring_am_27",
+    "id": "ap2024spring_am_15",
     "year": 2024,
     "season": "spring",
     "section": "morning",
-    "number": 27,
+    "number": 15,
     "category": "基礎理論",
     "subcategory": "ソートアルゴリズム",
     "difficulty": 3,
     "question": "マージソートの時間計算量として正しいものはどれか。",
-    "choices": ["O(n)", "O(n log n)", "O(n²)", "O(n³)"],
+    "choices": [
+      "O(n)",
+      "O(n log n)",
+      "O(n²)",
+      "O(n³)"
+    ],
     "answer": "B",
     "explanation": "マージソートは分割統治法を用いるアルゴリズムで、常にO(n log n)の時間計算量を持つ",
-    "tags": ["マージソート", "時間計算量", "分割統治法"]
+    "tags": [
+      "マージソート",
+      "時間計算量",
+      "分割統治法"
+    ]
   },
   {
-    "id": "ap2024spring_am_28",
+    "id": "ap2024spring_am_16",
     "year": 2024,
     "season": "spring",
     "section": "morning",
-    "number": 28,
+    "number": 16,
     "category": "技術要素",
     "subcategory": "IoT",
     "difficulty": 2,
@@ -507,14 +665,18 @@
     ],
     "answer": "B",
     "explanation": "IoTは様々なモノ（センサー、機器など）がインターネットに接続され、相互に情報交換する技術・概念",
-    "tags": ["IoT", "インターネット", "センサー"]
+    "tags": [
+      "IoT",
+      "インターネット",
+      "センサー"
+    ]
   },
   {
-    "id": "ap2024spring_am_29",
+    "id": "ap2024spring_am_17",
     "year": 2024,
     "season": "spring",
     "section": "morning",
-    "number": 29,
+    "number": 17,
     "category": "コンピュータシステム",
     "subcategory": "仮想化",
     "difficulty": 3,
@@ -527,14 +689,18 @@
     ],
     "answer": "C",
     "explanation": "コンテナ型仮想化はホストOSのカーネルを共有し、プロセス・ファイルシステムを分離することで軽量な仮想環境を実現",
-    "tags": ["コンテナ", "仮想化", "Docker"]
+    "tags": [
+      "コンテナ",
+      "仮想化",
+      "Docker"
+    ]
   },
   {
-    "id": "ap2024spring_am_30",
+    "id": "ap2024spring_am_18",
     "year": 2024,
     "season": "spring",
     "section": "morning",
-    "number": 30,
+    "number": 18,
     "category": "技術要素",
     "subcategory": "API",
     "difficulty": 2,
@@ -547,64 +713,90 @@
     ],
     "answer": "C",
     "explanation": "RESTful APIはステートレス設計のため、セッション情報をサーバ側で保持せず、各リクエストが独立して処理される",
-    "tags": ["REST", "API", "ステートレス"]
+    "tags": [
+      "REST",
+      "API",
+      "ステートレス"
+    ]
   },
   {
-    "id": "ap2024autumn_am_01",
+    "id": "ap2024autumn_am_07",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 1,
+    "number": 7,
     "category": "基礎理論",
     "subcategory": "情報理論",
     "difficulty": 3,
     "question": "文字A、B、C、Dの出現確率がそれぞれ1/2、1/4、1/8、1/8のとき、平均情報量（エントロピー）は何bitか。",
-    "choices": ["1.5", "1.75", "2.0", "2.25"],
+    "choices": [
+      "1.5",
+      "1.75",
+      "2.0",
+      "2.25"
+    ],
     "answer": "B",
     "explanation": "エントロピー H = -Σp(i)log₂p(i) = -(1/2)(-1) - (1/4)(-2) - 2×(1/8)(-3) = 0.5 + 0.5 + 0.75 = 1.75bit",
-    "tags": ["情報理論", "エントロピー", "平均情報量"]
+    "tags": [
+      "情報理論",
+      "エントロピー",
+      "平均情報量"
+    ]
   },
   {
-    "id": "ap2024autumn_am_02", 
+    "id": "ap2024autumn_am_08",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 2,
+    "number": 8,
     "category": "コンピュータシステム",
     "subcategory": "並列処理",
     "difficulty": 3,
     "question": "4つのプロセッサで並列実行可能なプログラムにおいて、逐次実行では100秒かかる処理が並列実行では30秒で完了した。並列化効率は何%か。",
-    "choices": ["75", "83", "90", "95"],
+    "choices": [
+      "75",
+      "83",
+      "90",
+      "95"
+    ],
     "answer": "B",
     "explanation": "並列化効率 = (逐次実行時間 ÷ (並列実行時間 × プロセッサ数)) × 100 = (100 ÷ (30 × 4)) × 100 = 83.3%",
-    "tags": ["並列処理", "並列化効率", "プロセッサ"]
+    "tags": [
+      "並列処理",
+      "並列化効率",
+      "プロセッサ"
+    ]
   },
   {
-    "id": "ap2024autumn_am_03",
+    "id": "ap2024autumn_am_09",
     "year": 2024,
-    "season": "autumn", 
+    "season": "autumn",
     "section": "morning",
-    "number": 3,
+    "number": 9,
     "category": "技術要素",
     "subcategory": "AI・機械学習",
     "difficulty": 2,
     "question": "機械学習における「教師あり学習」の説明として適切なものはどれか。",
     "choices": [
       "正解データなしでパターンを発見する学習",
-      "正解データを使ってモデルを訓練する学習", 
+      "正解データを使ってモデルを訓練する学習",
       "報酬に基づいて行動を学習する手法",
       "人間が直接ルールを教える手法"
     ],
     "answer": "B",
     "explanation": "教師あり学習は入力データと正解ラベル（教師データ）のペアを使ってモデルを訓練し、予測や分類を行う機械学習手法",
-    "tags": ["機械学習", "教師あり学習", "AI"]
+    "tags": [
+      "機械学習",
+      "教師あり学習",
+      "AI"
+    ]
   },
   {
-    "id": "ap2024autumn_am_04",
+    "id": "ap2024autumn_am_10",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 4,
+    "number": 10,
     "category": "技術要素",
     "subcategory": "ブロックチェーン",
     "difficulty": 3,
@@ -612,20 +804,24 @@
     "choices": [
       "分散台帳技術である",
       "中央管理者が必要である",
-      "改ざんが困難である", 
+      "改ざんが困難である",
       "透明性が高い"
     ],
     "answer": "B",
     "explanation": "ブロックチェーンは分散型システムであり、中央管理者を必要とせず、ネットワーク参加者全体で合意形成を行う",
-    "tags": ["ブロックチェーン", "分散台帳", "非中央集権"]
+    "tags": [
+      "ブロックチェーン",
+      "分散台帳",
+      "非中央集権"
+    ]
   },
   {
-    "id": "ap2024autumn_am_05",
+    "id": "ap2024autumn_am_11",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 5,
-    "category": "技術要素", 
+    "number": 11,
+    "category": "技術要素",
     "subcategory": "DevOps",
     "difficulty": 3,
     "question": "DevOpsの実践に最も適したツールの組み合わせはどれか。",
@@ -637,14 +833,18 @@
     ],
     "answer": "A",
     "explanation": "DevOpsではGit（バージョン管理）、Jenkins（CI/CD）、Docker（コンテナ）、Kubernetes（オーケストレーション）の組み合わせが標準的",
-    "tags": ["DevOps", "CI/CD", "コンテナオーケストレーション"]
+    "tags": [
+      "DevOps",
+      "CI/CD",
+      "コンテナオーケストレーション"
+    ]
   },
   {
-    "id": "ap2024autumn_am_06",
+    "id": "ap2024autumn_am_12",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 6,
+    "number": 12,
     "category": "マネジメント",
     "subcategory": "アジャイル開発",
     "difficulty": 2,
@@ -657,14 +857,18 @@
     ],
     "answer": "B",
     "explanation": "スプリントは1-4週間程度の短期間での開発サイクル単位で、この期間内に計画・開発・テスト・レビューを完了する",
-    "tags": ["アジャイル", "スプリント", "反復開発"]
+    "tags": [
+      "アジャイル",
+      "スプリント",
+      "反復開発"
+    ]
   },
   {
-    "id": "ap2024autumn_am_07",
+    "id": "ap2024autumn_am_13",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 7,
+    "number": 13,
     "category": "技術要素",
     "subcategory": "マイクロサービス",
     "difficulty": 3,
@@ -677,14 +881,18 @@
     ],
     "answer": "C",
     "explanation": "マイクロサービスは各サービスが独立している利点があるが、サービス間通信やデータ整合性などでシステム全体の複雑性は増加する",
-    "tags": ["マイクロサービス", "アーキテクチャ", "分散システム"]
+    "tags": [
+      "マイクロサービス",
+      "アーキテクチャ",
+      "分散システム"
+    ]
   },
   {
-    "id": "ap2024autumn_am_08",
+    "id": "ap2024autumn_am_14",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 8,
+    "number": 14,
     "category": "技術要素",
     "subcategory": "NoSQL",
     "difficulty": 2,
@@ -697,29 +905,42 @@
     ],
     "answer": "D",
     "explanation": "NoSQLは水平スケーリング（スケールアウト）に適しており、大量のデータと高いトラフィックに対応できる",
-    "tags": ["NoSQL", "スケーリング", "分散データベース"]
+    "tags": [
+      "NoSQL",
+      "スケーリング",
+      "分散データベース"
+    ]
   },
   {
-    "id": "ap2024spring_pm_01",
+    "id": "ap2024spring_pm_04",
     "year": 2024,
     "season": "spring",
     "section": "afternoon",
-    "number": 1,
+    "number": 4,
     "category": "システム設計",
     "subcategory": "高可用性設計",
     "difficulty": 4,
     "question": "24時間365日稼働が求められるECサイトで、年間の計画停止時間を8時間以内に収める場合、達成すべき最低稼働率はどれか。",
-    "choices": ["99.90%", "99.91%", "99.95%", "99.99%"],
+    "choices": [
+      "99.90%",
+      "99.91%",
+      "99.95%",
+      "99.99%"
+    ],
     "answer": "B",
     "explanation": "年間総時間8760時間、停止許容8時間なので稼働率=(8760-8)/8760×100=99.909...%。したがって99.91%以上が必要",
-    "tags": ["可用性", "稼働率", "SLA"]
+    "tags": [
+      "可用性",
+      "稼働率",
+      "SLA"
+    ]
   },
   {
-    "id": "ap2024spring_pm_02",
+    "id": "ap2024spring_pm_05",
     "year": 2024,
     "season": "spring",
     "section": "afternoon",
-    "number": 2,
+    "number": 5,
     "category": "プログラミング",
     "subcategory": "デザインパターン",
     "difficulty": 4,
@@ -727,19 +948,23 @@
     "choices": [
       "継承を使って実装する",
       "マルチスレッド環境での安全性",
-      "多数のインスタンス生成", 
+      "多数のインスタンス生成",
       "メモリ使用量の最小化のみ"
     ],
     "answer": "B",
     "explanation": "Singletonパターンでは唯一のインスタンス生成を保証する必要があり、マルチスレッド環境で同時実行によるインスタンス重複を防ぐ必要がある",
-    "tags": ["デザインパターン", "Singleton", "スレッドセーフ"]
+    "tags": [
+      "デザインパターン",
+      "Singleton",
+      "スレッドセーフ"
+    ]
   },
   {
-    "id": "ap2024autumn_pm_01",
+    "id": "ap2024autumn_pm_04",
     "year": 2024,
     "season": "autumn",
     "section": "afternoon",
-    "number": 1,
+    "number": 4,
     "category": "データベース設計",
     "subcategory": "レプリケーション",
     "difficulty": 4,
@@ -752,14 +977,18 @@
     ],
     "answer": "B",
     "explanation": "マスタースレーブ構成では、マスターが書き込みを処理し、スレーブは読み取りクエリの負荷分散とデータのバックアップ機能を担う",
-    "tags": ["レプリケーション", "負荷分散", "データベース"]
+    "tags": [
+      "レプリケーション",
+      "負荷分散",
+      "データベース"
+    ]
   },
   {
-    "id": "ap2024autumn_am_09",
+    "id": "ap2024autumn_am_15",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 9,
+    "number": 15,
     "category": "基礎理論",
     "subcategory": "暗号理論",
     "difficulty": 3,
@@ -772,14 +1001,18 @@
     ],
     "answer": "C",
     "explanation": "ハッシュ関数は一方向性を持ち、ハッシュ値から元のデータを復元することは計算量的に困難であることが重要な特性",
-    "tags": ["ハッシュ関数", "暗号理論", "一方向性"]
+    "tags": [
+      "ハッシュ関数",
+      "暗号理論",
+      "一方向性"
+    ]
   },
   {
-    "id": "ap2024autumn_am_10",
+    "id": "ap2024autumn_am_16",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 10,
+    "number": 16,
     "category": "技術要素",
     "subcategory": "GraphQL",
     "difficulty": 3,
@@ -792,14 +1025,18 @@
     ],
     "answer": "B",
     "explanation": "GraphQLはクライアントが必要なフィールドのみを指定してデータを取得でき、オーバーフェッチやアンダーフェッチの問題を解決する",
-    "tags": ["GraphQL", "API", "クエリ言語"]
+    "tags": [
+      "GraphQL",
+      "API",
+      "クエリ言語"
+    ]
   },
   {
-    "id": "ap2024autumn_am_11",
+    "id": "ap2024autumn_am_17",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 11,
+    "number": 17,
     "category": "マネジメント",
     "subcategory": "リスク管理",
     "difficulty": 3,
@@ -812,14 +1049,18 @@
     ],
     "answer": "B",
     "explanation": "モンテカルロ・シミュレーションは確率分布を用いてリスクの影響度を数値的に分析する定量分析手法",
-    "tags": ["リスク管理", "モンテカルロ", "定量分析"]
+    "tags": [
+      "リスク管理",
+      "モンテカルロ",
+      "定量分析"
+    ]
   },
   {
-    "id": "ap2024autumn_am_12",
+    "id": "ap2024autumn_am_18",
     "year": 2024,
     "season": "autumn",
     "section": "morning",
-    "number": 12,
+    "number": 18,
     "category": "技術要素",
     "subcategory": "エッジコンピューティング",
     "difficulty": 2,
@@ -832,29 +1073,42 @@
     ],
     "answer": "B",
     "explanation": "エッジコンピューティングはデータ発生場所の近くで処理することで、通信遅延を削減し、リアルタイム処理を実現する",
-    "tags": ["エッジコンピューティング", "低レイテンシー", "分散処理"]
+    "tags": [
+      "エッジコンピューティング",
+      "低レイテンシー",
+      "分散処理"
+    ]
   },
   {
-    "id": "ap2024spring_pm_03",
+    "id": "ap2024spring_pm_06",
     "year": 2024,
     "season": "spring",
     "section": "afternoon",
-    "number": 3,
+    "number": 6,
     "category": "システム設計",
     "subcategory": "負荷分散",
     "difficulty": 4,
     "question": "Webアプリケーションで同時接続ユーザ10,000人、1ユーザあたり毎秒2リクエストの負荷に対して、1台のサーバが毎秒5,000リクエスト処理可能な場合、最低何台のサーバが必要か。",
-    "choices": ["2台", "4台", "6台", "8台"],
+    "choices": [
+      "2台",
+      "4台",
+      "6台",
+      "8台"
+    ],
     "answer": "B",
     "explanation": "総リクエスト数=10,000×2=20,000req/s。1台5,000req/sなので20,000÷5,000=4台が最低限必要",
-    "tags": ["負荷分散", "容量設計", "スケーリング"]
+    "tags": [
+      "負荷分散",
+      "容量設計",
+      "スケーリング"
+    ]
   },
   {
-    "id": "ap2024autumn_pm_02",
+    "id": "ap2024autumn_pm_05",
     "year": 2024,
     "season": "autumn",
     "section": "afternoon",
-    "number": 2,
+    "number": 5,
     "category": "プログラミング",
     "subcategory": "関数型プログラミング",
     "difficulty": 4,
@@ -867,14 +1121,18 @@
     ],
     "answer": "D",
     "explanation": "関数型プログラミングは副作用を避け、データの不変性を保つことを重視し、オブジェクトの状態変更は基本的に行わない",
-    "tags": ["関数型プログラミング", "純粋関数", "不変性"]
+    "tags": [
+      "関数型プログラミング",
+      "純粋関数",
+      "不変性"
+    ]
   },
   {
-    "id": "ap2024autumn_pm_03",
+    "id": "ap2024autumn_pm_06",
     "year": 2024,
     "season": "autumn",
     "section": "afternoon",
-    "number": 3,
+    "number": 6,
     "category": "システム設計",
     "subcategory": "キャッシュ戦略",
     "difficulty": 4,
@@ -887,6 +1145,10 @@
     ],
     "answer": "B",
     "explanation": "Cache-Asideパターンではアプリケーション側がキャッシュの読み取り、更新、削除を明示的に制御し、データベースとキャッシュの整合性を管理する",
-    "tags": ["キャッシュ", "Cache-Aside", "分散システム"]
+    "tags": [
+      "キャッシュ",
+      "Cache-Aside",
+      "分散システム"
+    ]
   }
 ]

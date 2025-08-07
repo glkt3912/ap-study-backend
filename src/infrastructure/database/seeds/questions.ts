@@ -19,12 +19,13 @@ async function seedQuestions() {
     logger.info('🗑️ 既存データを削除しました');
 
     // 年度別ファイルから過去問データを読み込み
-    const years = [2025, 2024, 2023, 2022];
+    // Note: 新システム (convert-exam-data.sh) で生成されたファイルを優先使用
+    const years = [2025, 2024, 2023, 2022, 2021, 2020];
     let allQuestionsData: any[] = [];
 
     for (const year of years) {
-      const questionsPath = path.join(__dirname, `questions-${year}.json`);
-      
+      const questionsPath = path.join(__dirname, 'data', `questions-${year}.json`);
+
       if (fs.existsSync(questionsPath)) {
         const yearQuestionsData = JSON.parse(fs.readFileSync(questionsPath, 'utf-8'));
         allQuestionsData = allQuestionsData.concat(yearQuestionsData);
@@ -61,7 +62,7 @@ async function seedQuestions() {
       } catch (insertError) {
         const errorMessage = `問題 ${questionData.id} の挿入に失敗:`;
         const errorDetails = `問題データ: ${JSON.stringify(questionData, null, 2)}`;
-        
+
         if (insertError instanceof Error) {
           logger.error(errorMessage, insertError);
           logger.error(errorDetails);
@@ -87,10 +88,9 @@ async function seedQuestions() {
     categories.forEach(cat => {
       logger.info(`  - ${cat.category}: ${cat._count.category}問`);
     });
-
   } catch (error) {
     const mainErrorMessage = '❌ シード実行中にエラーが発生しました:';
-    
+
     if (error instanceof Error) {
       logger.error(mainErrorMessage, error);
       logger.error(`Error message: ${error.message}`);
@@ -109,11 +109,10 @@ async function seedQuestions() {
 
 // メイン実行
 if (import.meta.url === `file://${process.argv[1]}`) {
-  seedQuestions()
-    .catch((error) => {
-      logger.error('Seed execution failed:', error);
-      process.exit(1);
-    });
+  seedQuestions().catch(error => {
+    logger.error('Seed execution failed:', error);
+    process.exit(1);
+  });
 }
 
 export { seedQuestions };

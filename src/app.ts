@@ -1,47 +1,43 @@
 // Hono アプリケーション - エントリーポイント
 
-import { Hono } from "hono";
-import { createOpenAPIApp } from "src/infrastructure/web/openapi.js";
-import { cors } from "hono/cors";
-import { logger as honoLogger } from "hono/logger";
-import { PrismaClient } from "@prisma/client";
-import { logger } from "src/utils/logger.js";
+import { Hono } from 'hono';
+import { createOpenAPIApp } from 'src/infrastructure/web/openapi.js';
+import { cors } from 'hono/cors';
+import { logger as honoLogger } from 'hono/logger';
+import { PrismaClient } from '@prisma/client';
+import { logger } from 'src/utils/logger.js';
 
 // 環境変数の読み込み（dotenvは不要、Node.jsが自動読み込み）
-logger.info("🔧 環境設定:");
-logger.info(`  NODE_ENV: ${process.env.NODE_ENV || "development"}`);
-logger.info(`  DATABASE_URL: ${process.env.DATABASE_URL || "file:./dev.db"}`);
-logger.info(`  PORT: ${process.env.PORT || "8000"}`);
-logger.info(
-  `  ALLOWED_ORIGINS: ${
-    process.env.ALLOWED_ORIGINS || "http://localhost:3000,http://localhost:3001"
-  }`
-);
+logger.info('🔧 環境設定:');
+logger.info(`  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+logger.info(`  DATABASE_URL: ${process.env.DATABASE_URL || 'file:./dev.db'}`);
+logger.info(`  PORT: ${process.env.PORT || '8000'}`);
+logger.info(`  ALLOWED_ORIGINS: ${process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:3001'}`);
 
 // リポジトリ
-import { StudyRepository } from "src/infrastructure/database/repositories/StudyRepository.js";
-import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
-import { LearningEfficiencyAnalysisRepository } from "src/infrastructure/database/repositories/learning-efficiency-analyzerRepository.js";
+import { StudyRepository } from 'src/infrastructure/database/repositories/StudyRepository.js';
+import { StudyLogRepository } from 'src/infrastructure/database/repositories/StudyLogRepository.js';
+import { LearningEfficiencyAnalysisRepository } from 'src/infrastructure/database/repositories/learning-efficiency-analyzerRepository.js';
 
 // ユースケース
-import { GetStudyPlanUseCase } from "src/domain/usecases/GetStudyPlan.js";
-import { UpdateStudyProgressUseCase } from "src/domain/usecases/UpdateStudyProgress.js";
-import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
-import { LearningEfficiencyAnalysisUseCase } from "src/domain/usecases/learning-efficiency-analyzer.js";
+import { GetStudyPlanUseCase } from 'src/domain/usecases/GetStudyPlan.js';
+import { UpdateStudyProgressUseCase } from 'src/domain/usecases/UpdateStudyProgress.js';
+import { CreateStudyLogUseCase } from 'src/domain/usecases/CreateStudyLog.js';
+import { LearningEfficiencyAnalysisUseCase } from 'src/domain/usecases/learning-efficiency-analyzer.js';
 
 // ルート
-import { createStudyRoutes } from "src/infrastructure/web/routes/study.js";
-import { createStudyLogRoutes } from "src/infrastructure/web/routes/studylog.js";
-import { createTestRoutes } from "src/infrastructure/web/routes/test.js";
-import { createAnalysisRoutes } from "src/infrastructure/web/routes/analysis-routes.js";
-import { createQuizRoutes } from "src/infrastructure/web/routes/quiz.js";
-import { createLearningEfficiencyAnalysisRoutes } from "src/infrastructure/web/routes/learning-efficiency-analyzer.js";
-import authRoutes from "src/infrastructure/web/routes/auth.js";
-import monitoring from "src/infrastructure/web/routes/monitoring.js";
+import { createStudyRoutes } from 'src/infrastructure/web/routes/study.js';
+import { createStudyLogRoutes } from 'src/infrastructure/web/routes/studylog.js';
+import { createTestRoutes } from 'src/infrastructure/web/routes/test.js';
+import { createAnalysisRoutes } from 'src/infrastructure/web/routes/analysis-routes.js';
+import { createQuizRoutes } from 'src/infrastructure/web/routes/quiz.js';
+import { createLearningEfficiencyAnalysisRoutes } from 'src/infrastructure/web/routes/learning-efficiency-analyzer.js';
+import authRoutes from 'src/infrastructure/web/routes/auth.js';
+import monitoring from 'src/infrastructure/web/routes/monitoring.js';
 
 // ミドルウェア
-import { authMiddleware, optionalAuthMiddleware } from "src/infrastructure/web/middleware/auth.js";
-import { loggingMiddleware, errorLoggingMiddleware } from "src/infrastructure/web/middleware/logging.js";
+import { authMiddleware, optionalAuthMiddleware } from 'src/infrastructure/web/middleware/auth.js';
+import { loggingMiddleware, errorLoggingMiddleware } from 'src/infrastructure/web/middleware/logging.js';
 
 // 依存性注入コンテナ
 class DIContainer {
@@ -66,15 +62,11 @@ class DIContainer {
 
     // Use Cases
     this._getStudyPlanUseCase = new GetStudyPlanUseCase(this._studyRepository);
-    this._updateStudyProgressUseCase = new UpdateStudyProgressUseCase(
-      this._studyRepository
-    );
-    this._createStudyLogUseCase = new CreateStudyLogUseCase(
-      this._studyLogRepository
-    );
+    this._updateStudyProgressUseCase = new UpdateStudyProgressUseCase(this._studyRepository);
+    this._createStudyLogUseCase = new CreateStudyLogUseCase(this._studyLogRepository);
     this._learningEfficiencyAnalysisUseCase = new LearningEfficiencyAnalysisUseCase(
       this._learningEfficiencyAnalysisRepository,
-      this._studyLogRepository
+      this._studyLogRepository,
     );
   }
 
@@ -113,41 +105,42 @@ const app = createOpenAPIApp();
 const container = DIContainer.getInstance();
 
 // ミドルウェア
-app.use("*", honoLogger());
-app.use("*", loggingMiddleware);
-app.use("*", errorLoggingMiddleware);
+app.use('*', honoLogger());
+app.use('*', loggingMiddleware);
+app.use('*', errorLoggingMiddleware);
 
 // セキュリティヘッダー
-app.use("*", async (c, next) => {
+app.use('*', async (c, next) => {
   // 基本セキュリティヘッダー
-  c.header("X-Content-Type-Options", "nosniff");
-  c.header("X-Frame-Options", "DENY");
-  c.header("X-XSS-Protection", "1; mode=block");
-  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
-  
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('X-XSS-Protection', '1; mode=block');
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   // 本番環境追加セキュリティ
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === 'production') {
     // HSTS（HTTPS強制）
-    c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-    
+    c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+
     // CSP（Content Security Policy）
-    c.header("Content-Security-Policy", 
+    c.header(
+      'Content-Security-Policy',
       "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-      "style-src 'self' 'unsafe-inline' https:; " +
-      "img-src 'self' data: https:; " +
-      "font-src 'self' https:; " +
-      "connect-src 'self' https:; " +
-      "frame-ancestors 'none';"
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src 'self' 'unsafe-inline' https:; " +
+        "img-src 'self' data: https:; " +
+        "font-src 'self' https:; " +
+        "connect-src 'self' https:; " +
+        "frame-ancestors 'none';",
     );
-    
+
     // 追加セキュリティヘッダー
-    c.header("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
-    c.header("Cross-Origin-Embedder-Policy", "require-corp");
-    c.header("Cross-Origin-Opener-Policy", "same-origin");
-    c.header("Cross-Origin-Resource-Policy", "cross-origin");
+    c.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    c.header('Cross-Origin-Embedder-Policy', 'require-corp');
+    c.header('Cross-Origin-Opener-Policy', 'same-origin');
+    c.header('Cross-Origin-Resource-Policy', 'cross-origin');
   }
-  
+
   await next();
 });
 
@@ -156,36 +149,32 @@ const getProductionOrigins = () => {
   return [
     'https://ap-study-app.vercel.app',
     'https://ap-study-backend.railway.app',
-    'https://ap-study-backend.up.railway.app'
-  ]
-}
+    'https://ap-study-backend.up.railway.app',
+  ];
+};
 
 const getDevelopmentOrigins = () => {
-  return [
-    'http://localhost:3000', 
-    'http://localhost:3001',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:3001'
-  ]
-}
+  return ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001'];
+};
 
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? process.env.ALLOWED_ORIGINS?.split(",").map(origin => origin.trim()) || getProductionOrigins()
-  : process.env.ALLOWED_ORIGINS?.split(",").map(origin => origin.trim()) || getDevelopmentOrigins()
+const allowedOrigins =
+  process.env.NODE_ENV === 'production'
+    ? process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || getProductionOrigins()
+    : process.env.ALLOWED_ORIGINS?.split(',').map(origin => origin.trim()) || getDevelopmentOrigins();
 
 app.use(
-  "*",
+  '*',
   cors({
-    origin: (origin) => {
-      logger.debug(`🔍 CORS チェック: Origin = ${origin || "null"}`);
+    origin: origin => {
+      logger.debug(`🔍 CORS チェック: Origin = ${origin || 'null'}`);
 
       // オリジンなしのリクエスト（curl, Postman等）は開発環境でのみ許可
       if (!origin) {
-        if (process.env.NODE_ENV === "development") {
-          logger.debug("✅ オリジンなしリクエストを開発環境で許可");
-          return "*";
+        if (process.env.NODE_ENV === 'development') {
+          logger.debug('✅ オリジンなしリクエストを開発環境で許可');
+          return '*';
         }
-        logger.warn("❌ 本番環境でオリジンなしリクエストを拒否");
+        logger.warn('❌ 本番環境でオリジンなしリクエストを拒否');
         return null;
       }
 
@@ -197,112 +186,103 @@ app.use(
 
       // 許可されていないオリジンは拒否
       logger.warn(`❌ 許可されていないオリジン: ${origin}`);
-      logger.debug(`許可済みオリジン: ${allowedOrigins.join(", ")}`);
+      logger.debug(`許可済みオリジン: ${allowedOrigins.join(', ')}`);
       return null;
     },
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-      "Origin",
-      "X-User-ID", // 移行期間中の簡易認証用
+      'Content-Type',
+      'Authorization',
+      'X-Requested-With',
+      'Accept',
+      'Origin',
+      'X-User-ID', // 移行期間中の簡易認証用
     ],
     credentials: true, // 認証情報を含むリクエストを許可
     maxAge: 86400, // プリフライトリクエストのキャッシュ時間（24時間）
-  })
+  }),
 );
 
 // ヘルスチェック
-app.get("/", (c) => {
+app.get('/', c => {
   return c.json({
-    message: "応用情報技術者試験 学習管理API",
-    version: "1.0.0",
-    status: "healthy",
+    message: '応用情報技術者試験 学習管理API',
+    version: '1.0.0',
+    status: 'healthy',
     timestamp: new Date().toISOString(),
   });
 });
 
 // 認証API（認証不要）
-app.route("/api/auth", authRoutes);
+app.route('/api/auth', authRoutes);
 
 // 監視API（認証不要 - 開発環境のみ一部機能制限）
-app.route("/api/monitoring", monitoring);
+app.route('/api/monitoring', monitoring);
 
 // 認証が必要なAPIエンドポイント
-app.use("/api/study/*", authMiddleware);
-app.use("/api/studylog/*", authMiddleware);
-app.use("/api/test/*", authMiddleware);
-app.use("/api/analysis/*", optionalAuthMiddleware); // 分析は読み取り専用なのでオプショナル認証
-app.use("/api/quiz/*", authMiddleware);
-app.use("/api/learning-efficiency-analysis/*", optionalAuthMiddleware);
+app.use('/api/study/*', authMiddleware);
+app.use('/api/studylog/*', authMiddleware);
+app.use('/api/test/*', authMiddleware);
+app.use('/api/analysis/*', optionalAuthMiddleware); // 分析は読み取り専用なのでオプショナル認証
+app.use('/api/quiz/*', authMiddleware);
+app.use('/api/learning-efficiency-analysis/*', optionalAuthMiddleware);
 
 // API ルート
-app.route(
-  "/api/study",
-  createStudyRoutes(
-    container.getStudyPlanUseCase,
-    container.updateStudyProgressUseCase
-  )
-);
+app.route('/api/study', createStudyRoutes(container.getStudyPlanUseCase, container.updateStudyProgressUseCase));
 
 // 学習記録API
-app.route(
-  "/api/studylog",
-  createStudyLogRoutes(
-    container.createStudyLogUseCase,
-    container.studyLogRepository
-  )
-);
+app.route('/api/studylog', createStudyLogRoutes(container.createStudyLogUseCase, container.studyLogRepository));
 
 // 問題演習記録API
-app.route("/api/test", createTestRoutes(container.prisma));
+app.route('/api/test', createTestRoutes(container.prisma));
 
 // 分析API
-app.route("/api/analysis", createAnalysisRoutes(container.prisma));
+app.route('/api/analysis', createAnalysisRoutes(container.prisma));
 
 // Quiz API
-app.route("/api/quiz", createQuizRoutes());
+app.route('/api/quiz', createQuizRoutes());
 
 // Learning Efficiency Analysis API
-app.route("/api/learning-efficiency-analysis", createLearningEfficiencyAnalysisRoutes(container.learningEfficiencyAnalysisUseCase));
+app.route(
+  '/api/learning-efficiency-analysis',
+  createLearningEfficiencyAnalysisRoutes(container.learningEfficiencyAnalysisUseCase),
+);
 
 // エラーハンドリング
 app.onError((err, c) => {
-  logger.error("Error:", err);
+  logger.error('Error:', err);
 
   return c.json(
     {
       success: false,
-      error: "内部サーバーエラーが発生しました",
-      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+      error: '内部サーバーエラーが発生しました',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
     },
-    500
+    500,
   );
 });
 
 // 404 ハンドリング
-app.notFound((c) => {
+app.notFound(c => {
   return c.json(
     {
       success: false,
-      error: "エンドポイントが見つかりません",
+      error: 'エンドポイントが見つかりません',
       path: c.req.path,
     },
-    404
+    404,
   );
 });
 
 // グレースフルシャットダウン
-process.on("SIGINT", async () => {
-  logger.info("シャットダウン中...");
+process.on('SIGINT', async () => {
+  logger.info('シャットダウン中...');
   await container.prisma.$disconnect();
   process.exit(0);
 });
 
-process.on("SIGTERM", async () => {
-  logger.info("シャットダウン中...");
+process.on('SIGTERM', async () => {
+  logger.info('シャットダウン中...');
   await container.prisma.$disconnect();
   process.exit(0);
 });
@@ -313,9 +293,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : DEFAULT_PORT;
 
 // ポート番号のバリデーション
 if (isNaN(port) || port < 1 || port > 65535) {
-  logger.error(
-    `❌ 無効なポート番号: ${process.env.PORT}. デフォルトポート ${DEFAULT_PORT} を使用します。`
-  );
+  logger.error(`❌ 無効なポート番号: ${process.env.PORT}. デフォルトポート ${DEFAULT_PORT} を使用します。`);
   process.exit(1);
 }
 
@@ -334,7 +312,7 @@ async function startServer() {
   logger.info(`📊 Monitoring API: http://localhost:${port}/api/monitoring`);
 
   // Node.js環境でサーバー起動
-  const { serve } = await import("@hono/node-server");
+  const { serve } = await import('@hono/node-server');
   serve({
     fetch: app.fetch,
     port: Number(port),
@@ -343,7 +321,7 @@ async function startServer() {
 }
 
 // 開発環境では直接起動
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== 'production') {
   startServer();
 }
 

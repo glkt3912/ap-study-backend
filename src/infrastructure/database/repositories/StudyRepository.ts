@@ -1,8 +1,8 @@
 // Prismaを使ったリポジトリ実装
 
-import { PrismaClient } from '@prisma/client'
-import { IStudyRepository } from 'src/domain/repositories/IStudyRepository.js'
-import { StudyWeekEntity, StudyWeek } from 'src/domain/entities/StudyWeek.js'
+import { PrismaClient } from '@prisma/client';
+import { IStudyRepository } from 'src/domain/repositories/IStudyRepository.js';
+import { StudyWeekEntity, StudyWeek } from 'src/domain/entities/StudyWeek.js';
 
 export class StudyRepository implements IStudyRepository {
   constructor(private prisma: PrismaClient) {}
@@ -11,13 +11,13 @@ export class StudyRepository implements IStudyRepository {
     const weeks = await this.prisma.studyWeek.findMany({
       include: {
         days: {
-          orderBy: { id: 'asc' }
-        }
+          orderBy: { id: 'asc' },
+        },
       },
-      orderBy: { weekNumber: 'asc' }
-    })
+      orderBy: { weekNumber: 'asc' },
+    });
 
-    return weeks.map(week => this.toDomainEntity(week))
+    return weeks.map(week => this.toDomainEntity(week));
   }
 
   async findWeekByNumber(weekNumber: number): Promise<StudyWeekEntity | null> {
@@ -25,38 +25,38 @@ export class StudyRepository implements IStudyRepository {
       where: { weekNumber },
       include: {
         days: {
-          orderBy: { id: 'asc' }
-        }
-      }
-    })
+          orderBy: { id: 'asc' },
+        },
+      },
+    });
 
-    return week ? this.toDomainEntity(week) : null
+    return week ? this.toDomainEntity(week) : null;
   }
 
   async updateWeek(week: StudyWeekEntity): Promise<StudyWeekEntity> {
     if (!week.id) {
-      throw new Error('週のIDが必要です')
+      throw new Error('週のIDが必要です');
     }
 
     // トランザクション内で週と日を更新
-    const updatedWeek = await this.prisma.$transaction(async (tx) => {
+    const updatedWeek = await this.prisma.$transaction(async tx => {
       // 週の情報を更新
       await tx.studyWeek.update({
         where: { id: week.id },
         data: {
           title: week.title,
           phase: week.phase,
-          goals: JSON.stringify(week.goals)
-        }
-      })
+          goals: JSON.stringify(week.goals),
+        },
+      });
 
       // 各日の情報を更新
       for (let i = 0; i < week.days.length; i++) {
-        const day = week.days[i]
+        const day = week.days[i];
         await tx.studyDay.updateMany({
           where: {
             weekId: week.id,
-            day: day.day
+            day: day.day,
           },
           data: {
             subject: day.subject,
@@ -65,9 +65,9 @@ export class StudyRepository implements IStudyRepository {
             actualTime: day.actualTime,
             completed: day.completed,
             understanding: day.understanding,
-            memo: day.memo
-          }
-        })
+            memo: day.memo,
+          },
+        });
       }
 
       // 更新後のデータを取得
@@ -75,35 +75,31 @@ export class StudyRepository implements IStudyRepository {
         where: { id: week.id },
         include: {
           days: {
-            orderBy: { id: 'asc' }
-          }
-        }
-      })
-    })
+            orderBy: { id: 'asc' },
+          },
+        },
+      });
+    });
 
     if (!updatedWeek) {
-      throw new Error('週の更新に失敗しました')
+      throw new Error('週の更新に失敗しました');
     }
 
-    return this.toDomainEntity(updatedWeek)
+    return this.toDomainEntity(updatedWeek);
   }
 
-  async updateDayProgress(
-    weekId: number,
-    dayIndex: number,
-    updates: Partial<StudyWeek['days'][0]>
-  ): Promise<void> {
+  async updateDayProgress(weekId: number, dayIndex: number, updates: Partial<StudyWeek['days'][0]>): Promise<void> {
     // 週の日データを取得
     const week = await this.prisma.studyWeek.findUnique({
       where: { id: weekId },
-      include: { days: { orderBy: { id: 'asc' } } }
-    })
+      include: { days: { orderBy: { id: 'asc' } } },
+    });
 
     if (!week || dayIndex >= week.days.length) {
-      throw new Error('無効な週または日のインデックスです')
+      throw new Error('無効な週または日のインデックスです');
     }
 
-    const dayId = week.days[dayIndex].id
+    const dayId = week.days[dayIndex].id;
 
     await this.prisma.studyDay.update({
       where: { id: dayId },
@@ -111,9 +107,9 @@ export class StudyRepository implements IStudyRepository {
         ...(updates.actualTime !== undefined && { actualTime: updates.actualTime }),
         ...(updates.completed !== undefined && { completed: updates.completed }),
         ...(updates.understanding !== undefined && { understanding: updates.understanding }),
-        ...(updates.memo !== undefined && { memo: updates.memo })
-      }
-    })
+        ...(updates.memo !== undefined && { memo: updates.memo }),
+      },
+    });
   }
 
   async createWeek(weekData: Omit<StudyWeek, 'id'>): Promise<StudyWeekEntity> {
@@ -132,18 +128,18 @@ export class StudyRepository implements IStudyRepository {
             actualTime: day.actualTime,
             completed: day.completed,
             understanding: day.understanding,
-            memo: day.memo
-          }))
-        }
+            memo: day.memo,
+          })),
+        },
       },
       include: {
         days: {
-          orderBy: { id: 'asc' }
-        }
-      }
-    })
+          orderBy: { id: 'asc' },
+        },
+      },
+    });
 
-    return this.toDomainEntity(created)
+    return this.toDomainEntity(created);
   }
 
   async initializeDefaultPlan(): Promise<void> {
@@ -151,50 +147,50 @@ export class StudyRepository implements IStudyRepository {
     const defaultWeeks = [
       {
         weekNumber: 1,
-        title: "基礎固め期",
-        phase: "基礎固め期",
-        goals: ["基本的な概念理解"],
+        title: '基礎固め期',
+        phase: '基礎固め期',
+        goals: ['基本的な概念理解'],
         days: [
           {
-            day: "月",
-            subject: "コンピュータの基礎理論",
-            topics: ["2進数", "論理演算"],
+            day: '月',
+            subject: 'コンピュータの基礎理論',
+            topics: ['2進数', '論理演算'],
             estimatedTime: 180,
             actualTime: 0,
             completed: false,
             understanding: 0,
           },
           {
-            day: "火",
-            subject: "アルゴリズムとデータ構造",
-            topics: ["ソート", "探索", "計算量"],
+            day: '火',
+            subject: 'アルゴリズムとデータ構造',
+            topics: ['ソート', '探索', '計算量'],
             estimatedTime: 180,
             actualTime: 0,
             completed: false,
             understanding: 0,
           },
           {
-            day: "水",
-            subject: "ハードウェア基礎",
-            topics: ["CPU", "メモリ", "入出力装置"],
+            day: '水',
+            subject: 'ハードウェア基礎',
+            topics: ['CPU', 'メモリ', '入出力装置'],
             estimatedTime: 180,
             actualTime: 0,
             completed: false,
             understanding: 0,
           },
           {
-            day: "木",
-            subject: "ソフトウェア基礎",
-            topics: ["OS", "ミドルウェア", "ファイルシステム"],
+            day: '木',
+            subject: 'ソフトウェア基礎',
+            topics: ['OS', 'ミドルウェア', 'ファイルシステム'],
             estimatedTime: 180,
             actualTime: 0,
             completed: false,
             understanding: 0,
           },
           {
-            day: "金",
-            subject: "午前問題演習",
-            topics: ["1-20問", "基礎理論分野"],
+            day: '金',
+            subject: '午前問題演習',
+            topics: ['1-20問', '基礎理論分野'],
             estimatedTime: 120,
             actualTime: 0,
             completed: false,
@@ -203,48 +199,48 @@ export class StudyRepository implements IStudyRepository {
         ],
       },
       // 他の週も同様に...（省略）
-    ]
+    ];
 
     // バッチ作成
     for (const week of defaultWeeks) {
-      await this.createWeek(week)
+      await this.createWeek(week);
     }
   }
 
   async getTotalProgress(): Promise<{
-    totalDays: number
-    completedDays: number
-    totalStudyTime: number
-    averageUnderstanding: number
+    totalDays: number;
+    completedDays: number;
+    totalStudyTime: number;
+    averageUnderstanding: number;
   }> {
     const result = await this.prisma.studyDay.aggregate({
       _count: {
         id: true,
-        completed: true
+        completed: true,
       },
       _sum: {
-        actualTime: true
+        actualTime: true,
       },
       _avg: {
-        understanding: true
+        understanding: true,
       },
       where: {
-        completed: true
-      }
-    })
+        completed: true,
+      },
+    });
 
     const completedCount = await this.prisma.studyDay.count({
       where: {
-        completed: true
-      }
-    })
+        completed: true,
+      },
+    });
 
     return {
       totalDays: result._count?.id || 0,
       completedDays: completedCount || 0,
       totalStudyTime: result._sum?.actualTime || 0,
-      averageUnderstanding: result._avg?.understanding || 0
-    }
+      averageUnderstanding: result._avg?.understanding || 0,
+    };
   }
 
   // Prismaデータをドメインエンティティに変換
@@ -264,8 +260,8 @@ export class StudyRepository implements IStudyRepository {
         actualTime: day.actualTime,
         completed: day.completed,
         understanding: day.understanding,
-        memo: day.memo
-      }))
-    )
+        memo: day.memo,
+      })),
+    );
   }
 }
