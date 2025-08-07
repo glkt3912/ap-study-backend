@@ -34,6 +34,7 @@ import { createQuizRoutes } from 'src/infrastructure/web/routes/quiz.js';
 import { createLearningEfficiencyAnalysisRoutes } from 'src/infrastructure/web/routes/learning-efficiency-analyzer.js';
 import authRoutes from 'src/infrastructure/web/routes/auth.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
+// import questionRoutes from 'src/infrastructure/web/routes/question-routes.js'; // Quiz APIに統合済み
 
 // ミドルウェア
 import { authMiddleware, optionalAuthMiddleware } from 'src/infrastructure/web/middleware/auth.js';
@@ -225,6 +226,7 @@ app.use('/api/studylog/*', authMiddleware);
 app.use('/api/test/*', authMiddleware);
 app.use('/api/analysis/*', optionalAuthMiddleware); // 分析は読み取り専用なのでオプショナル認証
 app.use('/api/quiz/*', authMiddleware);
+// app.use('/api/questions/*', authMiddleware); // Quiz APIに統合済み
 app.use('/api/learning-efficiency-analysis/*', optionalAuthMiddleware);
 
 // API ルート
@@ -247,6 +249,9 @@ app.route(
   '/api/learning-efficiency-analysis',
   createLearningEfficiencyAnalysisRoutes(container.learningEfficiencyAnalysisUseCase),
 );
+
+// Questions API - Quiz APIに統合済み
+// app.route('/api/questions', questionRoutes);
 
 // エラーハンドリング
 app.onError((err, c) => {
