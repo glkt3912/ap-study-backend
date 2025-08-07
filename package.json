@@ -29,7 +29,16 @@
     "tdd:red": "npm test -- --reporter verbose",
     "tdd:green": "npm test && npm run lint",
     "tdd:refactor": "npm run lint:fix && npm run format && npm test",
-    "tdd:cycle": "npm run tdd:red && npm run tdd:green && npm run tdd:refactor"
+    "tdd:cycle": "npm run tdd:red && npm run tdd:green && npm run tdd:refactor",
+    "quality:security": "./scripts/security-check.sh",
+    "quality:database": "./scripts/database-check.sh",
+    "quality:api": "./scripts/api-quality-check.sh",
+    "quality:performance": "./scripts/performance-test.sh",
+    "quality:code": "./scripts/code-quality-check.sh",
+    "quality:docs": "./scripts/documentation-check.sh",
+    "quality:all": "./scripts/pr-quality-check.sh all",
+    "quality:critical": "./scripts/pr-quality-check.sh critical",
+    "pr:check": "./scripts/pr-quality-check.sh all"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^12.0.0",
