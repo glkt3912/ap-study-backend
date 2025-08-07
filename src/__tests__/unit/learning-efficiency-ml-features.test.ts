@@ -1,9 +1,9 @@
 // TDD Tests for ML Features in Learning Efficiency Analysis
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { LearningEfficiencyAnalysisUseCase } from '../domain/usecases/learning-efficiency-analyzer';
-import { ILearningEfficiencyAnalysisRepository } from '../domain/repositories/Ilearning-efficiency-analyzerRepository';
-import { IStudyLogRepository } from '../domain/repositories/IStudyLogRepository';
-import { CreateLearningEfficiencyAnalysisInput } from '../domain/entities/learning-efficiency-analyzer';
+import { LearningEfficiencyAnalysisUseCase } from '../../domain/usecases/learning-efficiency-analyzer';
+import { ILearningEfficiencyAnalysisRepository } from '../../domain/repositories/Ilearning-efficiency-analyzerRepository';
+import { IStudyLogRepository } from '../../domain/repositories/IStudyLogRepository';
+import { CreateLearningEfficiencyAnalysisInput } from '../../domain/entities/learning-efficiency-analyzer';
 
 describe('Learning Efficiency ML Features (TDD)', () => {
   let useCase: LearningEfficiencyAnalysisUseCase;
