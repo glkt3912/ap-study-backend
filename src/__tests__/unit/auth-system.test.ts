@@ -3,8 +3,8 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { Hono } from 'hono';
 import bcrypt from 'bcryptjs';
 import { sign, verify } from 'hono/jwt';
-import authRoutes from '../infrastructure/web/routes/auth';
-import { authMiddleware, getAuthUser, type Variables } from '../infrastructure/web/middleware/auth';
+import authRoutes from '../../infrastructure/web/routes/auth';
+import { authMiddleware, getAuthUser, type Variables } from '../../infrastructure/web/middleware/auth';
 
 // Mock PrismaClient
 const mockUser = {

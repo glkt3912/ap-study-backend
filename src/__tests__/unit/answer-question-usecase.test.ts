@@ -18,7 +18,7 @@ describe('AnswerQuestion UseCase', () => {
     userId: 1,
     questionId: TEST_CONSTANTS.QUESTION_IDS.VALID,
     userAnswer: TEST_CONSTANTS.ANSWERS.CORRECT,
-    timeSpent: 30,
+    timeSpent: 30 as number | undefined,
   };
 
   describe('execute', () => {
