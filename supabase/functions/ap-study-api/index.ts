@@ -6,6 +6,6 @@ import app from '../../../src/app.ts';
 // このファイルは参考用です。
 // 実際には Node.js アプリケーションを Deno 用に移植する必要があります。
 
-serve(async (req) => {
+serve(async req => {
   return app.fetch(req);
 });
