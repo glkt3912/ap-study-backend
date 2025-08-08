@@ -28,7 +28,7 @@ interface LogEntry {
   duration?: number;
   userAgent?: string;
   ip?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   error?: {
     name: string;
     message: string;
@@ -112,7 +112,7 @@ class Logger {
     duration?: number;
     userAgent?: string;
     ip?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     error?: Error;
   }): void {
     if (!this.shouldLog(level)) {
@@ -133,28 +133,7 @@ class Logger {
     };
 
     const formattedMessage = this.formatMessage(entry);
-
-    if (this.enableConsole) {
-      switch (level) {
-        case LogLevel.DEBUG:
-          // eslint-disable-next-line no-console
-          console.debug(formattedMessage);
-          break;
-        case LogLevel.INFO:
-          // eslint-disable-next-line no-console
-          console.log(formattedMessage);
-          break;
-        case LogLevel.WARN:
-          // eslint-disable-next-line no-console
-          console.warn(formattedMessage);
-          break;
-        case LogLevel.ERROR:
-        case LogLevel.FATAL:
-          // eslint-disable-next-line no-console
-          console.error(formattedMessage);
-          break;
-      }
-    }
+    this.outputToConsole(level, formattedMessage);
 
     // メトリクス更新（エラー時）
     if (level >= LogLevel.ERROR) {
@@ -174,23 +153,23 @@ class Logger {
   }
 
   // パブリックログメソッド
-  debug(message: string, metadata?: Record<string, any>): void {
+  debug(message: string, metadata?: Record<string, unknown>): void {
     this.log(LogLevel.DEBUG, message, { metadata });
   }
 
-  info(message: string, metadata?: Record<string, any>): void {
+  info(message: string, metadata?: Record<string, unknown>): void {
     this.log(LogLevel.INFO, message, { metadata });
   }
 
-  warn(message: string, metadata?: Record<string, any>): void {
+  warn(message: string, metadata?: Record<string, unknown>): void {
     this.log(LogLevel.WARN, message, { metadata });
   }
 
-  error(message: string, error?: Error, metadata?: Record<string, any>): void {
+  error(message: string, error?: Error, metadata?: Record<string, unknown>): void {
     this.log(LogLevel.ERROR, message, { error, metadata });
   }
 
-  fatal(message: string, error?: Error, metadata?: Record<string, any>): void {
+  fatal(message: string, error?: Error, metadata?: Record<string, unknown>): void {
     this.log(LogLevel.FATAL, message, { error, metadata });
   }
 
@@ -247,7 +226,7 @@ class Logger {
   }
 
   // ビジネスロジックログ
-  logBusinessEvent(event: string, metadata?: Record<string, any>): void {
+  logBusinessEvent(event: string, metadata?: Record<string, unknown>): void {
     this.log(LogLevel.INFO, `Business event: ${event}`, { metadata });
   }
 
@@ -257,7 +236,7 @@ class Logger {
     userAgent?: string;
     userId?: string;
     severity: 'low' | 'medium' | 'high' | 'critical';
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
   }): void {
     const level = context.severity === 'critical' ? LogLevel.ERROR : LogLevel.WARN;
     this.log(level, `Security event: ${event}`, context);
@@ -331,6 +310,32 @@ class Logger {
       statusCodes: {},
       endpoints: {},
     };
+  }
+
+  private outputToConsole(level: LogLevel, formattedMessage: string): void {
+    if (!this.enableConsole) {
+      return;
+    }
+
+    switch (level) {
+      case LogLevel.DEBUG:
+        // eslint-disable-next-line no-console
+        console.debug(formattedMessage);
+        break;
+      case LogLevel.INFO:
+        // eslint-disable-next-line no-console
+        console.log(formattedMessage);
+        break;
+      case LogLevel.WARN:
+        // eslint-disable-next-line no-console
+        console.warn(formattedMessage);
+        break;
+      case LogLevel.ERROR:
+      case LogLevel.FATAL:
+        // eslint-disable-next-line no-console
+        console.error(formattedMessage);
+        break;
+    }
   }
 }
 
