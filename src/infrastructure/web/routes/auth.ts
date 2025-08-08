@@ -246,8 +246,8 @@ app.post('/refresh', authMiddleware, async (c) => {
 if (process.env.NODE_ENV === 'development') {
   app.post('/dev/create-test-user', async (c) => {
     try {
-      const testEmail = 'test@example.com'
-      const testPassword = 'test1234'
+      const testEmail = process.env.TEST_USER_EMAIL || 'test@example.com'
+      const testPassword = process.env.TEST_USER_PASSWORD || 'development-test-password'
       
       // 既存テストユーザーを削除
       await prisma.user.deleteMany({
