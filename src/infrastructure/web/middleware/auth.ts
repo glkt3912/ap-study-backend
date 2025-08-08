@@ -14,7 +14,33 @@ export type Variables = {
 
 /**
  * JWT認証ミドルウェア
- * Bearer tokenまたはX-User-IDヘッダーからユーザーを認証
+ * 
+ * 複数の認証方式を段階的にサポートする包括的な認証ミドルウェア：
+ * 1. JWT Bearer Token認証（本番環境推奨）
+ * 2. X-User-ID ヘッダー認証（開発・移行期用）
+ * 3. 匿名ユーザー許可（開発環境のみ）
+ * 
+ * セキュリティ考慮事項：
+ * - JWT検証失敗時は次の認証方法を試行
+ * - 本番環境では開発用フォールバックは無効化される
+ * - 全ての認証情報はリクエストコンテキストに安全に格納
+ * 
+ * @param c - Honoコンテキスト（Variables: { authUser: AuthContext }）
+ * @param next - 次のミドルウェア関数
+ * @throws {HTTPException} 401 - 認証情報なしまたは無効
+ * @throws {HTTPException} 500 - 認証処理エラー
+ * 
+ * @example
+ * ```typescript
+ * // ルート保護
+ * app.use('/protected/*', authMiddleware);
+ * 
+ * // 認証ユーザー情報の取得
+ * app.get('/protected/profile', async (c) => {
+ *   const user = getAuthUser(c);
+ *   return c.json({ user });
+ * });
+ * ```
  */
 export const authMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   try {
@@ -82,6 +108,26 @@ export const authMiddleware = async (c: Context<{ Variables: Variables }>, next:
 
 /**
  * 管理者権限チェックミドルウェア
+ * 
+ * 認証済みユーザーが管理者権限を持っているかチェックします。
+ * authMiddleware適用後に使用してください。
+ * 
+ * @param c - Honoコンテキスト
+ * @param next - 次のミドルウェア関数
+ * @throws {HTTPException} 401 - 認証されていない場合
+ * @throws {HTTPException} 403 - 管理者権限がない場合
+ * 
+ * @example
+ * ```typescript
+ * // 管理者専用ルート
+ * app.use('/admin/*', authMiddleware);
+ * app.use('/admin/*', adminMiddleware);
+ * 
+ * app.get('/admin/users', async (c) => {
+ *   // 管理者のみアクセス可能
+ *   return c.json({ users: await getAllUsers() });
+ * });
+ * ```
  */
 export const adminMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   const authUser = c.get('authUser') as AuthContext
@@ -98,7 +144,22 @@ export const adminMiddleware = async (c: Context<{ Variables: Variables }>, next
 }
 
 /**
- * ユーザー情報取得ヘルパー
+ * 認証済みユーザー情報取得ヘルパー
+ * 
+ * リクエストコンテキストから認証済みユーザーの情報を安全に取得します。
+ * authMiddleware適用後のルートハンドラで使用してください。
+ * 
+ * @param c - Honoコンテキスト
+ * @returns {AuthContext} 認証済みユーザーの情報
+ * @throws {HTTPException} 401 - ユーザーが認証されていない場合
+ * 
+ * @example
+ * ```typescript
+ * app.get('/profile', authMiddleware, async (c) => {
+ *   const user = getAuthUser(c);
+ *   return c.json({ userId: user.userId, email: user.email });
+ * });
+ * ```
  */
 export const getAuthUser = (c: Context<{ Variables: Variables }>): AuthContext => {
   const authUser = c.get('authUser') as AuthContext
