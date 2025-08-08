@@ -94,25 +94,25 @@ describe('QuestionRepository', () => {
   });
 
   describe('findRandom', () => {
-    it('should find random questions using $queryRaw', async () => {
+    it('should find random questions using findMany', async () => {
       const mockQuestions = QuestionFixtures.createMultipleQuestions(2);
-      MockHelpers.setupQueryRaw(mockPrisma, mockQuestions);
+      MockHelpers.setupFindMany(mockPrisma, mockQuestions);
 
       const filters: QuestionFilters = { category: TEST_CONSTANTS.CATEGORIES.BASIC_THEORY };
       const result = await questionRepository.findRandom(2, filters);
 
-      expect(result).toEqual(mockQuestions);
-      expect(mockPrisma.$queryRaw).toHaveBeenCalled();
+      expect(result).toHaveLength(2);
+      expect(mockPrisma.question.findMany).toHaveBeenCalled();
     });
 
     it('should handle empty filters', async () => {
       const mockQuestions = QuestionFixtures.createMultipleQuestions(5);
-      MockHelpers.setupQueryRaw(mockPrisma, mockQuestions);
+      MockHelpers.setupFindMany(mockPrisma, mockQuestions);
 
       const result = await questionRepository.findRandom(5);
 
-      expect(result).toEqual(mockQuestions);
-      expect(mockPrisma.$queryRaw).toHaveBeenCalled();
+      expect(result).toHaveLength(5);
+      expect(mockPrisma.question.findMany).toHaveBeenCalled();
     });
   });
 

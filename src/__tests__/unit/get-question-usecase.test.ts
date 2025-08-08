@@ -47,7 +47,7 @@ describe('GetQuestion UseCase', () => {
 
       const result = await getQuestionUseCase.execute({ filters, options });
 
-      expect(result).toEqual(mockQuestion);
+      expect(result).toEqual(mockQuestions[0]);
       expect(mockQuestionRepository.findMany).toHaveBeenCalledWith(filters, { ...options, limit: 1 });
     });
 

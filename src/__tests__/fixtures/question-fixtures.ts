@@ -100,7 +100,7 @@ export const QuestionFixtures = {
   createAnswerCheckResult: (overrides: Partial<AnswerCheckResult> = {}): AnswerCheckResult => ({
     isCorrect: true,
     correctAnswer: 'B',
-    explanation: 'NAND回路の入力を同じ信号に接続すると、NOT回路として動作する',
+    explanation: 'NAND回路の入力を同じ信号に接続すると、NOT回路として動作する（A NAND A = NOT A）',
     userAnswer: 'B',
     ...overrides,
   }),
@@ -111,7 +111,7 @@ export const QuestionFixtures = {
   createIncorrectAnswerResult: (userAnswer: string = 'A'): AnswerCheckResult => ({
     isCorrect: false,
     correctAnswer: 'B',
-    explanation: 'NAND回路の入力を同じ信号に接続すると、NOT回路として動作する',
+    explanation: 'NAND回路の入力を同じ信号に接続すると、NOT回路として動作する（A NAND A = NOT A）',
     userAnswer,
   }),
 

@@ -33,7 +33,7 @@ export class AnswerQuestion {
         questionId,
         userAnswer,
         isCorrect: result.isCorrect,
-        timeSpent: timeSpent || null,
+        timeSpent: timeSpent ?? null,
         attemptNumber: await this.getNextAttemptNumber(userId, questionId)
       }
     });
