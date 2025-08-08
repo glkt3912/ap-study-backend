@@ -5,9 +5,9 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { PrismaClient } from '@prisma/client';
 import type { Variables } from '../middleware/auth';
-import { QuestionRepository } from '../../database/repositories/QuestionRepository';
-import { GetQuestion } from '../../../domain/usecases/GetQuestion';
-import { AnswerQuestion } from '../../../domain/usecases/AnswerQuestion';
+import { QuestionRepository } from '../../database/repositories/QuestionRepository.js';
+import { GetQuestion } from '../../../domain/usecases/GetQuestion.js';
+import { AnswerQuestion } from '../../../domain/usecases/AnswerQuestion.js';
 
 const prisma = new PrismaClient();
 const questionRepository = new QuestionRepository(prisma);
