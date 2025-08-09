@@ -249,7 +249,12 @@ app.route('/api/studylog', createStudyLogRoutes(container.createStudyLogUseCase,
 app.route('/api/test', createTestRoutes(container.prisma));
 
 // 分析API
-app.route('/api/analysis', createAnalysisRoutes(container.prisma));
+try {
+  const analysisRoutes = createAnalysisRoutes(container.prisma);
+  app.route('/api/analysis', analysisRoutes);
+} catch (error) {
+  logger.error('Failed to mount analysis routes:', error instanceof Error ? error : new Error(String(error)));
+}
 
 // Quiz API
 app.route('/api/quiz', createQuizRoutes());

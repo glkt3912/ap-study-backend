@@ -88,7 +88,9 @@ app.post('/signup', zValidator('json', signupSchema), async (c) => {
       throw error
     }
     
-    console.error('Signup error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Signup error:', error)
+    }
     throw new HTTPException(500, { message: 'Internal server error during signup' })
   }
 })
@@ -147,7 +149,9 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
       throw error
     }
     
-    console.error('Login error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Login error:', error)
+    }
     throw new HTTPException(500, { message: 'Internal server error during login' })
   }
 })
@@ -191,7 +195,9 @@ app.get('/me', authMiddleware, async (c) => {
       throw error
     }
     
-    console.error('Get user profile error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Get user profile error:', error)
+    }
     throw new HTTPException(500, { message: 'Internal server error' })
   }
 })
@@ -235,7 +241,9 @@ app.post('/refresh', authMiddleware, async (c) => {
       throw error
     }
     
-    console.error('Token refresh error:', error)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Token refresh error:', error)
+    }
     throw new HTTPException(500, { message: 'Internal server error during token refresh' })
   }
 })
@@ -286,7 +294,9 @@ if (process.env.NODE_ENV === 'development') {
       })
       
     } catch (error) {
-      console.error('Test user creation error:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Test user creation error:', error)
+      }
       throw new HTTPException(500, { message: 'Failed to create test user' })
     }
   })

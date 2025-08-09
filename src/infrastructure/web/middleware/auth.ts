@@ -64,7 +64,9 @@ export const authMiddleware = async (c: Context<{ Variables: Variables }>, next:
         return await next()
       } catch (jwtError) {
         // JWT検証失敗時は次の認証方法を試行
-        console.warn('JWT verification failed:', jwtError)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('JWT verification failed:', jwtError)
+        }
       }
     }
     
@@ -176,12 +178,52 @@ export const getAuthUser = (c: Context<{ Variables: Variables }>): AuthContext =
  */
 export const optionalAuthMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   try {
-    // 認証を試行するが、失敗してもエラーにしない
-    await authMiddleware(c, async () => {})
-  } catch {
-    // 認証失敗時はanonymousユーザーとして設定
+    // 1. Authorization ヘッダーからJWT取得を試行
+    const authHeader = c.req.header('Authorization')
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+      const secret = process.env.JWT_SECRET || 'development-secret-key'
+      
+      try {
+        const payload = await verify(token, secret) as any
+        
+        c.set('authUser', {
+          userId: parseInt(payload.sub || payload.userId),
+          email: payload.email,
+          role: payload.role || 'user'
+        } as AuthContext)
+        
+        return await next()
+      } catch (jwtError) {
+        // JWT検証失敗時は次の認証方法を試行
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('JWT verification failed:', jwtError)
+        }
+      }
+    }
+    
+    // 2. X-User-ID ヘッダーによる簡易認証
+    const userId = c.req.header('X-User-ID')
+    
+    if (userId && userId !== 'anonymous') {
+      c.set('authUser', {
+        userId: parseInt(userId) || 0,
+        role: 'user'
+      } as AuthContext)
+      
+      return await next()
+    }
+    
+    // 3. 認証情報なしの場合はanonymousユーザーとして設定
     c.set('authUser', {
       userId: 0, // anonymous user as ID 0
+      role: 'user'
+    } as AuthContext)
+  } catch (error) {
+    // 任意のエラーが発生してもanonymousユーザーとして続行
+    c.set('authUser', {
+      userId: 0,
       role: 'user'
     } as AuthContext)
   }
