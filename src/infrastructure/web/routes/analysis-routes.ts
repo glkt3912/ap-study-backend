@@ -6,17 +6,15 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
 
   // TEST endpoint - completely isolated
   routes.get("/test", async (c) => {
-    console.log("[DEBUG] TEST endpoint reached");
+    // テストエンドポイント
     return c.json({ message: "Test endpoint works", timestamp: new Date().toISOString() });
   });
 
   // GET /api/analysis/performance-metrics - 総合学習指標
   routes.get("/performance-metrics", async (c) => {
-    console.log("[DEBUG] performance-metrics START");
+    // パフォーマンス指標取得
     try {
-      console.log("[DEBUG] performance-metrics called");
       const period = parseInt(c.req.query("period") || "30");
-      console.log("[DEBUG] period:", period);
       
       // モックデータを直接返す（データベーススキーマ修正中）
       const response = {
@@ -59,10 +57,9 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         },
       };
       
-      console.log("[DEBUG] Returning response:", JSON.stringify(response, null, 2));
       return c.json(response);
     } catch (error) {
-      console.error("[ERROR] performance-metrics error:", error);
+      // エラー時はモックデータで継続
       return c.json(
         {
           success: false,
@@ -75,7 +72,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
 
   // GET /api/analysis/latest - 最新の分析結果取得
   routes.get("/latest", async (c) => {
-    console.log("[DEBUG] latest analysis endpoint called");
+    // 最新分析結果取得
     
     // モックデータを返す（初期データがないため）
     const mockLatestAnalysis = {
@@ -110,13 +107,12 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       }
     };
 
-    console.log("[DEBUG] Returning latest analysis mock data:", JSON.stringify(mockLatestAnalysis, null, 2));
     return c.json(mockLatestAnalysis);
   });
 
   // GET /api/analysis/review/today - 今日の復習情報取得
   routes.get("/review/today", async (c) => {
-    console.log("[DEBUG] review/today endpoint called");
+    // 今日の復習項目取得
     
     // モックデータを返す（初期データがないため）
     const mockReviewData = {
@@ -132,13 +128,12 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       }
     };
 
-    console.log("[DEBUG] Returning review/today mock data:", mockReviewData);
     return c.json(mockReviewData);
   });
 
   // GET /api/analysis/learning-pattern - 学習パターン分析取得
   routes.get("/learning-pattern", async (c) => {
-    console.log("[DEBUG] learning-pattern endpoint called");
+    // 学習パターン分析取得
     
     // モックデータを返す（初期データがないため）
     const mockLearningPatternData = {
@@ -158,7 +153,6 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       }
     };
 
-    console.log("[DEBUG] Returning learning-pattern mock data:", mockLearningPatternData);
     return c.json(mockLearningPatternData);
   });
 

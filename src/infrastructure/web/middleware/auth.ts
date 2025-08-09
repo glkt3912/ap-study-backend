@@ -64,7 +64,9 @@ export const authMiddleware = async (c: Context<{ Variables: Variables }>, next:
         return await next()
       } catch (jwtError) {
         // JWT検証失敗時は次の認証方法を試行
-        console.warn('JWT verification failed:', jwtError)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('JWT verification failed:', jwtError)
+        }
       }
     }
     
@@ -195,7 +197,9 @@ export const optionalAuthMiddleware = async (c: Context<{ Variables: Variables }
         return await next()
       } catch (jwtError) {
         // JWT検証失敗時は次の認証方法を試行
-        console.warn('JWT verification failed:', jwtError)
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('JWT verification failed:', jwtError)
+        }
       }
     }
     

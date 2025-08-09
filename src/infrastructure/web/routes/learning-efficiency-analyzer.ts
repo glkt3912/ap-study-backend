@@ -38,7 +38,7 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
         body = await c.req.json()
       } catch (jsonError) {
         // Handle empty body or invalid JSON - use default empty object
-        console.log("[DEBUG] No JSON body provided, using default empty object")
+        // No JSON body provided, using default empty object
       }
       
       // For now, return mock data since we don't have real user data
@@ -62,7 +62,7 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
       
       return c.json({ success: true, data: mockAnalysis }, 201)
     } catch (error: any) {
-      console.error("[ERROR] learning-efficiency-analysis/generate error:", error)
+      // エラー時のフォールバック処理
       return c.json({ success: false, error: error.message }, 500)
     }
   })
