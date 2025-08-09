@@ -113,8 +113,11 @@ class DIContainer {
 }
 
 // アプリケーション初期化 - OpenAPI対応アプリを作成
+console.log("[DEBUG] Creating OpenAPI app...");
 const app = createOpenAPIApp();
+console.log("[DEBUG] OpenAPI app created");
 const container = DIContainer.getInstance();
+console.log("[DEBUG] DI container initialized");
 
 // ミドルウェア
 app.use('*', honoLogger());
@@ -249,7 +252,15 @@ app.route('/api/studylog', createStudyLogRoutes(container.createStudyLogUseCase,
 app.route('/api/test', createTestRoutes(container.prisma));
 
 // 分析API
-app.route('/api/analysis', createAnalysisRoutes(container.prisma));
+console.log("[DEBUG] Mounting analysis routes...");
+try {
+  const analysisRoutes = createAnalysisRoutes(container.prisma);
+  console.log("[DEBUG] Analysis routes created successfully");
+  app.route('/api/analysis', analysisRoutes);
+  console.log("[DEBUG] Analysis routes mounted successfully");
+} catch (error) {
+  console.error("[ERROR] Failed to mount analysis routes:", error);
+}
 
 // Quiz API
 app.route('/api/quiz', createQuizRoutes());

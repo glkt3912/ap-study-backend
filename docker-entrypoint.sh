@@ -13,7 +13,7 @@ npx prisma migrate deploy --schema=./src/infrastructure/database/prisma/schema.p
 
 # Seed the database
 echo "Seeding database..."
-npx tsx src/seed.ts
+npx tsx src/infrastructure/database/seeds/index.ts
 
 # Start the application
 echo "Starting application..."
