@@ -34,6 +34,7 @@ import { createQuizRoutes } from 'src/infrastructure/web/routes/quiz.js';
 import { createLearningEfficiencyAnalysisRoutes } from 'src/infrastructure/web/routes/learning-efficiency-analyzer.js';
 import authRoutes from 'src/infrastructure/web/routes/auth.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
+import examConfigRoutes from 'src/infrastructure/web/routes/exam-config.js';
 
 // ミドルウェア
 import { authMiddleware, optionalAuthMiddleware } from 'src/infrastructure/web/middleware/auth.js';
@@ -238,6 +239,7 @@ app.use('/api/test/*', authMiddleware);
 app.use('/api/analysis/*', optionalAuthMiddleware); // 分析は読み取り専用なのでオプショナル認証
 app.use('/api/quiz/*', authMiddleware);
 app.use('/api/learning-efficiency-analysis/*', optionalAuthMiddleware);
+app.use('/api/exam-config/*', authMiddleware);
 
 // API ルート
 app.route('/api/study', createStudyRoutes(container.getStudyPlanUseCase, container.updateStudyProgressUseCase));
@@ -264,6 +266,9 @@ app.route(
   '/api/learning-efficiency-analysis',
   createLearningEfficiencyAnalysisRoutes(container.learningEfficiencyAnalysisUseCase),
 );
+
+// Exam Config API
+app.route('/api/exam-config', examConfigRoutes);
 
 
 // エラーハンドリング
@@ -326,6 +331,7 @@ async function startServer() {
   logger.info(`📊 分析API: http://localhost:${port}/api/analysis`);
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
+  logger.info(`📅 Exam Config API: http://localhost:${port}/api/exam-config`);
   logger.info(`🔐 Authentication API: http://localhost:${port}/api/auth`);
   logger.info(`📊 Monitoring API: http://localhost:${port}/api/monitoring`);
 
