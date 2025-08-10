@@ -107,6 +107,27 @@ export const QuizSessionSchema = z.object({
   isCompleted: z.boolean(),
 })
 
+// 試験設定関連スキーマ
+export const ExamConfigSchema = z.object({
+  id: z.number(),
+  userId: z.number(),
+  examDate: z.string(),
+  targetScore: z.number().optional(),
+  remainingDays: z.number().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+
+export const CreateExamConfigSchema = z.object({
+  examDate: z.string(),
+  targetScore: z.number().optional(),
+})
+
+export const UpdateExamConfigSchema = z.object({
+  examDate: z.string().optional(),
+  targetScore: z.number().optional(),
+})
+
 export const StartQuizSessionSchema = z.object({
   sessionType: z.enum(['category', 'random', 'review', 'weak_points']),
   questionCount: z.number(),
