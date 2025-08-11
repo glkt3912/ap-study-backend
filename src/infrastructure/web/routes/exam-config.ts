@@ -19,7 +19,7 @@ app.get('/:userId', async (c) => {
     const userId = parseInt(c.req.param('userId'));
     
     if (isNaN(userId)) {
-      return c.json({ error: 'Invalid user ID' }, 400);
+      return c.json({ success: false, error: 'Invalid user ID' }, 400);
     }
 
     const examConfig = await prisma.examConfig.findUnique({
@@ -27,7 +27,7 @@ app.get('/:userId', async (c) => {
     });
 
     if (!examConfig) {
-      return c.json({ error: 'Exam configuration not found' }, 404);
+      return c.json({ success: false, error: 'Exam configuration not found' }, 404);
     }
 
     // 残り日数を計算
@@ -36,12 +36,15 @@ app.get('/:userId', async (c) => {
     const remainingDays = Math.ceil((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     return c.json({
-      ...examConfig,
-      remainingDays,
+      success: true,
+      data: {
+        ...examConfig,
+        remainingDays,
+      }
     });
   } catch (error) {
     console.error('Error fetching exam config:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    return c.json({ success: false, error: 'Internal server error' }, 500);
   }
 });
 
@@ -51,7 +54,7 @@ app.post('/:userId', async (c) => {
     const userId = parseInt(c.req.param('userId'));
     
     if (isNaN(userId)) {
-      return c.json({ error: 'Invalid user ID' }, 400);
+      return c.json({ success: false, error: 'Invalid user ID' }, 400);
     }
 
     const body = await c.req.json();
@@ -85,15 +88,18 @@ app.post('/:userId', async (c) => {
     const remainingDays = Math.ceil((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     return c.json({
-      ...examConfig,
-      remainingDays,
+      success: true,
+      data: {
+        ...examConfig,
+        remainingDays,
+      }
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return c.json({ error: 'Validation error', details: error.issues }, 400);
+      return c.json({ success: false, error: 'Validation error', details: error.issues }, 400);
     }
     console.error('Error creating/updating exam config:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    return c.json({ success: false, error: 'Internal server error' }, 500);
   }
 });
 
@@ -103,17 +109,17 @@ app.delete('/:userId', async (c) => {
     const userId = parseInt(c.req.param('userId'));
     
     if (isNaN(userId)) {
-      return c.json({ error: 'Invalid user ID' }, 400);
+      return c.json({ success: false, error: 'Invalid user ID' }, 400);
     }
 
     await prisma.examConfig.delete({
       where: { userId },
     });
 
-    return c.json({ message: 'Exam configuration deleted successfully' });
+    return c.json({ success: true, data: { message: 'Exam configuration deleted successfully' } });
   } catch (error) {
     console.error('Error deleting exam config:', error);
-    return c.json({ error: 'Internal server error' }, 500);
+    return c.json({ success: false, error: 'Internal server error' }, 500);
   }
 });
 
