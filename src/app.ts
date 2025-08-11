@@ -233,14 +233,30 @@ app.route('/api/auth', logoutRoutes);
 // 監視API（認証不要 - 開発環境のみ一部機能制限）
 app.route('/api/monitoring', monitoring);
 
-// 認証が必要なAPIエンドポイント
-app.use('/api/study/*', authMiddleware);
-app.use('/api/studylog/*', authMiddleware);
-app.use('/api/test/*', authMiddleware);
-app.use('/api/analysis/*', optionalAuthMiddleware); // 分析は読み取り専用なのでオプショナル認証
-app.use('/api/quiz/*', authMiddleware);
+// 認証設定 - 開発環境では認証をオプショナルに
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+if (isDevelopment) {
+  logger.info('🔧 開発環境: 認証をオプショナルに設定');
+  // 開発環境では全てオプショナル認証を使用
+  app.use('/api/study/*', optionalAuthMiddleware);
+  app.use('/api/studylog/*', optionalAuthMiddleware);
+  app.use('/api/test/*', optionalAuthMiddleware);
+  app.use('/api/quiz/*', optionalAuthMiddleware);
+  app.use('/api/exam-config/*', optionalAuthMiddleware);
+} else {
+  logger.info('🔒 本番環境: 認証を必須に設定');
+  // 本番環境では厳密な認証を使用
+  app.use('/api/study/*', authMiddleware);
+  app.use('/api/studylog/*', authMiddleware);
+  app.use('/api/test/*', authMiddleware);
+  app.use('/api/quiz/*', authMiddleware);
+  app.use('/api/exam-config/*', authMiddleware);
+}
+
+// 分析は常にオプショナル認証（読み取り専用のため）
+app.use('/api/analysis/*', optionalAuthMiddleware);
 app.use('/api/learning-efficiency-analysis/*', optionalAuthMiddleware);
-app.use('/api/exam-config/*', authMiddleware);
 
 // API ルート
 app.route('/api/study', createStudyRoutes(container.getStudyPlanUseCase, container.updateStudyProgressUseCase));
