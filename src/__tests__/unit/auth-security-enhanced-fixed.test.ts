@@ -53,7 +53,7 @@ const mockUser = {
 };
 
 describe('Enhanced JWT Authentication System (Fixed)', () => {
-  let app: Hono;
+  let app: Hono<{ Variables: Variables }>;
 
   beforeEach(async () => {
     process.env.NODE_ENV = 'development';
