@@ -1,10 +1,25 @@
 -- CreateTable
+CREATE TABLE "users" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" TEXT NOT NULL DEFAULT 'user',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "refreshToken" TEXT,
+    "refreshTokenExp" TIMESTAMP(3),
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "study_weeks" (
     "id" SERIAL NOT NULL,
     "weekNumber" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "phase" TEXT NOT NULL,
-    "goals" TEXT NOT NULL,
+    "goals" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -16,7 +31,7 @@ CREATE TABLE "study_days" (
     "id" SERIAL NOT NULL,
     "day" TEXT NOT NULL,
     "subject" TEXT NOT NULL,
-    "topics" TEXT NOT NULL,
+    "topics" JSONB NOT NULL,
     "estimatedTime" INTEGER NOT NULL,
     "actualTime" INTEGER NOT NULL DEFAULT 0,
     "completed" BOOLEAN NOT NULL DEFAULT false,
@@ -39,6 +54,9 @@ CREATE TABLE "study_logs" (
     "memo" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "completed" BOOLEAN NOT NULL DEFAULT false,
+    "userId" INTEGER NOT NULL,
+    "topics" JSONB NOT NULL,
 
     CONSTRAINT "study_logs_pkey" PRIMARY KEY ("id")
 );
@@ -54,6 +72,7 @@ CREATE TABLE "morning_tests" (
     "memo" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "morning_tests_pkey" PRIMARY KEY ("id")
 );
@@ -62,18 +81,31 @@ CREATE TABLE "morning_tests" (
 CREATE TABLE "afternoon_tests" (
     "id" SERIAL NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
-    "questionType" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
     "score" INTEGER NOT NULL,
     "timeSpent" INTEGER NOT NULL,
     "memo" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "afternoon_tests_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "study_weeks_weekNumber_key" ON "study_weeks"("weekNumber");
 
 -- AddForeignKey
 ALTER TABLE "study_days" ADD CONSTRAINT "study_days_weekId_fkey" FOREIGN KEY ("weekId") REFERENCES "study_weeks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "study_logs" ADD CONSTRAINT "study_logs_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "morning_tests" ADD CONSTRAINT "morning_tests_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "afternoon_tests" ADD CONSTRAINT "afternoon_tests_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
