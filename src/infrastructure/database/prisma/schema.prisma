@@ -27,21 +27,47 @@ model User {
   reviewSessions    ReviewSession[]
   studyLogs         StudyLog[]
   userAnswers       UserAnswer[]
+  studyPlan         StudyPlan?
 
   @@map("users")
 }
 
 model StudyWeek {
-  id         Int        @id @default(autoincrement())
-  weekNumber Int        @unique
-  title      String
-  phase      String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  goals      Json
-  days       StudyDay[]
+  id           Int          @id @default(autoincrement())
+  weekNumber   Int          @unique
+  title        String
+  phase        String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  goals        Json
+  days         StudyDay[]
+  studyPlan    StudyPlan?   @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  studyPlanId  Int?
 
   @@map("study_weeks")
+}
+
+model StudyPlan {
+  id               Int         @id @default(autoincrement())
+  userId           Int         @unique
+  name             String
+  description      String?
+  totalWeeks       Int         @default(12)
+  weeklyHours      Int         @default(25)
+  dailyHours       Int         @default(3)
+  isActive         Boolean     @default(true)
+  isCustom         Boolean     @default(false)
+  examDate         DateTime?
+  startDate        DateTime    @default(now())
+  endDate          DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weeks            StudyWeek[]
+  preferences      Json        @default("{}")
+  metadata         Json        @default("{}")
+
+  @@map("study_plans")
 }
 
 model StudyDay {
