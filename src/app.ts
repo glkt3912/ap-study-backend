@@ -33,6 +33,7 @@ import { createAnalysisRoutes } from 'src/infrastructure/web/routes/analysis-rou
 import { createQuizRoutes } from 'src/infrastructure/web/routes/quiz.js';
 import { createLearningEfficiencyAnalysisRoutes } from 'src/infrastructure/web/routes/learning-efficiency-analyzer.js';
 import authRoutes from 'src/infrastructure/web/routes/auth.js';
+import logoutRoutes from 'src/infrastructure/web/routes/logout.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
 import examConfigRoutes from 'src/infrastructure/web/routes/exam-config.js';
 
@@ -209,9 +210,8 @@ app.use(
       'X-Requested-With',
       'Accept',
       'Origin',
-      'X-User-ID', // 移行期間中の簡易認証用
     ],
-    credentials: true, // 認証情報を含むリクエストを許可
+    credentials: true, // HttpOnly Cookie対応のため必須
     maxAge: 86400, // プリフライトリクエストのキャッシュ時間（24時間）
   }),
 );
@@ -228,6 +228,7 @@ app.get('/', c => {
 
 // 認証API（認証不要）
 app.route('/api/auth', authRoutes);
+app.route('/api/auth', logoutRoutes);
 
 // 監視API（認証不要 - 開発環境のみ一部機能制限）
 app.route('/api/monitoring', monitoring);

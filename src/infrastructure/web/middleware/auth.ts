@@ -1,6 +1,7 @@
 import { Context, Next } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { verify } from 'hono/jwt'
+import { getCookie } from 'hono/cookie'
 
 export interface AuthContext {
   userId: number
@@ -15,15 +16,15 @@ export type Variables = {
 /**
  * JWT認証ミドルウェア
  * 
- * 複数の認証方式を段階的にサポートする包括的な認証ミドルウェア：
- * 1. JWT Bearer Token認証（本番環境推奨）
- * 2. X-User-ID ヘッダー認証（開発・移行期用）
- * 3. 匿名ユーザー許可（開発環境のみ）
+ * セキュリティ強化済みJWT認証ミドルウェア：
+ * - JWT Bearer Token認証のみサポート
+ * - 本番・開発環境共に厳密な認証要求
+ * - 認証失敗時は即座に401エラーを返却
  * 
  * セキュリティ考慮事項：
- * - JWT検証失敗時は次の認証方法を試行
- * - 本番環境では開発用フォールバックは無効化される
- * - 全ての認証情報はリクエストコンテキストに安全に格納
+ * - 代替認証方法は削除（セキュリティリスク排除）
+ * - 開発環境でも認証を強制
+ * - JWT検証失敗時の明確な拒否処理
  * 
  * @param c - Honoコンテキスト（Variables: { authUser: AuthContext }）
  * @param next - 次のミドルウェア関数
@@ -44,58 +45,48 @@ export type Variables = {
  */
 export const authMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   try {
-    // 1. Authorization ヘッダーからJWT取得を試行
-    const authHeader = c.req.header('Authorization')
+    const secret = process.env.JWT_SECRET || 'development-secret-key'
+    let token = null
     
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7)
-      const secret = process.env.JWT_SECRET || 'development-secret-key'
-      
-      try {
-        const payload = await verify(token, secret) as any
-        
-        // JWTペイロードから認証情報を設定
-        c.set('authUser', {
-          userId: parseInt(payload.sub || payload.userId),
-          email: payload.email,
-          role: payload.role || 'user'
-        } as AuthContext)
-        
-        return await next()
-      } catch (jwtError) {
-        // JWT検証失敗時は次の認証方法を試行
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('JWT verification failed:', jwtError)
-        }
+    // 1. HttpOnly Cookieからトークン取得 (優先)
+    const cookieToken = getCookie(c, 'access_token')
+    if (cookieToken) {
+      token = cookieToken
+    }
+    
+    // 2. Authorization ヘッダーからJWTトークンを取得 (フォールバック)
+    if (!token) {
+      const authHeader = c.req.header('Authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
       }
     }
     
-    // 2. X-User-ID ヘッダーによる簡易認証（開発・移行期用）
-    const userId = c.req.header('X-User-ID')
+    if (!token) {
+      throw new HTTPException(401, { 
+        message: 'Authorization required. Please provide valid JWT Bearer token or login.' 
+      })
+    }
     
-    if (userId && userId !== 'anonymous') {
+    try {
+      const payload = await verify(token, secret) as any
+      
+      // JWTペイロードから認証情報を設定
       c.set('authUser', {
-        userId: parseInt(userId) || 0,
-        role: 'user'
+        userId: parseInt(payload.sub || payload.userId),
+        email: payload.email,
+        role: payload.role || 'user'
       } as AuthContext)
       
       return await next()
-    }
-    
-    // 3. 開発環境でのフォールバック（anonymous許可）
-    if (process.env.NODE_ENV === 'development') {
-      c.set('authUser', {
-        userId: 0, // anonymous user as ID 0
-        role: 'user'
-      } as AuthContext)
+    } catch (jwtError) {
+      // JWT検証失敗 - 認証エラーを返す
+      console.warn('JWT verification failed:', jwtError)
       
-      return await next()
+      throw new HTTPException(401, { 
+        message: 'Invalid or expired authentication token' 
+      })
     }
-    
-    // 認証情報なし - 401エラー
-    throw new HTTPException(401, { 
-      message: 'Authorization required. Please provide valid JWT token or X-User-ID header.' 
-    })
     
   } catch (error) {
     if (error instanceof HTTPException) {
@@ -174,17 +165,31 @@ export const getAuthUser = (c: Context<{ Variables: Variables }>): AuthContext =
 }
 
 /**
- * 認証なしでも許可するミドルウェア（オプショナル認証）
+ * オプショナル認証ミドルウェア
+ * 
+ * JWT認証をオプションとして扱い、認証情報がない場合は匿名ユーザーとして処理
+ * 公開APIエンドポイントで使用（パフォーマンス統計など）
  */
 export const optionalAuthMiddleware = async (c: Context<{ Variables: Variables }>, next: Next) => {
   try {
-    // 1. Authorization ヘッダーからJWT取得を試行
-    const authHeader = c.req.header('Authorization')
+    const secret = process.env.JWT_SECRET || 'development-secret-key'
+    let token = null
     
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7)
-      const secret = process.env.JWT_SECRET || 'development-secret-key'
-      
+    // 1. HttpOnly Cookieからトークン取得 (優先)
+    const cookieToken = getCookie(c, 'access_token')
+    if (cookieToken) {
+      token = cookieToken
+    }
+    
+    // 2. Authorization ヘッダーからJWTトークンを取得 (フォールバック)
+    if (!token) {
+      const authHeader = c.req.header('Authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
+      }
+    }
+    
+    if (token) {
       try {
         const payload = await verify(token, secret) as any
         
@@ -196,32 +201,18 @@ export const optionalAuthMiddleware = async (c: Context<{ Variables: Variables }
         
         return await next()
       } catch (jwtError) {
-        // JWT検証失敗時は次の認証方法を試行
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('JWT verification failed:', jwtError)
-        }
+        // JWT検証失敗時は匿名ユーザーとして続行
+        console.warn('Optional JWT verification failed:', jwtError)
       }
     }
     
-    // 2. X-User-ID ヘッダーによる簡易認証
-    const userId = c.req.header('X-User-ID')
-    
-    if (userId && userId !== 'anonymous') {
-      c.set('authUser', {
-        userId: parseInt(userId) || 0,
-        role: 'user'
-      } as AuthContext)
-      
-      return await next()
-    }
-    
-    // 3. 認証情報なしの場合はanonymousユーザーとして設定
+    // 認証情報なしまたは認証失敗の場合は匿名ユーザーとして設定
     c.set('authUser', {
       userId: 0, // anonymous user as ID 0
       role: 'user'
     } as AuthContext)
   } catch (error) {
-    // 任意のエラーが発生してもanonymousユーザーとして続行
+    // エラーが発生しても匿名ユーザーとして続行
     c.set('authUser', {
       userId: 0,
       role: 'user'
