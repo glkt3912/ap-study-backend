@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { getAuthUser } from '../middleware/auth.js';
+import type { Variables } from '../middleware/auth.js';
 
-const app = new Hono();
+const app = new Hono<{ Variables: Variables }>();
 const prisma = new PrismaClient();
 
 // 試験設定作成・更新用のスキーマ
@@ -12,7 +14,7 @@ const examConfigSchema = z.object({
 });
 
 // 試験設定取得
-app.get('/exam-config/:userId', async (c) => {
+app.get('/:userId', async (c) => {
   try {
     const userId = parseInt(c.req.param('userId'));
     
@@ -44,7 +46,7 @@ app.get('/exam-config/:userId', async (c) => {
 });
 
 // 試験設定作成・更新
-app.post('/exam-config/:userId', async (c) => {
+app.post('/:userId', async (c) => {
   try {
     const userId = parseInt(c.req.param('userId'));
     
@@ -96,7 +98,7 @@ app.post('/exam-config/:userId', async (c) => {
 });
 
 // 試験設定削除
-app.delete('/exam-config/:userId', async (c) => {
+app.delete('/:userId', async (c) => {
   try {
     const userId = parseInt(c.req.param('userId'));
     
