@@ -36,6 +36,7 @@ import authRoutes from 'src/infrastructure/web/routes/auth.js';
 import logoutRoutes from 'src/infrastructure/web/routes/logout.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
 import examConfigRoutes from 'src/infrastructure/web/routes/exam-config.js';
+import studyPlanRoutes from 'src/infrastructure/web/routes/study-plan.js';
 
 // ミドルウェア
 import { authMiddleware, optionalAuthMiddleware } from 'src/infrastructure/web/middleware/auth.js';
@@ -244,6 +245,7 @@ if (isDevelopment) {
   app.use('/api/test/*', optionalAuthMiddleware);
   app.use('/api/quiz/*', optionalAuthMiddleware);
   app.use('/api/exam-config/*', optionalAuthMiddleware);
+  app.use('/api/study-plan/*', optionalAuthMiddleware);
 } else {
   logger.info('🔒 本番環境: 認証を必須に設定');
   // 本番環境では厳密な認証を使用
@@ -252,6 +254,7 @@ if (isDevelopment) {
   app.use('/api/test/*', authMiddleware);
   app.use('/api/quiz/*', authMiddleware);
   app.use('/api/exam-config/*', authMiddleware);
+  app.use('/api/study-plan/*', authMiddleware);
 }
 
 // 分析は常にオプショナル認証（読み取り専用のため）
@@ -286,6 +289,9 @@ app.route(
 
 // Exam Config API
 app.route('/api/exam-config', examConfigRoutes);
+
+// Study Plan API
+app.route('/api/study-plan', studyPlanRoutes);
 
 
 // エラーハンドリング
@@ -349,6 +355,7 @@ async function startServer() {
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
   logger.info(`📅 Exam Config API: http://localhost:${port}/api/exam-config`);
+  logger.info(`📋 Study Plan API: http://localhost:${port}/api/study-plan`);
   logger.info(`🔐 Authentication API: http://localhost:${port}/api/auth`);
   logger.info(`📊 Monitoring API: http://localhost:${port}/api/monitoring`);
 
