@@ -37,7 +37,12 @@ app.post('/signup', zValidator('json', signupSchema), async (c) => {
     })
     
     if (existingUser) {
-      throw new HTTPException(409, { message: 'User already exists with this email' })
+      return c.json({
+        success: false,
+        error: 'このメールアドレスは既に使用されています',
+        errorCode: 'USER_ALREADY_EXISTS',
+        message: 'User already exists with this email'
+      }, 409)
     }
     
     // パスワードハッシュ化
@@ -88,10 +93,24 @@ app.post('/signup', zValidator('json', signupSchema), async (c) => {
       throw error
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Signup error:', error)
+    // Zodバリデーションエラー
+    if (error instanceof Error && error.name === 'ZodError') {
+      return c.json({
+        success: false,
+        error: '入力内容に問題があります',
+        errorCode: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: error.message
+      }, 400)
     }
-    throw new HTTPException(500, { message: 'Internal server error during signup' })
+    
+    
+    return c.json({
+      success: false,
+      error: '内部サーバーエラーが発生しました',
+      errorCode: 'INTERNAL_ERROR',
+      message: 'Internal server error during signup'
+    }, 500)
   }
 })
 
@@ -109,14 +128,24 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
     })
     
     if (!user) {
-      throw new HTTPException(401, { message: 'Invalid email or password' })
+      return c.json({
+        success: false,
+        error: 'メールアドレスまたはパスワードが正しくありません',
+        errorCode: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password'
+      }, 401)
     }
     
     // パスワード検証
     const isPasswordValid = await bcrypt.compare(password, user.password)
     
     if (!isPasswordValid) {
-      throw new HTTPException(401, { message: 'Invalid email or password' })
+      return c.json({
+        success: false,
+        error: 'メールアドレスまたはパスワードが正しくありません',
+        errorCode: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password'
+      }, 401)
     }
     
     // JWT生成
@@ -149,10 +178,24 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
       throw error
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Login error:', error)
+    // Zodバリデーションエラー
+    if (error instanceof Error && error.name === 'ZodError') {
+      return c.json({
+        success: false,
+        error: '入力内容に問題があります',
+        errorCode: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: error.message
+      }, 400)
     }
-    throw new HTTPException(500, { message: 'Internal server error during login' })
+    
+    
+    return c.json({
+      success: false,
+      error: '内部サーバーエラーが発生しました',
+      errorCode: 'INTERNAL_ERROR',
+      message: 'Internal server error during login'
+    }, 500)
   }
 })
 
@@ -195,9 +238,6 @@ app.get('/me', authMiddleware, async (c) => {
       throw error
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Get user profile error:', error)
-    }
     throw new HTTPException(500, { message: 'Internal server error' })
   }
 })
@@ -241,9 +281,6 @@ app.post('/refresh', authMiddleware, async (c) => {
       throw error
     }
     
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Token refresh error:', error)
-    }
     throw new HTTPException(500, { message: 'Internal server error during token refresh' })
   }
 })
@@ -294,9 +331,6 @@ if (process.env.NODE_ENV === 'development') {
       })
       
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Test user creation error:', error)
-      }
       throw new HTTPException(500, { message: 'Failed to create test user' })
     }
   })
