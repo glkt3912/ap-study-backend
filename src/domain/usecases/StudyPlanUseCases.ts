@@ -19,22 +19,27 @@ export class StudyPlanUseCases {
   }
 
   async createStudyPlan(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlanEntity> {
-    // 既存のアクティブプランを無効化
-    const existingPlan = await this.studyPlanRepository.findActiveByUserId(userId);
-    if (existingPlan) {
-      await this.studyPlanRepository.deactivate(existingPlan.id);
-    }
-
-    // 新しい学習計画を作成
+    // 学習計画を作成または更新（リポジトリレイヤーで既存計画をチェック）
     const studyPlan = await this.studyPlanRepository.create(userId, {
       name: data.name,
       description: data.description,
-      totalWeeks: data.totalWeeks || 12,
-      weeklyHours: data.weeklyHours || 25,
-      dailyHours: data.dailyHours || 3,
-      examDate: data.examDate,
+      templateId: data.templateId,
+      templateName: data.templateName,
+      targetExamDate: data.targetExamDate,
       startDate: data.startDate || new Date(),
-      preferences: data.preferences || {}
+      settings: data.settings || {
+        timeSettings: {
+          totalWeeks: 12,
+          weeklyHours: 25,
+          dailyHours: 3
+        },
+        planType: {
+          isCustom: true,
+          source: 'user_created'
+        },
+        preferences: {},
+        metadata: {}
+      }
     });
 
     // 学習週を生成
@@ -47,7 +52,7 @@ export class StudyPlanUseCases {
     const studyPlan = await this.studyPlanRepository.update(studyPlanId, data);
     
     // 学習期間が変更された場合は週数を再生成
-    if (data.totalWeeks) {
+    if (data.settings?.timeSettings?.totalWeeks) {
       await this.studyPlanRepository.generateWeeks(studyPlan.id);
     }
 
@@ -90,13 +95,19 @@ export class StudyPlanUseCases {
       throw new Error('Study plan not found');
     }
 
+    const currentSettings = studyPlan.settings || {};
     const updatedPreferences = {
-      ...studyPlan.preferences,
+      ...currentSettings.preferences,
       ...preferences
     };
 
-    return await this.studyPlanRepository.update(studyPlanId, {
+    const updatedSettings = {
+      ...currentSettings,
       preferences: updatedPreferences
+    };
+
+    return await this.studyPlanRepository.update(studyPlanId, {
+      settings: updatedSettings
     });
   }
 
@@ -122,8 +133,8 @@ export class StudyPlanUseCases {
     const isAhead = progress.actualStudyHours > progress.totalStudyHours;
     const isBehind = progress.actualStudyHours < progress.totalStudyHours * 0.7;
 
-    let recommendedDailyHours = studyPlan.dailyHours;
-    let recommendedWeeklyHours = studyPlan.weeklyHours;
+    let recommendedDailyHours = studyPlan.settings.timeSettings?.dailyHours || 3;
+    let recommendedWeeklyHours = studyPlan.settings.timeSettings?.weeklyHours || 21;
 
     if (isBehind && progress.remainingDays > 0) {
       const catchUpHours = (progress.totalStudyHours - progress.actualStudyHours) / progress.remainingDays;
