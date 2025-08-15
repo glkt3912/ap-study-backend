@@ -1,24 +1,25 @@
 import { Hono } from 'hono'
 import type { Variables } from '../middleware/auth'
-import { sign } from 'hono/jwt'
+import { sign, verify } from 'hono/jwt'
 import { HTTPException } from 'hono/http-exception'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import { authMiddleware } from '../middleware/auth.js'
-import { setCookie, deleteCookie } from 'hono/cookie'
+import { setCookie, deleteCookie, getCookie } from 'hono/cookie'
 import crypto from 'crypto'
 
 // バリデーションスキーマ
 const signupSchema = z.object({
   email: z.string().email('Invalid email format'),
+  username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be at most 20 characters').regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscore and dash'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   name: z.string().min(1, 'Name is required').optional()
 })
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  emailOrUsername: z.string().min(1, 'Email or username is required'),
   password: z.string().min(1, 'Password is required')
 })
 
@@ -34,20 +35,34 @@ const prisma = new PrismaClient()
  */
 app.post('/signup', zValidator('json', signupSchema), async (c) => {
   try {
-    const { email, password, name } = c.req.valid('json')
+    const { email, username, password, name } = c.req.valid('json')
     const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key'
     
-    // 既存ユーザーチェック
-    const existingUser = await prisma.user.findUnique({
+    // 既存ユーザーチェック（メール）
+    const existingUserByEmail = await prisma.user.findUnique({
       where: { email }
     })
     
-    if (existingUser) {
+    if (existingUserByEmail) {
       return c.json({
         success: false,
         error: 'このメールアドレスは既に使用されています',
         errorCode: 'USER_ALREADY_EXISTS',
         message: 'User already exists with this email'
+      }, 409)
+    }
+    
+    // 既存ユーザーチェック（ユーザー名）
+    const existingUserByUsername = await prisma.user.findUnique({
+      where: { username }
+    })
+    
+    if (existingUserByUsername) {
+      return c.json({
+        success: false,
+        error: 'このユーザー名は既に使用されています',
+        errorCode: 'USERNAME_ALREADY_EXISTS',
+        message: 'User already exists with this username'
       }, 409)
     }
     
@@ -59,6 +74,7 @@ app.post('/signup', zValidator('json', signupSchema), async (c) => {
     const user = await prisma.user.create({
       data: {
         email,
+        username,
         password: hashedPassword,
         name: name || email.split('@')[0], // nameが未提供の場合、emailのlocal部分を使用
         role: 'user'
@@ -66,6 +82,7 @@ app.post('/signup', zValidator('json', signupSchema), async (c) => {
       select: {
         id: true,
         email: true,
+        username: true,
         name: true,
         role: true,
         createdAt: true
@@ -155,20 +172,23 @@ app.post('/signup', zValidator('json', signupSchema), async (c) => {
  */
 app.post('/login', zValidator('json', loginSchema), async (c) => {
   try {
-    const { email, password } = c.req.valid('json')
+    const { emailOrUsername, password } = c.req.valid('json')
     const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key'
     
-    // ユーザー検索
+    // メール形式かユーザー名形式かを判定
+    const isEmail = emailOrUsername.includes('@')
+    
+    // ユーザー検索（メールまたはユーザー名で）
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: isEmail ? { email: emailOrUsername } : { username: emailOrUsername }
     })
     
     if (!user) {
       return c.json({
         success: false,
-        error: 'メールアドレスまたはパスワードが正しくありません',
+        error: 'メールアドレス/ユーザー名またはパスワードが正しくありません',
         errorCode: 'INVALID_CREDENTIALS',
-        message: 'Invalid email or password'
+        message: 'Invalid email/username or password'
       }, 401)
     }
     
@@ -268,36 +288,70 @@ app.post('/login', zValidator('json', loginSchema), async (c) => {
 /**
  * ユーザー情報取得（要認証）
  */
-app.get('/me', authMiddleware, async (c) => {
+app.get('/me', async (c) => {
   try {
-    // 認証ミドルウェアで設定された認証情報を取得
-    const authUser = c.get('authUser')
+    // オプション認証 - 認証情報がない場合はnullを返す
+    const secret = process.env.JWT_SECRET || 'development-secret-key'
+    let token = null
     
-    if (!authUser || authUser.userId === 0) {
-      throw new HTTPException(401, { message: 'Authentication required' })
+    // 1. HttpOnly Cookieからトークン取得 (優先)
+    const cookieToken = getCookie(c, 'access_token')
+    if (cookieToken) {
+      token = cookieToken
     }
     
-    // ユーザー詳細情報を取得
-    const user = await prisma.user.findUnique({
-      where: { id: authUser.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true
+    // 2. Authorization ヘッダーからJWTトークンを取得 (フォールバック)
+    if (!token) {
+      const authHeader = c.req.header('Authorization')
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7)
       }
-    })
-    
-    if (!user) {
-      throw new HTTPException(404, { message: 'User not found' })
     }
     
-    return c.json({
-      success: true,
-      data: { user }
-    })
+    // 認証情報がない場合は匿名ユーザーとして扱う
+    if (!token) {
+      return c.json({
+        success: true,
+        data: { user: null }
+      })
+    }
+    
+    try {
+      const payload = await verify(token, secret) as any
+      const userId = parseInt(payload.sub || payload.userId)
+      
+      // ユーザー詳細情報を取得
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          name: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      })
+      
+      if (!user) {
+        return c.json({
+          success: true,
+          data: { user: null }
+        })
+      }
+      
+      return c.json({
+        success: true,
+        data: { user }
+      })
+    } catch (jwtError) {
+      // JWT検証失敗時は匿名ユーザーとして扱う
+      return c.json({
+        success: true,
+        data: { user: null }
+      })
+    }
     
   } catch (error) {
     if (error instanceof HTTPException) {
@@ -442,6 +496,7 @@ if (process.env.NODE_ENV === 'development') {
       const user = await prisma.user.create({
         data: {
           email: testEmail,
+          username: `testuser_${Date.now()}`, // ユニークなユーザー名生成
           password: hashedPassword,
           name: 'Test User',
           role: 'user'
