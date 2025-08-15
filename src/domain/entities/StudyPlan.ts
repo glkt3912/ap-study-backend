@@ -3,19 +3,42 @@ export interface StudyPlan {
   userId: number;
   name: string;
   description?: string;
-  totalWeeks: number;
-  weeklyHours: number;
-  dailyHours: number;
   isActive: boolean;
-  isCustom: boolean;
-  examDate?: Date;
   startDate: Date;
-  endDate?: Date;
-  preferences: Record<string, any>;
-  metadata: Record<string, any>;
+  targetExamDate?: Date;
   createdAt: Date;
   updatedAt: Date;
+  
+  // Template information (simplified)
+  templateId?: string;
+  templateName?: string;
+  studyWeeksData?: any;
+  
+  // Essential settings (consolidated)
+  settings: StudyPlanSettings;
+  
+  // Relations
   weeks?: StudyWeek[];
+}
+
+export interface StudyPlanSettings {
+  [key: string]: any;
+  timeSettings?: {
+    totalWeeks: number;
+    weeklyHours: number;
+    dailyHours: number;
+  };
+  planType?: {
+    isCustom: boolean;
+    source: string;
+  };
+  metadata?: Record<string, any>;
+  preferences?: Record<string, any>;
+  migrationInfo?: {
+    migratedFrom: string;
+    migrationDate: string;
+    originalColumns: string[];
+  };
 }
 
 export interface StudyPlanEntity extends StudyPlan {}
@@ -23,24 +46,21 @@ export interface StudyPlanEntity extends StudyPlan {}
 export interface CreateStudyPlanRequest {
   name: string;
   description?: string;
-  totalWeeks?: number;
-  weeklyHours?: number;
-  dailyHours?: number;
-  examDate?: Date;
+  templateId?: string;
+  templateName?: string;
+  targetExamDate?: Date;
   startDate?: Date;
-  preferences?: Record<string, any>;
+  settings?: StudyPlanSettings;
 }
 
 export interface UpdateStudyPlanRequest {
   name?: string;
   description?: string;
-  totalWeeks?: number;
-  weeklyHours?: number;
-  dailyHours?: number;
-  examDate?: Date;
-  endDate?: Date;
+  templateId?: string;
+  templateName?: string;
+  targetExamDate?: Date;
   isActive?: boolean;
-  preferences?: Record<string, any>;
+  settings?: StudyPlanSettings;
 }
 
 export interface StudyPlanPreferences {
