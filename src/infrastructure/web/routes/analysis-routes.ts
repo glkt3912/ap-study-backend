@@ -4,11 +4,6 @@ import { PrismaClient } from "@prisma/client";
 export function createAnalysisRoutes(prisma: PrismaClient) {
   const routes = new Hono();
 
-  // TEST endpoint - completely isolated
-  routes.get("/test", async (c) => {
-    // テストエンドポイント
-    return c.json({ message: "Test endpoint works", timestamp: new Date().toISOString() });
-  });
 
   // GET /api/analysis/performance-metrics - 総合学習指標
   routes.get("/performance-metrics", async (c) => {
@@ -110,26 +105,6 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
     return c.json(mockLatestAnalysis);
   });
 
-  // GET /api/analysis/review/today - 今日の復習情報取得
-  routes.get("/review/today", async (c) => {
-    // 今日の復習項目取得
-    
-    // モックデータを返す（初期データがないため）
-    const mockReviewData = {
-      success: true,
-      data: {
-        date: new Date().toISOString().split('T')[0],
-        totalReviewItems: 0,
-        completedReviewItems: 0,
-        reviewProgress: 0,
-        categories: [],
-        upcomingReviews: [],
-        message: "初期データがありません。学習を開始すると復習データが蓄積されます。"
-      }
-    };
-
-    return c.json(mockReviewData);
-  });
 
   // GET /api/analysis/learning-pattern - 学習パターン分析取得
   routes.get("/learning-pattern", async (c) => {
