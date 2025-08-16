@@ -41,6 +41,7 @@ import studyPlanRoutes from 'src/infrastructure/web/routes/study-plan.js';
 // ミドルウェア
 import { authMiddleware, optionalAuthMiddleware } from 'src/infrastructure/web/middleware/auth.js';
 import { loggingMiddleware, errorLoggingMiddleware } from 'src/infrastructure/web/middleware/logging.js';
+import { errorHandlerMiddleware, createErrorResponse } from 'src/infrastructure/web/middleware/error-handler.js';
 
 /**
  * 依存性注入コンテナ
@@ -294,30 +295,13 @@ app.route('/api/exam-config', examConfigRoutes);
 app.route('/api/study-plan', studyPlanRoutes);
 
 
-// エラーハンドリング
-app.onError((err, c) => {
-  logger.error('Error:', err);
+// エラーハンドリング（標準化されたエラーレスポンス）
+app.onError(errorHandlerMiddleware);
 
-  return c.json(
-    {
-      success: false,
-      error: '内部サーバーエラーが発生しました',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined,
-    },
-    500,
-  );
-});
-
-// 404 ハンドリング
+// 404 ハンドリング（標準化されたエラーレスポンス）
 app.notFound(c => {
-  return c.json(
-    {
-      success: false,
-      error: 'エンドポイントが見つかりません',
-      path: c.req.path,
-    },
-    404,
-  );
+  const error = createErrorResponse.notFound(`エンドポイント ${c.req.path}`);
+  return error;
 });
 
 // グレースフルシャットダウン

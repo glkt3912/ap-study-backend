@@ -261,45 +261,6 @@ export function createStudyLogRoutes(
     }
   });
 
-  // GET /api/studylog/date-range - 期間指定で学習記録取得
-  app.post(
-    "/date-range",
-    zValidator("json", dateRangeSchema as any),
-    async (c) => {
-      try {
-        const { startDate, endDate } = c.req.valid("json");
-        const studyLogs = await studyLogRepository.findByDateRange(
-          startDate,
-          endDate
-        );
-
-        return c.json({
-          success: true,
-          data: studyLogs.map((log) => ({
-            id: log.id,
-            date: log.date,
-            subject: log.subject,
-            topics: log.topics,
-            studyTime: log.studyTime,
-            understanding: log.understanding,
-            memo: log.memo,
-            efficiency: log.calculateEfficiency(),
-          })),
-        });
-      } catch (error) {
-        return c.json(
-          {
-            success: false,
-            error:
-              error instanceof Error
-                ? error.message
-                : "期間指定での学習記録取得に失敗しました",
-          },
-          400
-        );
-      }
-    }
-  );
 
   // GET /api/studylog/subject/:subject - 科目別学習記録取得
   app.get("/subject/:subject", async (c) => {

@@ -6,6 +6,7 @@ export interface IStudyRepository {
   // 学習計画の取得
   findAllWeeks(): Promise<StudyWeekEntity[]>;
   findWeekByNumber(weekNumber: number): Promise<StudyWeekEntity | null>;
+  findWeeksByUserId(userId: number): Promise<StudyWeekEntity[]>;
 
   // 学習計画の更新
   updateWeek(week: StudyWeekEntity): Promise<StudyWeekEntity>;
@@ -18,6 +19,7 @@ export interface IStudyRepository {
   // 初期データの投入
   createWeek(week: Omit<StudyWeek, "id">): Promise<StudyWeekEntity>;
   initializeDefaultPlan(): Promise<void>;
+  initializeUserPlan(userId: number): Promise<void>;
 
   // 統計データ
   getTotalProgress(): Promise<{
