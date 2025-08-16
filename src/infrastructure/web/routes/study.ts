@@ -5,6 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { GetStudyPlanUseCase } from "src/domain/usecases/GetStudyPlan.js";
 import { UpdateStudyProgressUseCase } from "src/domain/usecases/UpdateStudyProgress.js";
+import { getAuthUser, type Variables } from "../middleware/auth.js";
 
 // バリデーションスキーマ
 const updateProgressSchema = z.object({
@@ -20,12 +21,14 @@ export function createStudyRoutes(
   getStudyPlanUseCase: GetStudyPlanUseCase,
   updateStudyProgressUseCase: UpdateStudyProgressUseCase
 ) {
-  const app = new Hono();
+  const app = new Hono<{ Variables: Variables }>();
 
-  // GET /api/study/plan - 全学習計画取得
+  // GET /api/study/plan - 全学習計画取得（ユーザー別）
   app.get("/plan", async (c) => {
     try {
-      const weeks = await getStudyPlanUseCase.execute();
+      const authUser = getAuthUser(c);
+      const weeks = await getStudyPlanUseCase.executeForUser(authUser.userId);
+      
       return c.json({
         success: true,
         data: weeks.map((week) => ({
@@ -57,8 +60,9 @@ export function createStudyRoutes(
   // GET /api/study/plan/:weekNumber - 特定週の計画取得
   app.get("/plan/:weekNumber", async (c) => {
     try {
+      const authUser = getAuthUser(c);
       const weekNumber = parseInt(c.req.param("weekNumber"));
-      const week = await getStudyPlanUseCase.getWeek(weekNumber);
+      const week = await getStudyPlanUseCase.getWeekForUser(authUser.userId, weekNumber);
 
       return c.json({
         success: true,
@@ -89,7 +93,8 @@ export function createStudyRoutes(
   // GET /api/study/current-week - 現在の週取得
   app.get("/current-week", async (c) => {
     try {
-      const currentWeek = await getStudyPlanUseCase.getCurrentWeek();
+      const authUser = getAuthUser(c);
+      const currentWeek = await getStudyPlanUseCase.getCurrentWeekForUser(authUser.userId);
 
       return c.json({
         success: true,
