@@ -25,10 +25,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       ...studyPlan,
       description: studyPlan.description || undefined,
-      examDate: studyPlan.examDate || undefined,
-      endDate: studyPlan.endDate || undefined,
-      preferences: studyPlan.preferences as Record<string, any>,
-      metadata: studyPlan.metadata as Record<string, any>,
+      targetExamDate: studyPlan.targetExamDate || undefined,
+      templateId: studyPlan.templateId || undefined,
+      templateName: studyPlan.templateName || undefined,
+      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -61,10 +62,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       ...studyPlan,
       description: studyPlan.description || undefined,
-      examDate: studyPlan.examDate || undefined,
-      endDate: studyPlan.endDate || undefined,
-      preferences: studyPlan.preferences as Record<string, any>,
-      metadata: studyPlan.metadata as Record<string, any>,
+      targetExamDate: studyPlan.targetExamDate || undefined,
+      templateId: studyPlan.templateId || undefined,
+      templateName: studyPlan.templateName || undefined,
+      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -100,10 +102,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       ...studyPlan,
       description: studyPlan.description || undefined,
-      examDate: studyPlan.examDate || undefined,
-      endDate: studyPlan.endDate || undefined,
-      preferences: studyPlan.preferences as Record<string, any>,
-      metadata: studyPlan.metadata as Record<string, any>,
+      targetExamDate: studyPlan.targetExamDate || undefined,
+      templateId: studyPlan.templateId || undefined,
+      templateName: studyPlan.templateName || undefined,
+      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -117,36 +120,83 @@ export class StudyPlanRepository implements IStudyPlanRepository {
   }
 
   async create(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlanEntity> {
-    const studyPlan = await this.prisma.studyPlan.create({
-      data: {
-        userId,
-        name: data.name,
-        description: data.description,
-        totalWeeks: data.totalWeeks || 12,
-        weeklyHours: data.weeklyHours || 25,
-        dailyHours: data.dailyHours || 3,
-        examDate: data.examDate,
-        startDate: data.startDate || new Date(),
-        isCustom: true,
-        preferences: data.preferences || {},
-        metadata: {}
-      },
-      include: {
-        weeks: {
-          include: {
-            days: true
+    console.log(`[StudyPlanRepository.create] Creating/updating plan for user ${userId}`);
+    
+    // 既存の学習計画をチェック
+    const existingPlan = await this.prisma.studyPlan.findUnique({
+      where: { userId }
+    });
+    
+    console.log(`[StudyPlanRepository.create] Existing plan found:`, existingPlan ? `ID ${existingPlan.id}` : 'None');
+
+    let studyPlan;
+    if (existingPlan) {
+      // 既存の計画がある場合は更新（置き換え）
+      // まず関連する週とタスクを削除
+      await this.prisma.studyDay.deleteMany({
+        where: {
+          week: {
+            studyPlanId: existingPlan.id
           }
         }
-      }
-    });
+      });
+      await this.prisma.studyWeek.deleteMany({
+        where: { studyPlanId: existingPlan.id }
+      });
+
+      // 学習計画を更新
+      studyPlan = await this.prisma.studyPlan.update({
+        where: { userId },
+        data: {
+          name: data.name,
+          description: data.description,
+          templateId: data.templateId,
+          templateName: data.templateName,
+          targetExamDate: data.targetExamDate,
+          startDate: data.startDate || new Date(),
+          settings: data.settings || {},
+          isActive: true,
+          updatedAt: new Date()
+        },
+        include: {
+          weeks: {
+            include: {
+              days: true
+            }
+          }
+        }
+      });
+    } else {
+      // 新規作成
+      studyPlan = await this.prisma.studyPlan.create({
+        data: {
+          userId,
+          name: data.name,
+          description: data.description,
+          templateId: data.templateId,
+          templateName: data.templateName,
+          targetExamDate: data.targetExamDate,
+          startDate: data.startDate || new Date(),
+          settings: data.settings || {}
+        },
+        include: {
+          weeks: {
+            include: {
+              days: true
+            }
+          }
+        }
+      });
+    }
 
     return {
       ...studyPlan,
       description: studyPlan.description || undefined,
-      examDate: studyPlan.examDate || undefined,
-      endDate: studyPlan.endDate || undefined,
-      preferences: studyPlan.preferences as Record<string, any>,
-      metadata: studyPlan.metadata as Record<string, any>,
+      targetExamDate: studyPlan.targetExamDate || undefined,
+      templateId: studyPlan.templateId || undefined,
+      templateName: studyPlan.templateName || undefined,
+      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -165,13 +215,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       data: {
         name: data.name,
         description: data.description,
-        totalWeeks: data.totalWeeks,
-        weeklyHours: data.weeklyHours,
-        dailyHours: data.dailyHours,
-        examDate: data.examDate,
-        endDate: data.endDate,
+        templateId: data.templateId,
+        templateName: data.templateName,
+        targetExamDate: data.targetExamDate,
         isActive: data.isActive,
-        preferences: data.preferences
+        settings: data.settings
       },
       include: {
         weeks: {
@@ -185,10 +233,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       ...studyPlan,
       description: studyPlan.description || undefined,
-      examDate: studyPlan.examDate || undefined,
-      endDate: studyPlan.endDate || undefined,
-      preferences: studyPlan.preferences as Record<string, any>,
-      metadata: studyPlan.metadata as Record<string, any>,
+      targetExamDate: studyPlan.targetExamDate || undefined,
+      templateId: studyPlan.templateId || undefined,
+      templateName: studyPlan.templateName || undefined,
+      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -238,10 +287,10 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       ...updatedPlan,
       description: updatedPlan.description || undefined,
-      examDate: updatedPlan.examDate || undefined,
-      endDate: updatedPlan.endDate || undefined,
-      preferences: updatedPlan.preferences as Record<string, any>,
-      metadata: updatedPlan.metadata as Record<string, any>,
+      targetExamDate: updatedPlan.targetExamDate || undefined,
+      templateId: updatedPlan.templateId || undefined,
+      templateName: updatedPlan.templateName || undefined,
+      settings: updatedPlan.settings as any || {},
       weeks: updatedPlan.weeks ? updatedPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -270,10 +319,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       ...studyPlan,
       description: studyPlan.description || undefined,
-      examDate: studyPlan.examDate || undefined,
-      endDate: studyPlan.endDate || undefined,
-      preferences: studyPlan.preferences as Record<string, any>,
-      metadata: studyPlan.metadata as Record<string, any>,
+      targetExamDate: studyPlan.targetExamDate || undefined,
+      templateId: studyPlan.templateId || undefined,
+      templateName: studyPlan.templateName || undefined,
+      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
         goals: Array.isArray(week.goals) ? week.goals : JSON.parse(week.goals || '[]'),
@@ -290,16 +340,27 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     return {
       name: 'AP試験対策 標準学習計画',
       description: '応用情報技術者試験の合格を目指す12週間の学習計画です',
-      totalWeeks: 12,
-      weeklyHours: 25,
-      dailyHours: 3,
-      preferences: {
-        focusAreas: ['基礎理論', 'アルゴリズム', 'データベース', 'ネットワーク'],
-        studyStyle: 'balanced',
-        difficultyLevel: 'intermediate',
-        reviewFrequency: 3,
-        breakDuration: 15,
-        notificationEnabled: true
+      templateId: 'ap-standard-12week',
+      templateName: 'AP試験対策 標準コース',
+      settings: {
+        timeSettings: {
+          totalWeeks: 12,
+          weeklyHours: 25,
+          dailyHours: 3
+        },
+        planType: {
+          isCustom: false,
+          source: 'template_based'
+        },
+        preferences: {
+          focusAreas: ['基礎理論', 'アルゴリズム', 'データベース', 'ネットワーク'],
+          studyStyle: 'balanced',
+          difficultyLevel: 'intermediate',
+          reviewFrequency: 3,
+          breakDuration: 15,
+          notificationEnabled: true
+        },
+        metadata: {}
       }
     };
   }
@@ -314,9 +375,9 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     const data = {
       ...template,
       ...customizations,
-      preferences: {
-        ...template.preferences,
-        ...(customizations?.preferences || {})
+      settings: {
+        ...template.settings,
+        ...(customizations?.settings || {})
       }
     };
 
@@ -346,7 +407,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       throw new Error('Study plan not found');
     }
 
-    const totalWeeks = studyPlan.weeks.length;
+    const actualWeeksCount = studyPlan.weeks.length;
     const completedWeeks = studyPlan.weeks.filter(week => 
       week.days.every(day => day.completed)
     ).length;
@@ -368,12 +429,14 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       : 0;
 
     const today = new Date();
-    const endDate = studyPlan.examDate || 
-      new Date(studyPlan.startDate.getTime() + (studyPlan.totalWeeks * 7 * 24 * 60 * 60 * 1000));
+    const settings = studyPlan.settings as any || {};
+    const plannedTotalWeeks = settings.timeSettings?.totalWeeks || 12;
+    const endDate = studyPlan.targetExamDate || 
+      new Date(studyPlan.startDate.getTime() + (plannedTotalWeeks * 7 * 24 * 60 * 60 * 1000));
     const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)));
 
     return {
-      totalWeeks,
+      totalWeeks: plannedTotalWeeks,
       completedWeeks,
       totalStudyHours,
       actualStudyHours,
@@ -397,9 +460,11 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     });
 
     // 標準テンプレートに基づいて週を生成
-    const weekTemplates = this.getWeekTemplates(studyPlan.totalWeeks);
+    const settings = studyPlan.settings as any || {};
+    const weeksToGenerate = settings.timeSettings?.totalWeeks || 12;
+    const weekTemplates = this.getWeekTemplates(weeksToGenerate);
 
-    for (let i = 0; i < studyPlan.totalWeeks; i++) {
+    for (let i = 0; i < weeksToGenerate; i++) {
       const template = weekTemplates[i] || weekTemplates[weekTemplates.length - 1];
       
       const week = await this.prisma.studyWeek.create({
@@ -420,7 +485,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
             day: dayTemplate.day,
             subject: dayTemplate.subject,
             topics: dayTemplate.topics,
-            estimatedTime: Math.round(studyPlan.dailyHours * 60), // Convert hours to minutes
+            estimatedTime: Math.round((settings.timeSettings?.dailyHours || 3) * 60), // Convert hours to minutes
             actualTime: 0,
             completed: false,
             understanding: 0

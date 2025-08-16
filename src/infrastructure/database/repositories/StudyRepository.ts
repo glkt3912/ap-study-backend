@@ -20,9 +20,28 @@ export class StudyRepository implements IStudyRepository {
     return weeks.map(week => this.toDomainEntity(week));
   }
 
-  async findWeekByNumber(weekNumber: number): Promise<StudyWeekEntity | null> {
+  async findWeekByNumber(weekNumber: number, studyPlanId?: number): Promise<StudyWeekEntity | null> {
+    if (!studyPlanId) {
+      // If no studyPlanId provided, find the first one with that week number
+      const week = await this.prisma.studyWeek.findFirst({
+        where: { weekNumber },
+        include: {
+          days: {
+            orderBy: { id: 'asc' },
+          },
+        },
+      });
+      return week ? this.toDomainEntity(week) : null;
+    }
+    
+    // Use composite unique constraint when studyPlanId is provided
     const week = await this.prisma.studyWeek.findUnique({
-      where: { weekNumber },
+      where: { 
+        studyPlanId_weekNumber: {
+          studyPlanId,
+          weekNumber
+        }
+      },
       include: {
         days: {
           orderBy: { id: 'asc' },
