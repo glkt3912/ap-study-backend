@@ -11,9 +11,8 @@ echo "PostgreSQL is ready!"
 echo "Running database migrations..."
 npx prisma migrate deploy --schema=./src/infrastructure/database/prisma/schema.prisma
 
-# Seed the database
-echo "Seeding database..."
-npx tsx src/infrastructure/database/seeds/index.ts
+# Note: Database seeding removed from automatic startup
+# Use manual script: ./scripts/seed-database.sh if needed
 
 # Start the application
 echo "Starting application..."

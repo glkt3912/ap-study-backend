@@ -88,12 +88,35 @@ async function seedDatabase() {
   console.log('🌱 データベースの初期化を開始...');
 
   try {
-    // 既存データを削除
-    await prisma.studyDay.deleteMany();
-    await prisma.studyWeek.deleteMany();
+    // 既存データを削除（ただし学習計画に関連付いていないもののみ）
+    await prisma.studyDay.deleteMany({
+      where: {
+        week: {
+          studyPlanId: null
+        }
+      }
+    });
+    await prisma.studyWeek.deleteMany({
+      where: {
+        studyPlanId: null
+      }
+    });
 
-    // 学習週データを作成
+    // 学習週データを作成（既存データがない場合のみ）
     for (const weekData of studyPlanData) {
+      // 既存の週データをチェック
+      const existingWeek = await prisma.studyWeek.findFirst({
+        where: {
+          weekNumber: weekData.weekNumber,
+          studyPlanId: null
+        }
+      });
+      
+      if (existingWeek) {
+        console.log(`Week ${weekData.weekNumber} already exists, skipping...`);
+        continue;
+      }
+
       const week = await prisma.studyWeek.create({
         data: {
           weekNumber: weekData.weekNumber,

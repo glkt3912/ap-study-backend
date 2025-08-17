@@ -110,69 +110,7 @@ const dynamicStudyPlanRequestSchema = z.object({
   customSettings: studyPlanCustomSettingsSchema.optional()
 });
 
-// GET /study-plan/templates - 学習計画テンプレート取得 (パス固有なのでuserIdより前に配置)
-app.get('/templates', async (c) => {
-  try {
-    const templates = [
-      {
-        id: 1,
-        name: '初学者向けプラン',
-        description: '基礎から着実に学習するプラン',
-        defaultPeriodDays: 120,
-        defaultWeeklyHours: 15,
-        difficulty: 'beginner' as const,
-        targetAudience: '初学者',
-        features: ['基礎重視', '段階的学習'],
-        isPopular: true
-      },
-      {
-        id: 2,
-        name: '短期集中プラン',
-        description: '効率重視の短期集中プラン',
-        defaultPeriodDays: 60,
-        defaultWeeklyHours: 30,
-        difficulty: 'intermediate' as const,
-        targetAudience: '経験者',
-        features: ['効率重視', '実践中心'],
-        isPopular: false
-      },
-      {
-        id: 3,
-        name: 'バランス型プラン',
-        description: '仕事と両立しながら学習するプラン',
-        defaultPeriodDays: 90,
-        defaultWeeklyHours: 20,
-        difficulty: 'intermediate' as const,
-        targetAudience: '社会人',
-        features: ['仕事両立', 'バランス重視'],
-        isPopular: true
-      }
-    ];
 
-    return c.json({
-      success: true,
-      data: templates
-    });
-  } catch (error) {
-    console.error('Error fetching study plan templates:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
-
-// GET /study-plan/schedule-templates - スケジュールテンプレート取得
-app.get('/schedule-templates', async (c) => {
-  try {
-    const templates = await getScheduleTemplates();
-
-    return c.json({
-      success: true,
-      data: templates
-    });
-  } catch (error) {
-    console.error('Error fetching schedule templates:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
 
 // GET /study-plan/:userId - ユーザーの学習計画取得
 app.get('/:userId', async (c) => {
@@ -291,30 +229,6 @@ app.delete('/:planId', async (c) => {
   }
 });
 
-// POST /study-plan/:userId/from-template - テンプレートから学習計画作成
-app.post('/:userId/from-template', async (c) => {
-  try {
-    const userId = parseInt(c.req.param('userId'));
-    
-    if (isNaN(userId)) {
-      return c.json({ success: false, error: 'Invalid user ID' }, 400);
-    }
-
-    const body = await c.req.json();
-    const templateName = body.templateName || 'default';
-    const customizations = body.customizations || {};
-
-    const studyPlan = await studyPlanUseCases.createFromTemplate(userId, templateName, customizations);
-
-    return c.json({
-      success: true,
-      data: studyPlan
-    });
-  } catch (error) {
-    console.error('Error creating study plan from template:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
 
 // GET /study-plan/:planId/progress - 学習計画の進捗取得
 app.get('/:planId/progress', async (c) => {
@@ -337,126 +251,10 @@ app.get('/:planId/progress', async (c) => {
   }
 });
 
-// PUT /study-plan/:planId/preferences - 学習設定調整
-app.put('/:planId/preferences', async (c) => {
-  try {
-    const planId = parseInt(c.req.param('planId'));
-    
-    if (isNaN(planId)) {
-      return c.json({ success: false, error: 'Invalid plan ID' }, 400);
-    }
 
-    const body = await c.req.json();
-    const validatedPreferences = preferencesSchema.parse(body);
-    
-    const studyPlan = await studyPlanUseCases.adjustStudyPlan(planId, validatedPreferences);
 
-    return c.json({
-      success: true,
-      data: studyPlan
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ success: false, error: 'Validation error', details: error.issues }, 400);
-    }
-    console.error('Error adjusting study plan preferences:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
 
-// GET /study-plan/:userId/recommendations - 学習推奨事項取得
-app.get('/:userId/recommendations', async (c) => {
-  try {
-    const userId = parseInt(c.req.param('userId'));
-    
-    if (isNaN(userId)) {
-      return c.json({ success: false, error: 'Invalid user ID' }, 400);
-    }
 
-    const recommendations = await studyPlanUseCases.generateRecommendations(userId);
-
-    return c.json({
-      success: true,
-      data: recommendations
-    });
-  } catch (error) {
-    console.error('Error generating recommendations:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
-
-// POST /study-plan/:userId/dynamic - 動的学習計画作成
-app.post('/:userId/dynamic', async (c) => {
-  try {
-    const userId = parseInt(c.req.param('userId'));
-    
-    if (isNaN(userId)) {
-      return c.json({ success: false, error: 'Invalid user ID' }, 400);
-    }
-
-    const body = await c.req.json();
-    const validatedData = dynamicStudyPlanRequestSchema.parse(body);
-    
-    // Generate dynamic study plan based on AI optimization and user preferences
-    const dynamicPlan = await generateDynamicStudyPlan(userId, validatedData);
-
-    return c.json({
-      success: true,
-      data: dynamicPlan
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ success: false, error: 'Validation error', details: error.issues }, 400);
-    }
-    console.error('Error creating dynamic study plan:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
-
-// POST /study-plan/:planId/optimize - 学習計画最適化
-app.post('/:planId/optimize', async (c) => {
-  try {
-    const planId = parseInt(c.req.param('planId'));
-    
-    if (isNaN(planId)) {
-      return c.json({ success: false, error: 'Invalid plan ID' }, 400);
-    }
-
-    const body = await c.req.json();
-    const optimizationParams = body.optimizationParams || {};
-    
-    const optimizedPlan = await optimizeStudyPlan(planId, optimizationParams);
-
-    return c.json({
-      success: true,
-      data: optimizedPlan
-    });
-  } catch (error) {
-    console.error('Error optimizing study plan:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
-
-// GET /study-plan/:planId/analytics - 学習計画分析データ取得
-app.get('/:planId/analytics', async (c) => {
-  try {
-    const planId = parseInt(c.req.param('planId'));
-    
-    if (isNaN(planId)) {
-      return c.json({ success: false, error: 'Invalid plan ID' }, 400);
-    }
-
-    const analytics = await getStudyPlanAnalytics(planId);
-
-    return c.json({
-      success: true,
-      data: analytics
-    });
-  } catch (error) {
-    console.error('Error fetching study plan analytics:', error);
-    return c.json({ success: false, error: 'Internal server error' }, 500);
-  }
-});
 
 
 // Helper functions for dynamic study plan functionality

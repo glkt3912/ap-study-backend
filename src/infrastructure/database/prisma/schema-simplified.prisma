@@ -1,0 +1,221 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== CORE USER MANAGEMENT =====
+model User {
+  id                Int                @id @default(autoincrement())
+  email             String             @unique
+  username          String             @unique
+  name              String
+  password          String
+  role              String             @default("user")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  refreshToken      String?
+  refreshTokenExp   DateTime?
+
+  // Simplified relations (5 core relations only)
+  studyPlan         StudyPlan?
+  testSessions      TestSession[]
+  userAnalysis      UserAnalysis[]
+  reviewEntries     ReviewEntry[]
+  examConfig        ExamConfig?
+
+  @@map("users")
+}
+
+// ===== UNIFIED STUDY SYSTEM =====
+model StudyPlan {
+  id                Int         @id @default(autoincrement())
+  userId            Int         @unique
+  name              String
+  description       String?
+  isActive          Boolean     @default(true)
+  startDate         DateTime    @default(now())
+  targetExamDate    DateTime?
+  templateId        String?     // Template reference
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  
+  // Simplified settings (structured, not JSON)
+  weeklyHours       Int         @default(10)
+  studyDaysPerWeek  Int         @default(5)
+  preferredTimes    String?     // "morning,evening"
+  difficulty        String      @default("intermediate")
+  
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studyUnits        StudyUnit[]
+  milestones        StudyMilestone[]
+
+  @@map("study_plans")
+}
+
+model StudyUnit {
+  id              Int         @id @default(autoincrement())
+  studyPlanId     Int
+  weekNumber      Int
+  dayOfWeek       String      // "monday", "tuesday", etc.
+  subject         String
+  topic           String
+  estimatedHours  Float
+  actualHours     Float       @default(0)
+  difficulty      String      @default("medium")
+  isCompleted     Boolean     @default(false)
+  understanding   Int         @default(0)  // 0-5 scale
+  notes           String?
+  dueDate         DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  studyPlan       StudyPlan   @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([studyPlanId, weekNumber, dayOfWeek])
+  @@map("study_units")
+}
+
+// ===== UNIFIED TEST SYSTEM =====
+model TestSession {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  sessionType     String   // "morning", "afternoon", "quiz", "mock"
+  category        String   // "基本情報", "応用情報", etc.
+  totalQuestions  Int
+  correctAnswers  Int      @default(0)
+  timeSpentMinutes Int     @default(0)
+  score           Float?   // Percentage or points
+  difficulty      String   @default("medium")
+  isCompleted     Boolean  @default(false)
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers         TestAnswer[]
+
+  @@map("test_sessions")
+}
+
+model TestAnswer {
+  id            Int         @id @default(autoincrement())
+  sessionId     Int
+  questionId    String      // Reference to Question
+  userAnswer    String
+  correctAnswer String
+  isCorrect     Boolean
+  timeSpent     Int?        // seconds
+  createdAt     DateTime    @default(now())
+  
+  session       TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@map("test_answers")
+}
+
+// ===== UNIFIED ANALYSIS SYSTEM =====
+model UserAnalysis {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  analysisType      String   // "learning_efficiency", "prediction", "weakness"
+  period            String   // "weekly", "monthly", "overall"
+  analysisDate      DateTime @default(now())
+  
+  // Structured data instead of JSON
+  overallScore      Float?
+  passProbability   Float?
+  weekAreasRating   Float?   // 0.0-1.0
+  strongSubjects    String?  // comma-separated
+  weakSubjects      String?  // comma-separated
+  recommendations   String?  // structured text
+  
+  targetExamDate    DateTime?
+  estimatedReadiness String? // "ready", "needs_work", "not_ready"
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_analysis")
+}
+
+// ===== SIMPLIFIED REVIEW SYSTEM =====
+model ReviewEntry {
+  id                Int      @id @default(autoincrement())
+  userId            Int
+  subject           String
+  topic             String
+  difficulty        String   // "easy", "medium", "hard"
+  lastReviewDate    DateTime @default(now())
+  nextReviewDate    DateTime
+  reviewCount       Int      @default(0)
+  currentInterval   Int      @default(1)  // days
+  understanding     Int      @default(0)  // 0-5 scale
+  isActive          Boolean  @default(true)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("review_entries")
+}
+
+// ===== QUESTIONS (UNCHANGED) =====
+model Question {
+  id          String   @id
+  year        Int
+  season      String
+  section     String
+  number      Int
+  category    String
+  subcategory String?
+  difficulty  Int
+  question    String
+  answer      String
+  explanation String?
+  choices     String   // JSON string for choices
+  tags        String?  // comma-separated tags
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("questions")
+}
+
+// ===== EXAM CONFIG (SIMPLIFIED) =====
+model ExamConfig {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @unique
+  examDate    DateTime
+  targetScore Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("exam_configs")
+}
+
+// ===== MILESTONES (SIMPLIFIED) =====
+model StudyMilestone {
+  id             Int        @id @default(autoincrement())
+  studyPlanId    Int
+  title          String
+  targetDate     DateTime
+  isCompleted    Boolean    @default(false)
+  completedDate  DateTime?
+  description    String?
+  priority       String     @default("medium")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  
+  studyPlan      StudyPlan  @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+
+  @@map("study_milestones")
+}

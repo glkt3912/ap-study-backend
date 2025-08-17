@@ -52,6 +52,29 @@ export class StudyRepository implements IStudyRepository {
     return week ? this.toDomainEntity(week) : null;
   }
 
+  async findWeeksByUserId(userId: number): Promise<StudyWeekEntity[]> {
+    // ユーザーの学習計画を取得
+    const studyPlan = await this.prisma.studyPlan.findUnique({
+      where: { userId },
+      include: {
+        weeks: {
+          include: {
+            days: {
+              orderBy: { id: 'asc' },
+            },
+          },
+          orderBy: { weekNumber: 'asc' },
+        },
+      },
+    });
+
+    if (!studyPlan) {
+      return [];
+    }
+
+    return studyPlan.weeks.map(week => this.toDomainEntity(week));
+  }
+
   async updateWeek(week: StudyWeekEntity): Promise<StudyWeekEntity> {
     if (!week.id) {
       throw new Error('週のIDが必要です');
@@ -223,6 +246,64 @@ export class StudyRepository implements IStudyRepository {
     // バッチ作成
     for (const week of defaultWeeks) {
       await this.createWeek(week);
+    }
+  }
+
+  async initializeUserPlan(userId: number): Promise<void> {
+    // ユーザー用の学習計画を取得または作成（upsert）
+    let studyPlan = await this.prisma.studyPlan.findUnique({
+      where: { userId },
+      include: { weeks: true }
+    });
+
+    if (!studyPlan) {
+      // StudyPlanが存在しない場合は作成
+      studyPlan = await this.prisma.studyPlan.create({
+        data: {
+          userId,
+          name: '基本学習計画',
+          description: '応用情報技術者試験対策の基本学習計画',
+          templateId: 'default-12week',
+          templateName: '基本12週間コース',
+        },
+        include: { weeks: true }
+      });
+    } else if (studyPlan.weeks.length > 0) {
+      // 既にweeksがある場合は何もしない
+      return;
+    }
+
+    // デフォルトの週データを取得してコピー
+    const defaultWeeks = await this.findAllWeeks();
+    
+    // ユーザー専用の週データを作成
+    for (const week of defaultWeeks) {
+      const createdWeek = await this.prisma.studyWeek.create({
+        data: {
+          studyPlanId: studyPlan.id,
+          weekNumber: week.weekNumber,
+          title: week.title,
+          phase: week.phase,
+          goals: JSON.stringify(week.goals),
+        },
+      });
+
+      // 週に対応する日データを作成
+      for (const day of week.days) {
+        await this.prisma.studyDay.create({
+          data: {
+            weekId: createdWeek.id,
+            day: day.day,
+            subject: day.subject,
+            topics: JSON.stringify(day.topics),
+            estimatedTime: day.estimatedTime,
+            actualTime: 0,
+            completed: false,
+            understanding: 0,
+            memo: day.memo,
+          },
+        });
+      }
     }
   }
 
