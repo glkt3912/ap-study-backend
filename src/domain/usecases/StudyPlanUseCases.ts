@@ -25,6 +25,7 @@ export class StudyPlanUseCases {
       description: data.description,
       templateId: data.templateId,
       templateName: data.templateName,
+      studyWeeksData: data.studyWeeksData, // studyWeeksDataを渡す
       targetExamDate: data.targetExamDate,
       startDate: data.startDate || new Date(),
       settings: data.settings || {
@@ -42,8 +43,10 @@ export class StudyPlanUseCases {
       }
     });
 
-    // 学習週を生成
-    await this.studyPlanRepository.generateWeeks(studyPlan.id);
+    // studyWeeksDataが提供されていない場合のみ、デフォルトの学習週を生成
+    if (!data.studyWeeksData || !Array.isArray(data.studyWeeksData) || data.studyWeeksData.length === 0) {
+      await this.studyPlanRepository.generateWeeks(studyPlan.id);
+    }
 
     return studyPlan;
   }

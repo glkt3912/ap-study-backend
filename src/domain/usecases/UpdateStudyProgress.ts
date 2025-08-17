@@ -26,6 +26,26 @@ export class UpdateStudyProgressUseCase {
     return await this.studyRepository.updateWeek(updatedWeek);
   }
 
+  // タスクを未完了にする
+  async uncompleteTask(
+    weekNumber: number,
+    dayIndex: number
+  ): Promise<StudyWeekEntity> {
+    const week = await this.studyRepository.findWeekByNumber(weekNumber);
+    if (!week) {
+      throw new Error(`第${weekNumber}週の計画が見つかりません`);
+    }
+
+    if (dayIndex < 0 || dayIndex >= week.days.length) {
+      throw new Error("無効な日のインデックスです");
+    }
+
+    // ドメインロジックを使用してタスク未完了化
+    const updatedWeek = week.uncompleteTask(dayIndex);
+
+    return await this.studyRepository.updateWeek(updatedWeek);
+  }
+
   // 学習時間を更新
   async updateStudyTime(
     weekNumber: number,
