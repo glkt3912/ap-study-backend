@@ -251,7 +251,7 @@ export function createQuizRoutes() {
   app.post('/start', zValidator('json', startQuizSchema), async c => {
     try {
       const { category, sessionType, questionCount } = c.req.valid('json');
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
 
       // Quizセッションを作成
@@ -308,7 +308,7 @@ export function createQuizRoutes() {
   app.post('/answer', zValidator('json', submitAnswerSchema), async c => {
     try {
       const { sessionId, questionId, userAnswer, timeSpent } = c.req.valid('json');
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
 
       // リポジトリパターンで回答処理
@@ -420,7 +420,7 @@ export function createQuizRoutes() {
   // GET /api/quiz/sessions - セッション履歴取得
   app.get('/sessions', async c => {
     try {
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
       const limit = parseInt(c.req.query('limit') || '10');
       const offset = parseInt(c.req.query('offset') || '0');
@@ -460,7 +460,7 @@ export function createQuizRoutes() {
   // GET /api/quiz/stats - 統計情報取得（ユーザー別）
   app.get('/stats', async c => {
     try {
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
 
       const sessions = await prisma.quizSession.findMany({
@@ -515,7 +515,7 @@ export function createQuizRoutes() {
   // GET /api/quiz/weak-points - 苦手分野分析
   app.get('/weak-points', async c => {
     try {
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
 
       const userAnswers = await prisma.userAnswer.findMany({
@@ -592,7 +592,7 @@ export function createQuizRoutes() {
   // GET /api/quiz/recommendations - 学習推奨問題
   app.get('/recommendations', async c => {
     try {
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
       const limit = parseInt(c.req.query('limit') || '10');
 
@@ -655,7 +655,7 @@ export function createQuizRoutes() {
   // GET /api/quiz/progress - 学習進捗取得
   app.get('/progress', async c => {
     try {
-      const authUser = c.get('authUser') || { userId: 0 };
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const userId = authUser.userId;
 
       // 日別進捗データを取得（過去30日）

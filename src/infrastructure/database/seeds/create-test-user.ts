@@ -1,9 +1,9 @@
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcrypt');
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-async function createTestUser() {
+export async function createTestUser() {
   try {
     console.log('🔄 テストユーザーを作成中...');
     
@@ -48,8 +48,6 @@ async function createTestUser() {
 }
 
 // 直接実行の場合
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   createTestUser();
 }
-
-module.exports = { createTestUser };

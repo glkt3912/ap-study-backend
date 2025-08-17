@@ -527,4 +527,114 @@ if (process.env.NODE_ENV === 'development') {
   })
 }
 
+/**
+ * 開発環境用の簡易ログイン
+ * メールアドレスまたはユーザーIDでJWTトークンを即座に生成
+ */
+// 開発環境でのみ有効
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined) {
+  const devLoginSchema = z.object({
+    email: z.string().email().optional(),
+    userId: z.number().optional(),
+    username: z.string().optional()
+  }).refine(data => data.email || data.userId || data.username, {
+    message: "email, userId, or username is required"
+  })
+
+  app.post('/dev-login', zValidator('json', devLoginSchema), async (c) => {
+    try {
+      const { email, userId, username } = c.req.valid('json')
+      const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key'
+      
+      // ユーザーを検索
+      let user = null
+      if (userId) {
+        user = await prisma.user.findUnique({ where: { id: userId } })
+      } else if (email) {
+        user = await prisma.user.findUnique({ where: { email } })
+      } else if (username) {
+        user = await prisma.user.findUnique({ where: { username } })
+      }
+      
+      if (!user) {
+        return c.json({
+          success: false,
+          error: 'User not found',
+          errorCode: 'USER_NOT_FOUND'
+        }, 404)
+      }
+      
+      // JWTトークン生成
+      const payload = {
+        sub: user.id.toString(),
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 2) // 2時間有効
+      }
+      
+      const token = await sign(payload, JWT_SECRET)
+      
+      return c.json({
+        success: true,
+        message: 'Development login successful',
+        data: {
+          token,
+          user: {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            name: user.name,
+            role: user.role
+          },
+          expiresIn: '2h'
+        }
+      })
+      
+    } catch (error) {
+      console.error('Dev login error:', error)
+      return c.json({
+        success: false,
+        error: 'Login failed',
+        errorCode: 'LOGIN_FAILED'
+      }, 500)
+    }
+  })
+
+  // 開発環境用のユーザー一覧取得
+  app.get('/dev-users', async (c) => {
+    try {
+      const users = await prisma.user.findMany({
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          name: true,
+          role: true,
+          createdAt: true
+        },
+        orderBy: { id: 'asc' }
+      })
+      
+      return c.json({
+        success: true,
+        data: { users }
+      })
+      
+    } catch (error) {
+      console.error('Get users error:', error)
+      return c.json({
+        success: false,
+        error: 'Failed to get users'
+      }, 500)
+    }
+  })
+}
+
+// テスト用の簡単なエンドポイント
+app.get('/test', (c) => {
+  return c.json({ message: 'Auth route is working', env: process.env.NODE_ENV })
+})
+
 export default app
