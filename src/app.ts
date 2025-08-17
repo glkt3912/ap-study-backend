@@ -37,6 +37,7 @@ import logoutRoutes from 'src/infrastructure/web/routes/logout.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
 import examConfigRoutes from 'src/infrastructure/web/routes/exam-config.js';
 import studyPlanRoutes from 'src/infrastructure/web/routes/study-plan.js';
+import createUnifiedApiRoutes from 'src/infrastructure/web/routes/unified-api.js';
 
 // ミドルウェア
 import { authMiddleware, optionalAuthMiddleware } from 'src/infrastructure/web/middleware/auth.js';
@@ -291,8 +292,20 @@ app.route(
 // Exam Config API
 app.route('/api/exam-config', examConfigRoutes);
 
-// Study Plan API
+// Study Plan API (Legacy - will be replaced)
 app.route('/api/study-plan', studyPlanRoutes);
+
+// Phase 2: Unified API Routes - Direct Path Integration
+const unifiedApiRoutes = createUnifiedApiRoutes(container.prisma);
+
+// New unified API endpoints with proper authentication
+app.use('/api/study-plans/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
+app.use('/api/test-sessions/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
+app.use('/api/user-analysis/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
+app.use('/api/review-entries/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
+
+// Mount unified routes
+app.route('/api', unifiedApiRoutes);
 
 
 // エラーハンドリング（標準化されたエラーレスポンス）
@@ -339,7 +352,11 @@ async function startServer() {
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
   logger.info(`📅 Exam Config API: http://localhost:${port}/api/exam-config`);
-  logger.info(`📋 Study Plan API: http://localhost:${port}/api/study-plan`);
+  logger.info(`📋 Study Plan API (Legacy): http://localhost:${port}/api/study-plan`);
+  logger.info(`🔄 Unified Study Plans API: http://localhost:${port}/api/study-plans`);
+  logger.info(`🔄 Unified Test Sessions API: http://localhost:${port}/api/test-sessions`);
+  logger.info(`🔄 Unified User Analysis API: http://localhost:${port}/api/user-analysis`);
+  logger.info(`🔄 Unified Review Entries API: http://localhost:${port}/api/review-entries`);
   logger.info(`🔐 Authentication API: http://localhost:${port}/api/auth`);
   logger.info(`📊 Monitoring API: http://localhost:${port}/api/monitoring`);
 

@@ -143,6 +143,8 @@ export function createStudyRoutes(
         if (completed !== undefined) {
           if (completed) {
             await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
+          } else {
+            await updateStudyProgressUseCase.uncompleteTask(weekNumber, dayIndex);
           }
         }
 
