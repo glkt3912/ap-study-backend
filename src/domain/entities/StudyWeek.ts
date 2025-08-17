@@ -74,6 +74,29 @@ export class StudyWeekEntity {
     );
   }
 
+  // ビジネスロジック: タスクを未完了にする
+  uncompleteTask(dayIndex: number): StudyWeekEntity {
+    const updatedDays = this.days.map((day, index) => {
+      if (index === dayIndex) {
+        return {
+          ...day,
+          completed: false,
+          actualTime: 0, // 未完了にする際は実際時間をリセット
+        };
+      }
+      return day;
+    });
+
+    return new StudyWeekEntity(
+      this.id,
+      this.weekNumber,
+      this.title,
+      this.phase,
+      this.goals,
+      updatedDays
+    );
+  }
+
   // ビジネスロジック: 理解度を更新
   updateUnderstanding(
     dayIndex: number,

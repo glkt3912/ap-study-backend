@@ -48,6 +48,7 @@ export interface CreateStudyPlanRequest {
   description?: string;
   templateId?: string;
   templateName?: string;
+  studyWeeksData?: any[];
   targetExamDate?: Date;
   startDate?: Date;
   settings?: StudyPlanSettings;
