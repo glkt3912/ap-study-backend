@@ -250,16 +250,28 @@ export class StudyRepository implements IStudyRepository {
   }
 
   async initializeUserPlan(userId: number): Promise<void> {
-    // ユーザー用の学習計画を作成
-    const studyPlan = await this.prisma.studyPlan.create({
-      data: {
-        userId,
-        name: '基本学習計画',
-        description: '応用情報技術者試験対策の基本学習計画',
-        templateId: 'default-12week',
-        templateName: '基本12週間コース',
-      },
+    // ユーザー用の学習計画を取得または作成（upsert）
+    let studyPlan = await this.prisma.studyPlan.findUnique({
+      where: { userId },
+      include: { weeks: true }
     });
+
+    if (!studyPlan) {
+      // StudyPlanが存在しない場合は作成
+      studyPlan = await this.prisma.studyPlan.create({
+        data: {
+          userId,
+          name: '基本学習計画',
+          description: '応用情報技術者試験対策の基本学習計画',
+          templateId: 'default-12week',
+          templateName: '基本12週間コース',
+        },
+        include: { weeks: true }
+      });
+    } else if (studyPlan.weeks.length > 0) {
+      // 既にweeksがある場合は何もしない
+      return;
+    }
 
     // デフォルトの週データを取得してコピー
     const defaultWeeks = await this.findAllWeeks();

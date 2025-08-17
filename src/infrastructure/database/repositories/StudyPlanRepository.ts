@@ -121,6 +121,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
 
   async create(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlanEntity> {
     console.log(`[StudyPlanRepository.create] Creating/updating plan for user ${userId}`);
+    console.log(`[StudyPlanRepository.create] Received data:`, JSON.stringify(data, null, 2));
     
     // 既存の学習計画をチェック
     const existingPlan = await this.prisma.studyPlan.findUnique({
@@ -152,6 +153,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
           description: data.description,
           templateId: data.templateId,
           templateName: data.templateName,
+          studyWeeksData: data.studyWeeksData,
           targetExamDate: data.targetExamDate,
           startDate: data.startDate || new Date(),
           settings: data.settings || {},
@@ -175,6 +177,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
           description: data.description,
           templateId: data.templateId,
           templateName: data.templateName,
+          studyWeeksData: data.studyWeeksData,
           targetExamDate: data.targetExamDate,
           startDate: data.startDate || new Date(),
           settings: data.settings || {}
@@ -187,6 +190,73 @@ export class StudyPlanRepository implements IStudyPlanRepository {
           }
         }
       });
+    }
+
+    // studyWeeksDataが提供されている場合、実際のStudyWeekとStudyDayレコードを作成
+    console.log(`[StudyPlanRepository.create] Checking studyWeeksData:`, data.studyWeeksData ? 'present' : 'missing', Array.isArray(data.studyWeeksData) ? 'is array' : 'not array');
+    if (data.studyWeeksData && Array.isArray(data.studyWeeksData)) {
+      console.log(`[StudyPlanRepository.create] Creating ${data.studyWeeksData.length} weeks from template data`);
+      
+      for (const weekData of data.studyWeeksData) {
+        const createdWeek = await this.prisma.studyWeek.create({
+          data: {
+            studyPlanId: studyPlan.id,
+            weekNumber: weekData.weekNumber,
+            title: weekData.title,
+            phase: weekData.phase,
+            goals: weekData.goals
+          }
+        });
+
+        // 各週の日データを作成
+        if (weekData.days && Array.isArray(weekData.days)) {
+          for (const dayData of weekData.days) {
+            await this.prisma.studyDay.create({
+              data: {
+                weekId: createdWeek.id,
+                day: dayData.day,
+                subject: dayData.subject,
+                topics: dayData.topics,
+                estimatedTime: dayData.estimatedTime,
+                actualTime: dayData.actualTime || 0,
+                completed: dayData.completed || false,
+                understanding: dayData.understanding || 0,
+                memo: dayData.memo || null
+              }
+            });
+          }
+        }
+      }
+
+      // 作成後の完全なデータを再取得
+      studyPlan = await this.prisma.studyPlan.findUnique({
+        where: { id: studyPlan.id },
+        include: {
+          weeks: {
+            include: {
+              days: true
+            },
+            orderBy: { weekNumber: 'asc' }
+          }
+        }
+      }) || studyPlan;
+    } else {
+      // studyWeeksDataがない場合、従来の固定テンプレートを使用
+      console.log(`[StudyPlanRepository.create] No studyWeeksData provided, using default template`);
+      await this.createDefaultWeeks(studyPlan.id, 8);
+      
+      // 作成後の完全なデータを再取得
+      studyPlan = await this.prisma.studyPlan.findUnique({
+        where: { id: studyPlan.id },
+        include: {
+          weeks: {
+            include: {
+              days: true
+            },
+            orderBy: { weekNumber: 'asc' }
+          }
+        }
+      }) || studyPlan;
     }
 
     return {
@@ -509,6 +579,40 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       },
       data: { studyPlanId }
     });
+  }
+
+  private async createDefaultWeeks(studyPlanId: number, totalWeeks: number): Promise<void> {
+    const weekTemplates = this.getWeekTemplates(totalWeeks);
+
+    for (let i = 0; i < totalWeeks; i++) {
+      const template = weekTemplates[i] || weekTemplates[weekTemplates.length - 1];
+      
+      const week = await this.prisma.studyWeek.create({
+        data: {
+          weekNumber: i + 1,
+          title: template.title.replace('Week X', `Week ${i + 1}`),
+          phase: template.phase,
+          goals: template.goals,
+          studyPlanId: studyPlanId
+        }
+      });
+
+      // 日次計画を生成
+      for (const dayTemplate of template.days) {
+        await this.prisma.studyDay.create({
+          data: {
+            weekId: week.id,
+            day: dayTemplate.day,
+            subject: dayTemplate.subject,
+            topics: dayTemplate.topics,
+            estimatedTime: 360, // Default 6 hours in minutes
+            actualTime: 0,
+            completed: false,
+            understanding: 0
+          }
+        });
+      }
+    }
   }
 
   private getWeekTemplates(totalWeeks: number) {
