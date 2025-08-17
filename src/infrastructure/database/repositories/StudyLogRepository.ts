@@ -10,7 +10,7 @@ export class StudyLogRepository implements IStudyLogRepository {
   async create(studyLogData: Omit<StudyLogData, 'id'>): Promise<StudyLogEntity> {
     const created = await this.prisma.studyLog.create({
       data: {
-        userId: (studyLogData as any).userId || 'anonymous',
+        userId: (studyLogData as any).userId || 7, // 開発環境用のデフォルトユーザーID
         date: studyLogData.date,
         subject: studyLogData.subject,
         topics: JSON.stringify(studyLogData.topics),

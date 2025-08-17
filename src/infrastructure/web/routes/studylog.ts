@@ -5,6 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
 import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
+import type { Variables } from '../middleware/auth.js';
 
 // バリデーションスキーマ
 const createStudyLogSchema = z.object({
@@ -40,13 +41,15 @@ export function createStudyLogRoutes(
   createStudyLogUseCase: CreateStudyLogUseCase,
   studyLogRepository: StudyLogRepository
 ) {
-  const app = new Hono();
+  const app = new Hono<{ Variables: Variables }>();
 
   // POST /api/studylog - 学習記録作成
   app.post("/", zValidator("json", createStudyLogSchema as any), async (c) => {
     try {
       const studyLogData = c.req.valid("json");
-      const studyLog = await createStudyLogUseCase.execute(studyLogData);
+      const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
+      const studyLogWithUser = { ...studyLogData, userId: authUser.userId };
+      const studyLog = await createStudyLogUseCase.execute(studyLogWithUser);
 
       return c.json(
         {

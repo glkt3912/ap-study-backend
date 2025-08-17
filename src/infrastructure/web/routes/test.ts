@@ -44,7 +44,7 @@ export function createTestRoutes(prisma: PrismaClient) {
     zValidator("json", morningTestSchema as any),
     async (c) => {
       try {
-        const authUser = c.get('authUser') || { userId: 0 };
+        const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
         const testData = c.req.valid("json");
 
         const morningTest = await prisma.morningTest.create({
@@ -226,7 +226,7 @@ export function createTestRoutes(prisma: PrismaClient) {
     zValidator("json", afternoonTestSchema as any),
     async (c) => {
       try {
-        const authUser = c.get('authUser') || { userId: 0 };
+        const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
         const testData = c.req.valid("json");
 
         const afternoonTest = await prisma.afternoonTest.create({
