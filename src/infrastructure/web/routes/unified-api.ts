@@ -38,6 +38,7 @@ class UnifiedApiService {
       data,
       metadata: {
         timestamp: new Date().toISOString(),
+        version: 'unified-api-v1.0',
         ...metadata
       }
     };
@@ -49,7 +50,8 @@ class UnifiedApiService {
       success: false,
       error: { code, message, details },
       metadata: {
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        version: 'unified-api-v1.0'
       }
     };
   }
