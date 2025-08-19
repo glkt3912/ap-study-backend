@@ -345,17 +345,30 @@ export class StudyRepository implements IStudyRepository {
 
   // Prismaデータをドメインエンティティに変換
   private toDomainEntity(data: any): StudyWeekEntity {
+    // goalsが既に配列の場合はそのまま使用、文字列の場合はJSONパース
+    let goals: string[];
+    if (Array.isArray(data.goals)) {
+      goals = data.goals;
+    } else {
+      try {
+        goals = JSON.parse(data.goals);
+      } catch (error) {
+        console.error('Failed to parse goals JSON:', data.goals, error);
+        goals = [data.goals]; // フォールバック：文字列をそのまま配列にする
+      }
+    }
+
     return new StudyWeekEntity(
       data.id,
       data.weekNumber,
       data.title,
       data.phase,
-      JSON.parse(data.goals),
+      goals,
       data.days.map((day: any) => ({
         id: day.id,
         day: day.day,
         subject: day.subject,
-        topics: JSON.parse(day.topics),
+        topics: Array.isArray(day.topics) ? day.topics : JSON.parse(day.topics),
         estimatedTime: day.estimatedTime,
         actualTime: day.actualTime,
         completed: day.completed,
