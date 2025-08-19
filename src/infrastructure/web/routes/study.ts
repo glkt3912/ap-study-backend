@@ -27,7 +27,10 @@ export function createStudyRoutes(
   app.get("/plan", async (c) => {
     try {
       const authUser = getAuthUser(c);
+      console.log('Getting study plan for user:', authUser.userId);
       const weeks = await getStudyPlanUseCase.executeForUser(authUser.userId);
+      console.log('Retrieved weeks:', weeks.length);
+      console.log('First week goals type:', typeof weeks[0]?.goals, weeks[0]?.goals);
       
       return c.json({
         success: true,
@@ -127,8 +130,29 @@ export function createStudyRoutes(
   // PUT /api/study/progress - 学習進捗更新
   app.put(
     "/progress",
-    zValidator("json", updateProgressSchema as any),
     async (c) => {
+      // カスタムバリデーション（詳細エラーログ付き）
+      let requestBody;
+      try {
+        requestBody = await c.req.json();
+        console.log('Received request body:', JSON.stringify(requestBody, null, 2));
+      } catch (error) {
+        console.error('Failed to parse JSON request body:', error);
+        return c.json({
+          success: false,
+          error: 'Invalid JSON format',
+        }, 400);
+      }
+
+      const validationResult = updateProgressSchema.safeParse(requestBody);
+      if (!validationResult.success) {
+        console.error('Validation failed:', JSON.stringify(validationResult.error.issues, null, 2));
+        return c.json({
+          success: false,
+          error: 'Validation failed',
+          details: validationResult.error.issues,
+        }, 400);
+      }
       try {
         const {
           weekNumber,
@@ -137,7 +161,7 @@ export function createStudyRoutes(
           understanding,
           memo,
           completed,
-        } = c.req.valid("json");
+        } = validationResult.data;
 
         // 完了状態の更新
         if (completed !== undefined) {

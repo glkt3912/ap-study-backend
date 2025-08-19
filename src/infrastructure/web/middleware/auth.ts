@@ -207,8 +207,7 @@ export const optionalAuthMiddleware = async (c: Context<{ Variables: Variables }
     }
     
     // 認証情報なしまたは認証失敗の場合は匿名ユーザーとして設定
-    // 開発環境では作成済みのテストユーザーID（7）を使用
-    const fallbackUserId = process.env.NODE_ENV === 'development' ? 7 : 0
+    const fallbackUserId = 0
     c.set('authUser', {
       userId: fallbackUserId,
       role: 'user'
