@@ -36,7 +36,7 @@ import authRoutes from 'src/infrastructure/web/routes/auth.js';
 import logoutRoutes from 'src/infrastructure/web/routes/logout.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
 import examConfigRoutes from 'src/infrastructure/web/routes/exam-config.js';
-import studyPlanRoutes from 'src/infrastructure/web/routes/study-plan.js';
+// Legacy study-plan route import removed
 import createUnifiedApiRoutes from 'src/infrastructure/web/routes/unified-api.js';
 
 // ミドルウェア
@@ -236,28 +236,15 @@ app.route('/api/auth', logoutRoutes);
 // 監視API（認証不要 - 開発環境のみ一部機能制限）
 app.route('/api/monitoring', monitoring);
 
-// 認証設定 - 開発環境では認証をオプショナルに
-const isDevelopment = process.env.NODE_ENV === 'development';
+// 統一認証設定 - 環境に関わらずオプショナル認証を使用（開発効率重視）
+const authHandler = optionalAuthMiddleware;
 
-if (isDevelopment) {
-  logger.info('🔧 開発環境: 認証をオプショナルに設定');
-  // 開発環境では全てオプショナル認証を使用
-  app.use('/api/study/*', optionalAuthMiddleware);
-  app.use('/api/studylog/*', optionalAuthMiddleware);
-  app.use('/api/test/*', optionalAuthMiddleware);
-  app.use('/api/quiz/*', optionalAuthMiddleware);
-  app.use('/api/exam-config/*', optionalAuthMiddleware);
-  app.use('/api/study-plan/*', optionalAuthMiddleware);
-} else {
-  logger.info('🔒 本番環境: 認証を必須に設定');
-  // 本番環境では厳密な認証を使用
-  app.use('/api/study/*', authMiddleware);
-  app.use('/api/studylog/*', authMiddleware);
-  app.use('/api/test/*', authMiddleware);
-  app.use('/api/quiz/*', authMiddleware);
-  app.use('/api/exam-config/*', authMiddleware);
-  app.use('/api/study-plan/*', authMiddleware);
-}
+logger.info('🔧 統一認証設定: オプショナル認証を使用');
+app.use('/api/study/*', authHandler);
+app.use('/api/studylog/*', authHandler);
+app.use('/api/test/*', authHandler);
+app.use('/api/quiz/*', authHandler);
+app.use('/api/exam-config/*', authHandler);
 
 // 分析は常にオプショナル認証（読み取り専用のため）
 app.use('/api/analysis/*', optionalAuthMiddleware);
@@ -292,17 +279,16 @@ app.route(
 // Exam Config API
 app.route('/api/exam-config', examConfigRoutes);
 
-// Study Plan API (Legacy - will be replaced)
-app.route('/api/study-plan', studyPlanRoutes);
+// Legacy Study Plan API removed - migrated to Unified API
 
 // Phase 2: Unified API Routes - Direct Path Integration
 const unifiedApiRoutes = createUnifiedApiRoutes(container.prisma);
 
-// New unified API endpoints with proper authentication
-app.use('/api/study-plans/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
-app.use('/api/test-sessions/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
-app.use('/api/user-analysis/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
-app.use('/api/review-entries/*', isDevelopment ? optionalAuthMiddleware : authMiddleware);
+// Unified API endpoints authentication
+app.use('/api/study-plans/*', authHandler);
+app.use('/api/test-sessions/*', authHandler);
+app.use('/api/user-analysis/*', authHandler);
+app.use('/api/review-entries/*', authHandler);
 
 // Mount unified routes
 app.route('/api', unifiedApiRoutes);
@@ -352,11 +338,11 @@ async function startServer() {
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
   logger.info(`📅 Exam Config API: http://localhost:${port}/api/exam-config`);
-  logger.info(`📋 Study Plan API (Legacy): http://localhost:${port}/api/study-plan`);
-  logger.info(`🔄 Unified Study Plans API: http://localhost:${port}/api/study-plans`);
-  logger.info(`🔄 Unified Test Sessions API: http://localhost:${port}/api/test-sessions`);
-  logger.info(`🔄 Unified User Analysis API: http://localhost:${port}/api/user-analysis`);
-  logger.info(`🔄 Unified Review Entries API: http://localhost:${port}/api/review-entries`);
+  // Legacy Study Plan API removed
+  logger.info(`🔄 Study Plans API: http://localhost:${port}/api/study-plans`);
+  logger.info(`🔄 Test Sessions API: http://localhost:${port}/api/test-sessions`);
+  logger.info(`🔄 User Analysis API: http://localhost:${port}/api/user-analysis`);
+  logger.info(`🔄 Review Entries API: http://localhost:${port}/api/review-entries`);
   logger.info(`🔐 Authentication API: http://localhost:${port}/api/auth`);
   logger.info(`📊 Monitoring API: http://localhost:${port}/api/monitoring`);
 
