@@ -94,7 +94,7 @@ export const QuestionSchema = z.object({
 
 export const QuizSessionSchema = z.object({
   id: z.number(),
-  userId: z.string().optional(),
+  userId: z.number().optional(),
   sessionType: z.enum(['category', 'random', 'review', 'weak_points']),
   category: z.string().optional(),
   totalQuestions: z.number(),
@@ -206,7 +206,7 @@ export const ExamReadinessRequestSchema = z.object({
 })
 
 export const PerformanceMetricsQuerySchema = z.object({
-  userId: z.string().optional(),
+  userId: z.number().optional(),
   period: z.number().optional().default(30),
 })
 
@@ -1024,19 +1024,7 @@ export function createOpenAPIApp() {
                       success: { type: 'boolean', example: true },
                       data: {
                         type: 'array',
-                        items: {
-                          type: 'object',
-                          properties: {
-                            id: { type: 'number' },
-                            weekNumber: { type: 'number' },
-                            title: { type: 'string' },
-                            phase: { type: 'string' },
-                            goals: { type: 'array', items: { type: 'string' } },
-                            progressPercentage: { type: 'number' },
-                            totalStudyTime: { type: 'number' },
-                            averageUnderstanding: { type: 'number' },
-                          },
-                        },
+                        items: { $ref: '#/components/schemas/StudyWeek' },
                       },
                     },
                   },
@@ -1048,6 +1036,208 @@ export function createOpenAPIApp() {
               content: {
                 'application/json': {
                   schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/api/study/plan/{weekNumber}': {
+        get: {
+          tags: ['Study Plan'],
+          summary: '特定週の学習計画取得',
+          description: '指定された週番号の学習計画を取得します',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'weekNumber',
+              in: 'path',
+              required: true,
+              schema: { type: 'integer', minimum: 1, maximum: 12 },
+              description: '週番号 (1-12)',
+              example: 1,
+            },
+          ],
+          responses: {
+            '200': {
+              description: '学習計画の取得に成功',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      data: { $ref: '#/components/schemas/StudyWeek' },
+                    },
+                  },
+                },
+              },
+            },
+            '404': {
+              description: '指定された週が見つかりません',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/NotFoundError' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/api/study/current-week': {
+        get: {
+          tags: ['Study Plan'],
+          summary: '現在の週の学習計画取得',
+          description: '現在進行中の週の学習計画を取得します',
+          security: [{ bearerAuth: [] }],
+          responses: {
+            '200': {
+              description: '現在の週の学習計画取得に成功',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      data: { $ref: '#/components/schemas/StudyWeek' },
+                    },
+                  },
+                },
+              },
+            },
+            '500': {
+              description: 'サーバーエラー',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/Error' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/api/study/progress': {
+        put: {
+          tags: ['Study Plan'],
+          summary: '学習進捗更新',
+          description: '学習進捗（完了状態、実際の学習時間、理解度、メモ）を更新します',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['weekNumber', 'dayIndex'],
+                  properties: {
+                    weekNumber: { type: 'number', minimum: 1, maximum: 12, example: 1 },
+                    dayIndex: { type: 'number', minimum: 0, maximum: 6, example: 0 },
+                    actualTime: { type: 'number', minimum: 0, example: 120 },
+                    understanding: { type: 'number', minimum: 1, maximum: 5, example: 4 },
+                    memo: { type: 'string', example: 'データベース正規化について理解が深まった' },
+                    completed: { type: 'boolean', example: true },
+                  },
+                },
+                examples: {
+                  complete_task: {
+                    summary: 'タスク完了の更新',
+                    value: {
+                      weekNumber: 1,
+                      dayIndex: 0,
+                      actualTime: 120,
+                      understanding: 4,
+                      completed: true,
+                    },
+                  },
+                  update_understanding: {
+                    summary: '理解度のみ更新',
+                    value: {
+                      weekNumber: 2,
+                      dayIndex: 3,
+                      understanding: 5,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: '進捗更新に成功',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      message: { type: 'string', example: '進捗が更新されました' },
+                    },
+                  },
+                },
+              },
+            },
+            '400': {
+              description: 'リクエストエラー',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ValidationError' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/api/study/complete-task': {
+        post: {
+          tags: ['Study Plan'],
+          summary: 'タスク完了',
+          description: '指定された学習タスクを完了状態にし、更新された週の情報を返します',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['weekNumber', 'dayIndex'],
+                  properties: {
+                    weekNumber: { type: 'number', minimum: 1, maximum: 12, example: 1 },
+                    dayIndex: { type: 'number', minimum: 0, maximum: 6, example: 0 },
+                  },
+                },
+                examples: {
+                  default: {
+                    summary: 'タスク完了',
+                    value: {
+                      weekNumber: 1,
+                      dayIndex: 0,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: 'タスク完了に成功',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      data: { $ref: '#/components/schemas/StudyWeek' },
+                      message: { type: 'string', example: 'タスクが完了しました' },
+                    },
+                  },
+                },
+              },
+            },
+            '400': {
+              description: 'リクエストエラー',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/ValidationError' },
                 },
               },
             },
@@ -1278,7 +1468,7 @@ export function createOpenAPIApp() {
           type: 'object',
           properties: {
             id: { type: 'number', example: 1 },
-            userId: { type: 'string', example: 'user123' },
+            userId: { type: 'number', example: 123 },
             sessionType: {
               type: 'string',
               enum: ['category', 'random', 'review', 'weak_points'],
@@ -1293,6 +1483,45 @@ export function createOpenAPIApp() {
             startedAt: { type: 'string', format: 'date-time' },
             completedAt: { type: 'string', format: 'date-time' },
             isCompleted: { type: 'boolean', example: true },
+          },
+        },
+        StudyDay: {
+          type: 'object',
+          properties: {
+            id: { type: 'number', example: 1 },
+            day: { type: 'string', example: 'Monday' },
+            subject: { type: 'string', example: 'データベース' },
+            topics: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['正規化', 'SQL最適化'],
+            },
+            estimatedTime: { type: 'number', minimum: 0, example: 120 },
+            actualTime: { type: 'number', minimum: 0, example: 110 },
+            completed: { type: 'boolean', example: false },
+            understanding: { type: 'number', minimum: 1, maximum: 5, example: 4 },
+            memo: { type: 'string', example: 'JOIN句の理解が深まった' },
+          },
+        },
+        StudyWeek: {
+          type: 'object',
+          properties: {
+            id: { type: 'number', example: 1 },
+            weekNumber: { type: 'number', minimum: 1, maximum: 12, example: 1 },
+            title: { type: 'string', example: '基礎固め週間' },
+            phase: { type: 'string', example: 'foundation' },
+            goals: {
+              type: 'array',
+              items: { type: 'string' },
+              example: ['データベースの基本概念理解', 'SQL文法習得'],
+            },
+            days: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/StudyDay' },
+            },
+            progressPercentage: { type: 'number', minimum: 0, maximum: 100, example: 42.8 },
+            totalStudyTime: { type: 'number', minimum: 0, example: 350 },
+            averageUnderstanding: { type: 'number', minimum: 1, maximum: 5, example: 3.8 },
           },
         },
       },
