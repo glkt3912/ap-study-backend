@@ -39,11 +39,19 @@ export interface StandardErrorResponse {
       requestId?: string;
     };
   };
+  metadata?: {
+    version: string;
+    timestamp: string;
+  };
 }
 
 export interface StandardSuccessResponse<T = any> {
   success: true;
   data: T;
+  metadata?: {
+    version: string;
+    timestamp: string;
+  };
 }
 
 export type StandardApiResponse<T = any> = StandardSuccessResponse<T> | StandardErrorResponse;
@@ -116,6 +124,10 @@ export class StandardError extends Error {
     return {
       success: false,
       error: this.toJSON(),
+      metadata: {
+        version: 'unified-api-v1.0',
+        timestamp: new Date().toISOString()
+      }
     };
   }
 }
