@@ -8,72 +8,66 @@ datasource db {
 }
 
 model User {
-  email             String             @unique
-  username          String             @unique  // ユーザー名ログイン用
-  name              String
-  password          String
-  role              String             @default("user")
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  id                Int                @id @default(autoincrement())
-  refreshToken      String?            // リフレッシュトークン
-  refreshTokenExp   DateTime?          // リフレッシュトークン有効期限
-  afternoonTests    AfternoonTest[]
-  analysisResults   AnalysisResult[]
-  examConfig        ExamConfig?
-  morningTests      MorningTest[]
-  predictionResults PredictionResult[]
-  quizSessions      QuizSession[]
-  reviewItems       ReviewItem[]
-  reviewSessions    ReviewSession[]
-  studyLogs         StudyLog[]
-  userAnswers       UserAnswer[]
-  studyPlan         StudyPlan?
-  studyRecommendations StudyRecommendation[]
+  email                String                @unique
+  username             String                @unique
+  name                 String
+  password             String
+  role                 String                @default("user")
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  id                   Int                   @id @default(autoincrement())
+  refreshToken         String?
+  refreshTokenExp      DateTime?
+  afternoonTests       AfternoonTest[]
+  analysisResults      AnalysisResult[]
+  examConfig           ExamConfig?
+  morningTests         MorningTest[]
+  predictionResults    PredictionResult[]
+  quizSessions         QuizSession[]
+  reviewItems          ReviewItem[]
+  reviewSessions       ReviewSession[]
+  studyLogs            StudyLog[]
   studyPlanPreferences StudyPlanPreferences?
+  studyPlan            StudyPlan?
+  studyRecommendations StudyRecommendation[]
+  userAnswers          UserAnswer[]
 
   @@map("users")
 }
 
 model StudyWeek {
-  id           Int          @id @default(autoincrement())
-  weekNumber   Int
-  title        String
-  phase        String
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  goals        Json
-  days         StudyDay[]
-  studyPlan    StudyPlan?   @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
-  studyPlanId  Int?
+  id          Int        @id @default(autoincrement())
+  weekNumber  Int
+  title       String
+  phase       String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  goals       Json
+  studyPlanId Int?
+  days        StudyDay[]
+  studyPlan   StudyPlan? @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
 
   @@unique([studyPlanId, weekNumber])
   @@map("study_weeks")
 }
 
 model StudyPlan {
-  id                     Int         @id @default(autoincrement())
-  userId                 Int         @unique
-  name                   String
-  description            String?
-  isActive               Boolean     @default(true)
-  startDate              DateTime    @default(now())
-  targetExamDate         DateTime?   // Unified exam date field
-  createdAt              DateTime    @default(now())
-  updatedAt              DateTime    @updatedAt
-  
-  // Template information (simplified)
-  templateId             String?     // Template ID (e.g., 'beginner-12week')
-  templateName           String?     // Template display name
-  studyWeeksData         Json?       // Complete study weeks data from template
-  
-  // Essential settings (consolidated)
-  settings               Json        @default("{}")  // All preferences, schedules, and metadata
-  
-  // Relations
-  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weeks                  StudyWeek[] // Keep for backward compatibility
-  milestones             StudyMilestone[]
+  id             Int              @id @default(autoincrement())
+  userId         Int              @unique
+  name           String
+  description    String?
+  isActive       Boolean          @default(true)
+  startDate      DateTime         @default(now())
+  targetExamDate DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  templateId     String?
+  templateName   String?
+  studyWeeksData Json?
+  settings       Json             @default("{}")
+  milestones     StudyMilestone[]
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weeks          StudyWeek[]
 
   @@map("study_plans")
 }
@@ -281,17 +275,17 @@ model ExamConfig {
 }
 
 model StudyPlanTemplate {
-  id                  Int      @id @default(autoincrement())
-  name                String
-  description         String
-  defaultPeriodDays   Int
-  defaultWeeklyHours  Int
-  targetAudience      String
-  difficulty          String   // 'beginner' | 'intermediate' | 'advanced'
-  features            Json     // Array of features
-  isPopular           Boolean  @default(false)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 Int      @id @default(autoincrement())
+  name               String
+  description        String
+  defaultPeriodDays  Int
+  defaultWeeklyHours Int
+  targetAudience     String
+  difficulty         String
+  features           Json
+  isPopular          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@map("study_plan_templates")
 }
@@ -300,8 +294,8 @@ model StudyScheduleTemplate {
   id                    Int      @id @default(autoincrement())
   name                  String
   description           String
-  weeklyPattern         Json     // WeeklyStudyPattern object
-  targetDifficulty      String   // 'beginner' | 'intermediate' | 'advanced'
+  weeklyPattern         Json
+  targetDifficulty      String
   estimatedHoursPerWeek Int
   isFlexible            Boolean  @default(true)
   createdAt             DateTime @default(now())
@@ -313,10 +307,10 @@ model StudyScheduleTemplate {
 model StudyRecommendation {
   id              Int      @id @default(autoincrement())
   userId          Int
-  type            String   // 'topic_focus' | 'time_adjustment' | 'difficulty_change' | 'review_schedule'
+  type            String
   title           String
   description     String
-  priority        String   // 'low' | 'medium' | 'high'
+  priority        String
   actionable      Boolean  @default(true)
   estimatedImpact String
   isRead          Boolean  @default(false)
@@ -329,33 +323,33 @@ model StudyRecommendation {
 }
 
 model StudyPlanPreferences {
-  id                       Int      @id @default(autoincrement())
-  userId                   Int      @unique
-  reminderEnabled          Boolean  @default(true)
-  reminderTime             String?  // HH:MM format
-  weekendStudy             Boolean  @default(false)
-  intensiveMode            Boolean  @default(false)
-  adaptiveDifficulty       Boolean  @default(true)
-  notificationPreferences  Json     @default("{\"email\": true, \"push\": true, \"daily\": true, \"weekly\": false}")
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
-  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                      Int      @id @default(autoincrement())
+  userId                  Int      @unique
+  reminderEnabled         Boolean  @default(true)
+  reminderTime            String?
+  weekendStudy            Boolean  @default(false)
+  intensiveMode           Boolean  @default(false)
+  adaptiveDifficulty      Boolean  @default(true)
+  notificationPreferences Json     @default("{\"push\": true, \"daily\": true, \"email\": true, \"weekly\": false}")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("study_plan_preferences")
 }
 
 model StudyMilestone {
-  id             Int        @id @default(autoincrement())
-  studyPlanId    Int
-  title          String
-  targetDate     DateTime
-  isCompleted    Boolean    @default(false)
-  completedDate  DateTime?
-  description    String?
-  priority       String     @default("medium") // 'low' | 'medium' | 'high'
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  studyPlan      StudyPlan  @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  id            Int       @id @default(autoincrement())
+  studyPlanId   Int
+  title         String
+  targetDate    DateTime
+  isCompleted   Boolean   @default(false)
+  completedDate DateTime?
+  description   String?
+  priority      String    @default("medium")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  studyPlan     StudyPlan @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
 
   @@map("study_milestones")
 }
