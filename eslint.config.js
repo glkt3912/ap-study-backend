@@ -35,7 +35,7 @@ export default tseslint.config(
 
       // コードの可読性
       'max-len': ['error', { code: 120, ignoreUrls: true }],
-      'complexity': ['warn', 10],
+      'complexity': ['error', 8],
     },
   },
   {

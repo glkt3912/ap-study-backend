@@ -152,78 +152,110 @@ class UnifiedApiService {
 
   async getTestSessions(userId: number, limit = 10, offset = 0): Promise<ApiResponse> {
     try {
-      // Aggregate from MorningTest, AfternoonTest, and QuizSession
-      const [morningTests, afternoonTests, quizSessions] = await Promise.all([
-        this.prisma.morningTest.findMany({
-          where: { userId },
-          orderBy: { date: 'desc' },
-          take: Math.ceil(limit / 3),
-          skip: Math.floor(offset / 3)
-        }),
-        this.prisma.afternoonTest.findMany({
-          where: { userId },
-          orderBy: { date: 'desc' },
-          take: Math.ceil(limit / 3),
-          skip: Math.floor(offset / 3)
-        }),
-        this.prisma.quizSession.findMany({
-          where: { userId },
-          orderBy: { startedAt: 'desc' },
-          take: Math.ceil(limit / 3),
-          skip: Math.floor(offset / 3)
-        })
-      ]);
-
-      // Unified response format
-      const unifiedSessions = [
-        ...morningTests.map(test => ({
-          id: test.id,
-          type: 'morning',
-          category: test.category,
-          totalQuestions: test.totalQuestions,
-          correctAnswers: test.correctAnswers,
-          score: (test.correctAnswers / test.totalQuestions) * 100,
-          timeSpent: test.timeSpent,
-          date: test.date,
-          memo: test.memo
-        })),
-        ...afternoonTests.map(test => ({
-          id: test.id,
-          type: 'afternoon',
-          category: test.category,
-          score: test.score,
-          timeSpent: test.timeSpent,
-          date: test.date,
-          memo: test.memo
-        })),
-        ...quizSessions.map(quiz => ({
-          id: quiz.id,
-          type: 'quiz',
-          category: quiz.category,
-          totalQuestions: quiz.totalQuestions,
-          correctAnswers: quiz.correctAnswers,
-          score: quiz.score,
-          timeSpent: quiz.totalTime,
-          startedAt: quiz.startedAt,
-          completedAt: quiz.completedAt,
-          isCompleted: quiz.isCompleted
-        }))
-      ].sort((a, b) => {
-        const aDate = 'date' in a ? a.date : a.startedAt;
-        const bDate = 'date' in b ? b.date : b.startedAt;
-        return new Date(bDate).getTime() - new Date(aDate).getTime();
-      })
-       .slice(0, limit);
-
-      return this.success(unifiedSessions, {
-        pagination: {
-          page: Math.floor(offset / limit) + 1,
-          limit,
-          total: unifiedSessions.length
-        }
-      });
+      const testSessions = await this.fetchAllTestSessions(userId, limit, offset)
+      const unifiedSessions = this.unifyTestSessions(testSessions, limit)
+      const pagination = this.buildPaginationMetadata(offset, limit, unifiedSessions.length)
+      
+      return this.success(unifiedSessions, { pagination })
     } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to fetch test sessions', error);
+      return this.error('INTERNAL_ERROR', 'Failed to fetch test sessions', error)
+    }
+  }
+
+  private async fetchAllTestSessions(userId: number, limit: number, offset: number) {
+    const takeAmount = Math.ceil(limit / 3)
+    const skipAmount = Math.floor(offset / 3)
+
+    return await Promise.all([
+      this.prisma.morningTest.findMany({
+        where: { userId },
+        orderBy: { date: 'desc' },
+        take: takeAmount,
+        skip: skipAmount
+      }),
+      this.prisma.afternoonTest.findMany({
+        where: { userId },
+        orderBy: { date: 'desc' },
+        take: takeAmount,
+        skip: skipAmount
+      }),
+      this.prisma.quizSession.findMany({
+        where: { userId },
+        orderBy: { startedAt: 'desc' },
+        take: takeAmount,
+        skip: skipAmount
+      })
+    ])
+  }
+
+  private unifyTestSessions(testSessions: any[], limit: number) {
+    const [morningTests, afternoonTests, quizSessions] = testSessions
+    
+    const unifiedSessions = [
+      ...this.formatMorningTests(morningTests),
+      ...this.formatAfternoonTests(afternoonTests),
+      ...this.formatQuizSessions(quizSessions)
+    ]
+
+    return this.sortAndLimitSessions(unifiedSessions, limit)
+  }
+
+  private formatMorningTests(morningTests: any[]) {
+    return morningTests.map(test => ({
+      id: test.id,
+      type: 'morning',
+      category: test.category,
+      totalQuestions: test.totalQuestions,
+      correctAnswers: test.correctAnswers,
+      score: (test.correctAnswers / test.totalQuestions) * 100,
+      timeSpent: test.timeSpent,
+      date: test.date,
+      memo: test.memo
+    }))
+  }
+
+  private formatAfternoonTests(afternoonTests: any[]) {
+    return afternoonTests.map(test => ({
+      id: test.id,
+      type: 'afternoon',
+      category: test.category,
+      score: test.score,
+      timeSpent: test.timeSpent,
+      date: test.date,
+      memo: test.memo
+    }))
+  }
+
+  private formatQuizSessions(quizSessions: any[]) {
+    return quizSessions.map(quiz => ({
+      id: quiz.id,
+      type: 'quiz',
+      category: quiz.category,
+      totalQuestions: quiz.totalQuestions,
+      correctAnswers: quiz.correctAnswers,
+      score: quiz.score,
+      timeSpent: quiz.totalTime,
+      startedAt: quiz.startedAt,
+      completedAt: quiz.completedAt,
+      isCompleted: quiz.isCompleted
+    }))
+  }
+
+  private sortAndLimitSessions(sessions: any[], limit: number) {
+    return sessions
+      .sort((a, b) => {
+        const aDate = 'date' in a ? a.date : a.startedAt
+        const bDate = 'date' in b ? b.date : b.startedAt
+        return new Date(bDate).getTime() - new Date(aDate).getTime()
+      })
+      .slice(0, limit)
+  }
+
+  private buildPaginationMetadata(offset: number, limit: number, totalResults: number) {
+    return {
+      page: Math.floor(offset / limit) + 1,
+      limit,
+      total: totalResults
     }
   }
 

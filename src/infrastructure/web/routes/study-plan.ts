@@ -429,57 +429,82 @@ async function optimizeStudyPlan(planId: number, optimizationParams: any) {
 }
 
 async function getStudyPlanAnalytics(planId: number) {
+  const studyPlan = await fetchStudyPlanWithLogs(planId)
+  const progressMetrics = calculateProgressMetrics(studyPlan)
+  const recentLogs = getRecentStudyLogs(studyPlan.user.studyLogs)
+  const performanceMetrics = calculatePerformanceMetrics(recentLogs)
+  const weeklyBreakdown = calculateWeeklyBreakdown(studyPlan.weeks)
+  const recommendations = generateAnalyticsRecommendations(
+    progressMetrics.overallProgress, 
+    performanceMetrics.averageUnderstanding, 
+    recentLogs
+  )
+
+  return {
+    planId,
+    ...progressMetrics,
+    performanceMetrics,
+    weeklyBreakdown,
+    recommendations
+  }
+}
+
+async function fetchStudyPlanWithLogs(planId: number) {
   const studyPlan = await prisma.studyPlan.findUnique({
     where: { id: planId },
     include: { 
       weeks: { include: { days: true } },
       user: { include: { studyLogs: true } }
     }
-  });
+  })
 
   if (!studyPlan) {
-    throw new Error('Study plan not found');
+    throw new Error('Study plan not found')
   }
 
-  // Calculate analytics
-  const totalDays = studyPlan.weeks.reduce((acc, week) => acc + week.days.length, 0);
-  const completedDays = studyPlan.weeks.reduce((acc, week) => 
-    acc + week.days.filter(day => day.completed).length, 0
-  );
-  
-  const overallProgress = totalDays > 0 ? (completedDays / totalDays) * 100 : 0;
-  
-  // Performance metrics from study logs
-  const recentLogs = studyPlan.user.studyLogs
-    .filter(log => log.createdAt >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) // Last 30 days
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  return studyPlan
+}
 
+function calculateProgressMetrics(studyPlan: any) {
+  const totalDays = studyPlan.weeks.reduce((acc: number, week: any) => acc + week.days.length, 0)
+  const completedDays = studyPlan.weeks.reduce((acc: number, week: any) => 
+    acc + week.days.filter((day: any) => day.completed).length, 0
+  )
+  const overallProgress = totalDays > 0 ? (completedDays / totalDays) * 100 : 0
+
+  return { overallProgress, totalDays, completedDays }
+}
+
+function getRecentStudyLogs(studyLogs: any[]) {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  return studyLogs
+    .filter(log => log.createdAt >= thirtyDaysAgo)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+}
+
+function calculatePerformanceMetrics(recentLogs: any[]) {
   const averageUnderstanding = recentLogs.length > 0 
     ? recentLogs.reduce((acc, log) => acc + log.understanding, 0) / recentLogs.length 
-    : 0;
+    : 0
 
-  const totalStudyTime = recentLogs.reduce((acc, log) => acc + log.studyTime, 0);
+  const totalStudyTime = recentLogs.reduce((acc, log) => acc + log.studyTime, 0)
 
   return {
-    planId,
-    overallProgress,
-    totalDays,
-    completedDays,
-    performanceMetrics: {
-      averageUnderstanding,
-      totalStudyTimeLastMonth: totalStudyTime,
-      consistencyRate: recentLogs.length / 30 * 100, // Percentage of days studied in last 30 days
-      strongSubjects: getTopSubjects(recentLogs, 'high'),
-      improvementAreas: getTopSubjects(recentLogs, 'low')
-    },
-    weeklyBreakdown: studyPlan.weeks.map(week => ({
-      weekNumber: week.weekNumber,
-      title: week.title,
-      progress: week.days.filter(day => day.completed).length / week.days.length * 100,
-      averageUnderstanding: week.days.reduce((acc, day) => acc + day.understanding, 0) / week.days.length
-    })),
-    recommendations: generateAnalyticsRecommendations(overallProgress, averageUnderstanding, recentLogs)
-  };
+    averageUnderstanding,
+    totalStudyTimeLastMonth: totalStudyTime,
+    consistencyRate: recentLogs.length / 30 * 100,
+    strongSubjects: getTopSubjects(recentLogs, 'high'),
+    improvementAreas: getTopSubjects(recentLogs, 'low')
+  }
+}
+
+function calculateWeeklyBreakdown(weeks: any[]) {
+  return weeks.map(week => ({
+    weekNumber: week.weekNumber,
+    title: week.title,
+    progress: week.days.filter((day: any) => day.completed).length / week.days.length * 100,
+    averageUnderstanding: week.days.reduce((acc: number, day: any) => acc + day.understanding, 0) / week.days.length
+  }))
 }
 
 function getTopSubjects(logs: any[], performanceLevel: 'high' | 'low') {

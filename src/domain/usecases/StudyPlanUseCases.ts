@@ -120,37 +120,54 @@ export class StudyPlanUseCases {
     focusAreas: string[];
     studyTips: string[];
   }> {
-    const studyPlan = await this.studyPlanRepository.findActiveByUserId(userId);
-    const progress = studyPlan ? await this.studyPlanRepository.getProgress(studyPlan.id) : null;
-
-    if (!studyPlan || !progress) {
-      return {
-        recommendedDailyHours: 3,
-        recommendedWeeklyHours: 25,
-        focusAreas: ['基礎理論', 'アルゴリズム', 'データベース'],
-        studyTips: ['毎日一定の時間を確保しましょう', '苦手分野を重点的に学習しましょう']
-      };
+    const studyData = await this.fetchStudyData(userId)
+    
+    if (!studyData.studyPlan || !studyData.progress) {
+      return this.getDefaultRecommendations()
     }
 
-    // 進捗に基づく推奨調整
-    const isAhead = progress.actualStudyHours > progress.totalStudyHours;
-    const isBehind = progress.actualStudyHours < progress.totalStudyHours * 0.7;
-
-    let recommendedDailyHours = studyPlan.settings.timeSettings?.dailyHours || 3;
-    let recommendedWeeklyHours = studyPlan.settings.timeSettings?.weeklyHours || 21;
-
-    if (isBehind && progress.remainingDays > 0) {
-      const catchUpHours = (progress.totalStudyHours - progress.actualStudyHours) / progress.remainingDays;
-      recommendedDailyHours = Math.ceil(catchUpHours * 1.2); // 20%のバッファ
-      recommendedWeeklyHours = recommendedDailyHours * 7;
-    }
-
+    const progressAnalysis = this.analyzeProgress(studyData.progress)
+    const timeRecommendations = this.calculateTimeRecommendations(studyData, progressAnalysis)
+    
     return {
-      recommendedDailyHours,
-      recommendedWeeklyHours,
-      focusAreas: this.getFocusAreas(progress.averageUnderstanding),
-      studyTips: this.getStudyTips(isAhead, isBehind, progress.remainingDays)
-    };
+      ...timeRecommendations,
+      focusAreas: this.getFocusAreas(studyData.progress.averageUnderstanding),
+      studyTips: this.getStudyTips(progressAnalysis.isAhead, progressAnalysis.isBehind, studyData.progress.remainingDays)
+    }
+  }
+
+  private async fetchStudyData(userId: number) {
+    const studyPlan = await this.studyPlanRepository.findActiveByUserId(userId)
+    const progress = studyPlan ? await this.studyPlanRepository.getProgress(studyPlan.id) : null
+    return { studyPlan, progress }
+  }
+
+  private getDefaultRecommendations() {
+    return {
+      recommendedDailyHours: 3,
+      recommendedWeeklyHours: 25,
+      focusAreas: ['基礎理論', 'アルゴリズム', 'データベース'],
+      studyTips: ['毎日一定の時間を確保しましょう', '苦手分野を重点的に学習しましょう']
+    }
+  }
+
+  private analyzeProgress(progress: any) {
+    const isAhead = progress.actualStudyHours > progress.totalStudyHours
+    const isBehind = progress.actualStudyHours < progress.totalStudyHours * 0.7
+    return { isAhead, isBehind }
+  }
+
+  private calculateTimeRecommendations(studyData: any, progressAnalysis: any) {
+    let recommendedDailyHours = studyData.studyPlan.settings.timeSettings?.dailyHours || 3
+    let recommendedWeeklyHours = studyData.studyPlan.settings.timeSettings?.weeklyHours || 21
+
+    if (progressAnalysis.isBehind && studyData.progress.remainingDays > 0) {
+      const catchUpHours = (studyData.progress.totalStudyHours - studyData.progress.actualStudyHours) / studyData.progress.remainingDays
+      recommendedDailyHours = Math.ceil(catchUpHours * 1.2)
+      recommendedWeeklyHours = recommendedDailyHours * 7
+    }
+
+    return { recommendedDailyHours, recommendedWeeklyHours }
   }
 
   private getFocusAreas(averageUnderstanding: number): string[] {

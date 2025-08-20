@@ -17,36 +17,52 @@ export class LearningEfficiencyAnalysisUseCase {
   ) {}
 
   async generateAnalysis(input: CreateLearningEfficiencyAnalysisInput): Promise<LearningEfficiencyAnalysis> {
-    // Fetch study logs within the time range
+    const studyLogs = await this.fetchAndValidateStudyLogs(input)
+    const efficiencyMetrics = this.calculateEfficiencyMetrics(studyLogs)
+    const analysisResults = await this.generateAnalysisResults(studyLogs, efficiencyMetrics)
+    const analysis = this.buildAnalysisObject(input, efficiencyMetrics, analysisResults)
+    
+    return await this.repository.create(analysis)
+  }
+
+  private async fetchAndValidateStudyLogs(input: CreateLearningEfficiencyAnalysisInput) {
     const studyLogs = await this.studyLogRepository.findByUserAndDateRange(
       input.userId, 
       input.timeRange.startDate, 
       input.timeRange.endDate
     )
 
-    // Validate that we have data to analyze
     if (studyLogs.length === 0) {
       throw new Error('No study logs found for analysis')
     }
 
-    // Calculate hourly efficiency
+    return studyLogs
+  }
+
+  private calculateEfficiencyMetrics(studyLogs: any[]) {
     const hourlyEfficiency = this.calculateHourlyEfficiency(studyLogs)
-    
-    // Calculate subject efficiency
     const subjectEfficiency = this.calculateSubjectEfficiency(studyLogs)
-    
-    // Generate recommendations
-    const recommendations = this.generateRecommendations(hourlyEfficiency, subjectEfficiency)
-    
-    // Calculate overall score
     const overallScore = this.calculateOverallScore(hourlyEfficiency, subjectEfficiency)
+
+    return { hourlyEfficiency, subjectEfficiency, overallScore }
+  }
+
+  private async generateAnalysisResults(studyLogs: any[], efficiencyMetrics: any) {
+    const { hourlyEfficiency, subjectEfficiency } = efficiencyMetrics
     
-    // Advanced ML predictions
+    const recommendations = this.generateRecommendations(hourlyEfficiency, subjectEfficiency)
     const performancePrediction = await this.predictFuturePerformance(studyLogs, subjectEfficiency)
     const personalizedGoals = this.generatePersonalizedGoals(studyLogs, hourlyEfficiency, subjectEfficiency)
     const burnoutRisk = this.calculateBurnoutRisk(studyLogs, hourlyEfficiency)
 
-    const analysis: Omit<LearningEfficiencyAnalysis, 'id' | 'createdAt' | 'updatedAt'> = {
+    return { recommendations, performancePrediction, personalizedGoals, burnoutRisk }
+  }
+
+  private buildAnalysisObject(input: CreateLearningEfficiencyAnalysisInput, efficiencyMetrics: any, analysisResults: any): Omit<LearningEfficiencyAnalysis, 'id' | 'createdAt' | 'updatedAt'> {
+    const { hourlyEfficiency, subjectEfficiency, overallScore } = efficiencyMetrics
+    const { recommendations, personalizedGoals } = analysisResults
+    
+    return {
       userId: input.userId,
       analysisDate: new Date(),
       timeRange: input.timeRange,
@@ -55,8 +71,6 @@ export class LearningEfficiencyAnalysisUseCase {
       recommendations: [...recommendations, ...personalizedGoals],
       overallScore
     }
-
-    return await this.repository.create(analysis)
   }
 
   async getAnalysisById(id: string): Promise<LearningEfficiencyAnalysis | null> {
@@ -108,42 +122,70 @@ export class LearningEfficiencyAnalysisUseCase {
     const analyses = await this.repository.findByUserId(userId)
     
     if (analyses.length === 0) {
-      return {
-        dailySchedule: [
-          { time: '09:00', activity: '基礎理論の学習', duration: 60 },
-          { time: '14:00', activity: '問題演習', duration: 90 }
-        ],
-        weeklyGoals: ['毎日2時間の学習時間確保', '理解度4以上を維持'],
-        studyTechniques: ['ポモドーロ・テクニック', 'アクティブラーニング']
-      }
+      return this.getDefaultRecommendations()
     }
 
     const latestAnalysis = analyses[analyses.length - 1]
-    const bestHours = latestAnalysis.hourlyEfficiency
-      .filter(h => h.efficiencyScore > 0)
-      .sort((a, b) => b.efficiencyScore - a.efficiencyScore)
-      .slice(0, 3)
+    return this.buildPersonalizedRecommendations(latestAnalysis)
+  }
 
-    const weakSubjects = latestAnalysis.subjectEfficiency
-      .filter(s => s.avgUnderstanding < 3.5)
-      .sort((a, b) => a.avgUnderstanding - b.avgUnderstanding)
-
+  private getDefaultRecommendations() {
     return {
-      dailySchedule: bestHours.map((hour, index) => ({
-        time: `${hour.hour.toString().padStart(2, '0')}:00`,
-        activity: weakSubjects[index]?.subject || '復習・問題演習',
-        duration: Math.round(60 + (hour.efficiencyScore * 30))
-      })),
-      weeklyGoals: [
-        `理解度平均${Math.round(latestAnalysis.overallScore * 0.05 + 3)}以上を目指す`,
-        `週間学習時間${Math.round(latestAnalysis.overallScore * 0.2 + 10)}時間確保`,
-        '苦手分野の理解度向上'
+      dailySchedule: [
+        { time: '09:00', activity: '基礎理論の学習', duration: 60 },
+        { time: '14:00', activity: '問題演習', duration: 90 }
       ],
+      weeklyGoals: ['毎日2時間の学習時間確保', '理解度4以上を維持'],
+      studyTechniques: ['ポモドーロ・テクニック', 'アクティブラーニング']
+    }
+  }
+
+  private buildPersonalizedRecommendations(latestAnalysis: LearningEfficiencyAnalysis) {
+    const bestHours = this.getBestStudyHours(latestAnalysis.hourlyEfficiency)
+    const weakSubjects = this.getWeakSubjects(latestAnalysis.subjectEfficiency)
+    
+    return {
+      dailySchedule: this.generateDailySchedule(bestHours, weakSubjects),
+      weeklyGoals: this.generateWeeklyGoals(latestAnalysis),
       studyTechniques: this.recommendStudyTechniques(latestAnalysis)
     }
   }
 
+  private getBestStudyHours(hourlyEfficiency: HourlyEfficiency[]) {
+    return hourlyEfficiency
+      .filter(h => h.efficiencyScore > 0)
+      .sort((a, b) => b.efficiencyScore - a.efficiencyScore)
+      .slice(0, 3)
+  }
+
+  private getWeakSubjects(subjectEfficiency: SubjectEfficiency[]) {
+    return subjectEfficiency
+      .filter(s => s.avgUnderstanding < 3.5)
+      .sort((a, b) => a.avgUnderstanding - b.avgUnderstanding)
+  }
+
+  private generateDailySchedule(bestHours: HourlyEfficiency[], weakSubjects: SubjectEfficiency[]) {
+    return bestHours.map((hour, index) => ({
+      time: `${hour.hour.toString().padStart(2, '0')}:00`,
+      activity: weakSubjects[index]?.subject || '復習・問題演習',
+      duration: Math.round(60 + (hour.efficiencyScore * 30))
+    }))
+  }
+
+  private generateWeeklyGoals(latestAnalysis: LearningEfficiencyAnalysis) {
+    return [
+      `理解度平均${Math.round(latestAnalysis.overallScore * 0.05 + 3)}以上を目指す`,
+      `週間学習時間${Math.round(latestAnalysis.overallScore * 0.2 + 10)}時間確保`,
+      '苦手分野の理解度向上'
+    ]
+  }
+
   private calculateHourlyEfficiency(studyLogs: any[]): HourlyEfficiency[] {
+    const hourlyData = this.aggregateHourlyData(studyLogs)
+    return this.buildHourlyEfficiencyArray(hourlyData)
+  }
+
+  private aggregateHourlyData(studyLogs: any[]) {
     const hourlyData: { [hour: number]: { totalTime: number, totalUnderstanding: number, completions: number, attempts: number } } = {}
     
     studyLogs.forEach(log => {
@@ -158,21 +200,29 @@ export class LearningEfficiencyAnalysisUseCase {
       if (log.completed) hourlyData[hour].completions += 1
     })
 
+    return hourlyData
+  }
+
+  private buildHourlyEfficiencyArray(hourlyData: any): HourlyEfficiency[] {
     return Array.from({ length: 24 }, (_, hour) => {
       const data = hourlyData[hour] || { totalTime: 0, totalUnderstanding: 0, completions: 0, attempts: 0 }
-      const avgStudyTime = data.attempts > 0 ? data.totalTime / data.attempts : 0
-      const avgUnderstanding = data.attempts > 0 ? data.totalUnderstanding / data.attempts : 0
-      const completionRate = data.attempts > 0 ? data.completions / data.attempts : 0
-      const efficiencyScore = avgUnderstanding * completionRate * Math.min(avgStudyTime / 60, 1)
-
-      return {
-        hour,
-        avgStudyTime,
-        avgUnderstanding,
-        completionRate,
-        efficiencyScore
-      }
+      return this.calculateHourlyMetrics(hour, data)
     })
+  }
+
+  private calculateHourlyMetrics(hour: number, data: any): HourlyEfficiency {
+    const avgStudyTime = data.attempts > 0 ? data.totalTime / data.attempts : 0
+    const avgUnderstanding = data.attempts > 0 ? data.totalUnderstanding / data.attempts : 0
+    const completionRate = data.attempts > 0 ? data.completions / data.attempts : 0
+    const efficiencyScore = avgUnderstanding * completionRate * Math.min(avgStudyTime / 60, 1)
+
+    return {
+      hour,
+      avgStudyTime,
+      avgUnderstanding,
+      completionRate,
+      efficiencyScore
+    }
   }
 
   private calculateSubjectEfficiency(studyLogs: any[]): SubjectEfficiency[] {
@@ -507,44 +557,58 @@ export class LearningEfficiencyAnalysisUseCase {
     const factors: string[] = []
     let riskScore = 0
     
-    // Check for excessive study time
+    riskScore += this.checkExcessiveStudyTime(studyLogs, factors)
+    riskScore += this.checkDecliningEfficiency(hourlyEfficiency, factors)
+    riskScore += this.checkRestPeriods(studyLogs, factors)
+    
+    const riskLevel = this.determineRiskLevel(riskScore)
+    
+    return { riskLevel, riskScore, factors }
+  }
+
+  private checkExcessiveStudyTime(studyLogs: any[], factors: string[]): number {
     const avgDailyHours = studyLogs.reduce((sum, log) => sum + log.studyTime, 0) / (studyLogs.length * 60)
     if (avgDailyHours > 8) {
-      riskScore += 30
       factors.push('長時間学習による疲労')
+      return 30
     }
+    return 0
+  }
+
+  private checkDecliningEfficiency(hourlyEfficiency: HourlyEfficiency[], factors: string[]): number {
+    const recentEfficiency = hourlyEfficiency.slice(-7)
+    const earlyEfficiency = hourlyEfficiency.slice(0, 7)
     
-    // Check for declining efficiency
-    const recentEfficiency = hourlyEfficiency.slice(-7) // Last 7 hours
-    const earlyEfficiency = hourlyEfficiency.slice(0, 7) // First 7 hours
-    
-    if (recentEfficiency.length > 0 && earlyEfficiency.length > 0) {
-      const recentAvg = recentEfficiency.reduce((sum, he) => sum + he.efficiencyScore, 0) / recentEfficiency.length
-      const earlyAvg = earlyEfficiency.reduce((sum, he) => sum + he.efficiencyScore, 0) / earlyEfficiency.length
-      
-      if (recentAvg < earlyAvg - 0.1) {
-        riskScore += 25
-        factors.push('学習効率の低下傾向')
-      }
+    if (recentEfficiency.length === 0 || earlyEfficiency.length === 0) {
+      return 0
     }
+
+    const recentAvg = recentEfficiency.reduce((sum, he) => sum + he.efficiencyScore, 0) / recentEfficiency.length
+    const earlyAvg = earlyEfficiency.reduce((sum, he) => sum + he.efficiencyScore, 0) / earlyEfficiency.length
     
-    // Check for low rest periods
+    if (recentAvg < earlyAvg - 0.1) {
+      factors.push('学習効率の低下傾向')
+      return 25
+    }
+    return 0
+  }
+
+  private checkRestPeriods(studyLogs: any[], factors: string[]): number {
     const studyDaysCount = new Set(studyLogs.map(log => new Date(log.createdAt).toDateString())).size
     const totalDays = Math.ceil((new Date().getTime() - new Date(studyLogs[0]?.createdAt || new Date()).getTime()) / (1000 * 60 * 60 * 24))
     const restDaysRatio = (totalDays - studyDaysCount) / totalDays
     
-    if (restDaysRatio < 0.15) { // Less than 15% rest days
-      riskScore += 20
+    if (restDaysRatio < 0.15) {
       factors.push('休息日不足')
+      return 20
     }
-    
-    // Determine risk level
-    let riskLevel: 'low' | 'medium' | 'high'
-    if (riskScore >= 50) riskLevel = 'high'
-    else if (riskScore >= 25) riskLevel = 'medium'
-    else riskLevel = 'low'
-    
-    return { riskLevel, riskScore, factors }
+    return 0
+  }
+
+  private determineRiskLevel(riskScore: number): 'low' | 'medium' | 'high' {
+    if (riskScore >= 50) return 'high'
+    if (riskScore >= 25) return 'medium'
+    return 'low'
   }
 
   /**
