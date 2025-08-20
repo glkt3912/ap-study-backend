@@ -5,6 +5,8 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
 import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
+import { standardTopicsBySubject } from "src/data/study-topics.js";
+import type { StudyLogData } from "src/domain/entities/StudyLog.js";
 import type { Variables } from '../middleware/auth.js';
 
 // バリデーションスキーマ
@@ -324,6 +326,109 @@ export function createStudyLogRoutes(
               : "学習統計の取得に失敗しました",
         },
         500
+      );
+    }
+  });
+
+  // 学習項目候補取得のヘルパー関数
+  const collectExistingTopics = (logs: StudyLogData[]): Set<string> => {
+    const topics = new Set<string>();
+    for (const log of logs) {
+      for (const topic of log.topics) {
+        topics.add(topic);
+      }
+    }
+    return topics;
+  };
+
+  const addStandardTopics = (allTopics: Set<string>, subject?: string): void => {
+    if (subject && standardTopicsBySubject[subject]) {
+      for (const topic of standardTopicsBySubject[subject]) {
+        allTopics.add(topic);
+      }
+    } else {
+      for (const topics of Object.values(standardTopicsBySubject)) {
+        for (const topic of topics) {
+          allTopics.add(topic);
+        }
+      }
+    }
+  };
+
+  const filterBySubject = (suggestions: string[], logs: StudyLogData[], subject: string): string[] => {
+    const subjectLogs = logs.filter(log => log.subject === subject);
+    const subjectTopics = collectExistingTopics(subjectLogs);
+    
+    return suggestions.filter(
+      topic => subjectTopics.has(topic) || standardTopicsBySubject[subject]?.includes(topic),
+    );
+  };
+
+  const sortByFrequency = (suggestions: string[], logs: StudyLogData[]): string[] => {
+    const topicFrequency = new Map<string, number>();
+    for (const log of logs) {
+      for (const topic of log.topics) {
+        topicFrequency.set(topic, (topicFrequency.get(topic) || 0) + 1);
+      }
+    }
+
+    return suggestions.sort((a, b) => {
+      const freqA = topicFrequency.get(a) || 0;
+      const freqB = topicFrequency.get(b) || 0;
+      if (freqA !== freqB) {
+        return freqB - freqA;
+      }
+      return a.localeCompare(b);
+    });
+  };
+
+  // GET /api/studylog/topics/suggestions - 学習項目候補取得
+  app.get('/topics/suggestions', async c => {
+    try {
+      const query = c.req.query('q');
+      const subject = c.req.query('subject');
+
+      // 既存の学習記録から学習項目を取得
+      const allLogs = await studyLogRepository.findAll();
+      const allTopics = collectExistingTopics(allLogs);
+
+      // 標準的な学習項目を追加
+      addStandardTopics(allTopics, subject);
+
+      // 候補をフィルタリング
+      let suggestions = Array.from(allTopics);
+
+      if (query) {
+        const lowerQuery = query.toLowerCase();
+        suggestions = suggestions.filter(topic => topic.toLowerCase().includes(lowerQuery));
+      }
+
+      // 科目でフィルタリング
+      if (subject) {
+        suggestions = filterBySubject(suggestions, allLogs, subject);
+      }
+
+      // 使用頻度でソート
+      suggestions = sortByFrequency(suggestions, allLogs);
+
+      // 上位20件に制限
+      suggestions = suggestions.slice(0, 20);
+
+      return c.json({
+        success: true,
+        data: {
+          suggestions,
+          query,
+          subject,
+        },
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : '候補の取得に失敗しました',
+        },
+        500,
       );
     }
   });
