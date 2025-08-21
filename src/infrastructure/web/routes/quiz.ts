@@ -14,6 +14,38 @@ const questionRepository = new QuestionRepository(prisma);
 const getQuestionUseCase = new GetQuestion(questionRepository);
 const answerQuestionUseCase = new AnswerQuestion(questionRepository, prisma);
 
+// Helper functions for quiz routes
+const parseQueryParameters = (c: any) => {
+  const category = c.req.query('category');
+  const limit = parseInt(c.req.query('limit') || '10');
+  const random = c.req.query('random') === 'true';
+  const year = c.req.query('year') ? parseInt(c.req.query('year')!) : undefined;
+  const section = c.req.query('section');
+  const difficulty = c.req.query('difficulty') ? parseInt(c.req.query('difficulty')!) : undefined;
+
+  return { category, limit, random, year, section, difficulty };
+};
+
+const buildFilters = (params: { category?: string; year?: number; section?: string; difficulty?: number }) => {
+  const { category, year, section, difficulty } = params;
+  return {
+    ...(category && { category }),
+    ...(year && { year }),
+    ...(section && { section }),
+    ...(difficulty && { difficulty }),
+  };
+};
+
+const handleQuizError = (c: any, error: unknown, defaultMessage: string) => {
+  return c.json(
+    {
+      success: false,
+      error: error instanceof Error ? error.message : defaultMessage,
+    },
+    500,
+  );
+};
+
 // バリデーションスキーマ
 const startQuizSchema = z.object({
   category: z.string().optional(),
@@ -38,25 +70,9 @@ export function createQuizRoutes() {
   // GET /api/quiz/questions - 問題一覧取得（統合版）
   app.get('/questions', async c => {
     try {
-      const category = c.req.query('category');
-      const limit = parseInt(c.req.query('limit') || '10');
-      const random = c.req.query('random') === 'true';
-      const year = c.req.query('year') ? parseInt(c.req.query('year')!) : undefined;
-      const section = c.req.query('section');
-      const difficulty = c.req.query('difficulty') ? parseInt(c.req.query('difficulty')!) : undefined;
-
-      // リポジトリパターンを使用
-      const filters = {
-        ...(category && { category }),
-        ...(year && { year }),
-        ...(section && { section }),
-        ...(difficulty && { difficulty }),
-      };
-
-      const options = {
-        limit,
-        random,
-      };
+      const params = parseQueryParameters(c);
+      const filters = buildFilters(params);
+      const options = { limit: params.limit, random: params.random };
 
       const questions = await getQuestionUseCase.getMany({ filters, options });
 
@@ -65,19 +81,13 @@ export function createQuizRoutes() {
         data: questions,
         meta: {
           total: questions.length,
-          category,
-          random,
+          category: params.category,
+          random: params.random,
           filters,
         },
       });
     } catch (error) {
-      return c.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : '問題の取得に失敗しました',
-        },
-        500,
-      );
+      return handleQuizError(c, error, '問題の取得に失敗しました');
     }
   });
 
@@ -85,22 +95,13 @@ export function createQuizRoutes() {
   app.get('/questions/random/:count', async c => {
     try {
       const count = parseInt(c.req.param('count'));
-      const category = c.req.query('category');
-      const year = c.req.query('year') ? parseInt(c.req.query('year')!) : undefined;
-      const section = c.req.query('section');
-      const difficulty = c.req.query('difficulty') ? parseInt(c.req.query('difficulty')!) : undefined;
-
+      
       if (isNaN(count) || count <= 0) {
         return c.json({ success: false, error: 'Invalid count parameter' }, 400);
       }
 
-      const filters = {
-        ...(category && { category }),
-        ...(year && { year }),
-        ...(section && { section }),
-        ...(difficulty && { difficulty }),
-      };
-
+      const params = parseQueryParameters(c);
+      const filters = buildFilters(params);
       const questions = await getQuestionUseCase.getRandomQuestions(count, filters);
 
       return c.json({
@@ -109,13 +110,7 @@ export function createQuizRoutes() {
         meta: { count: questions.length, filters },
       });
     } catch (error) {
-      return c.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : 'ランダム問題の取得に失敗しました',
-        },
-        500,
-      );
+      return handleQuizError(c, error, 'ランダム問題の取得に失敗しました');
     }
   });
 

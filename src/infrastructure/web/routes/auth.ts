@@ -34,153 +34,143 @@ const refreshSchema = z.object({
 const app = new Hono<{ Variables: Variables }>();
 const prisma = new PrismaClient();
 
+// Helper functions for auth routes
+const checkExistingUser = async (email: string, username: string) => {
+  const existingUserByEmail = await prisma.user.findUnique({ where: { email } });
+  if (existingUserByEmail) {
+    throw new HTTPException(409, {
+      message: JSON.stringify({
+        success: false,
+        error: 'このメールアドレスは既に使用されています',
+        errorCode: 'USER_ALREADY_EXISTS',
+        message: 'User already exists with this email',
+      })
+    });
+  }
+
+  const existingUserByUsername = await prisma.user.findUnique({ where: { username } });
+  if (existingUserByUsername) {
+    throw new HTTPException(409, {
+      message: JSON.stringify({
+        success: false,
+        error: 'このユーザー名は既に使用されています',
+        errorCode: 'USERNAME_ALREADY_EXISTS',
+        message: 'User already exists with this username',
+      })
+    });
+  }
+};
+
+const createUserWithHashedPassword = async (email: string, username: string, password: string, name?: string) => {
+  const saltRounds = 12;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  
+  return await prisma.user.create({
+    data: {
+      email,
+      username,
+      name: name || username,
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      name: true,
+      createdAt: true,
+    },
+  });
+};
+
+const generateTokenPair = async (userId: number, email: string, username: string) => {
+  const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
+  const REFRESH_SECRET = process.env.REFRESH_SECRET || 'development-refresh-secret';
+
+  const accessToken = await sign(
+    {
+      sub: userId.toString(),
+      email,
+      username,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60, // 1時間
+    },
+    JWT_SECRET
+  );
+
+  const refreshToken = await sign(
+    {
+      sub: userId.toString(),
+      type: 'refresh',
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30日
+    },
+    REFRESH_SECRET
+  );
+
+  return { accessToken, refreshToken };
+};
+
+const setAuthCookies = (c: any, accessToken: string, refreshToken: string) => {
+  setCookie(c, 'access_token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60, // 1時間
+    path: '/',
+  });
+
+  setCookie(c, 'refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 30, // 30日
+    path: '/',
+  });
+};
+
+const handleAuthError = (c: any, error: unknown, defaultMessage: string) => {
+  if (error instanceof HTTPException) {
+    const parsedMessage = JSON.parse(error.message);
+    return c.json(parsedMessage, error.status);
+  }
+  
+  return c.json({
+    success: false,
+    error: error instanceof Error ? error.message : defaultMessage,
+  }, 500);
+};
+
 /**
  * ユーザー登録
  */
 app.post('/signup', zValidator('json', signupSchema), async c => {
   try {
     const { email, username, password, name } = c.req.valid('json');
-    const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
 
-    // 既存ユーザーチェック（メール）
-    const existingUserByEmail = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUserByEmail) {
-      return c.json(
-        {
-          success: false,
-          error: 'このメールアドレスは既に使用されています',
-          errorCode: 'USER_ALREADY_EXISTS',
-          message: 'User already exists with this email',
-        },
-        409,
-      );
-    }
-
-    // 既存ユーザーチェック（ユーザー名）
-    const existingUserByUsername = await prisma.user.findUnique({
-      where: { username },
-    });
-
-    if (existingUserByUsername) {
-      return c.json(
-        {
-          success: false,
-          error: 'このユーザー名は既に使用されています',
-          errorCode: 'USERNAME_ALREADY_EXISTS',
-          message: 'User already exists with this username',
-        },
-        409,
-      );
-    }
-
-    // パスワードハッシュ化
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // ユーザー作成
-    const user = await prisma.user.create({
-      data: {
-        email,
-        username,
-        password: hashedPassword,
-        name: name || email.split('@')[0], // nameが未提供の場合、emailのlocal部分を使用
-        role: 'user',
-      },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        name: true,
-        role: true,
-        createdAt: true,
-      },
-    });
-
-    // JWT生成
-    const payload = {
-      sub: user.id,
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // 2時間有効
-    };
-
-    const token = await sign(payload, JWT_SECRET);
-
-    // リフレッシュトークン生成（7日間有効）
-    const refreshToken = crypto.randomBytes(64).toString('hex');
-    const refreshTokenExp = new Date();
-    refreshTokenExp.setDate(refreshTokenExp.getDate() + 7);
+    await checkExistingUser(email, username);
+    const user = await createUserWithHashedPassword(email, username, password, name);
+    const { accessToken, refreshToken } = await generateTokenPair(user.id, user.email, user.username);
+    
+    setAuthCookies(c, accessToken, refreshToken);
 
     // リフレッシュトークンをDBに保存
+    const refreshTokenExp = new Date();
+    refreshTokenExp.setDate(refreshTokenExp.getDate() + 30);
     await prisma.user.update({
       where: { id: user.id },
+      data: { refreshToken, refreshTokenExp },
+    });
+
+    return c.json({
+      success: true,
+      message: 'User registered successfully',
       data: {
+        token: accessToken,
+        user,
+        expiresIn: '1h',
         refreshToken,
-        refreshTokenExp,
       },
-    });
-
-    // HttpOnly Cookieに設定
-    setCookie(c, 'access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 2 * 60 * 60, // 2時間
-    });
-
-    setCookie(c, 'refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 7 * 24 * 60 * 60, // 7日間
-    });
-
-    return c.json(
-      {
-        success: true,
-        message: 'User registered successfully',
-        data: {
-          token, // フロントエンド互換性のため残す
-          user,
-          expiresIn: '2h',
-          refreshToken, // セキュリティ強化版
-        },
-      },
-      201,
-    );
+    }, 201);
   } catch (error) {
-    if (error instanceof HTTPException) {
-      throw error;
-    }
-
-    // Zodバリデーションエラー
-    if (error instanceof Error && error.name === 'ZodError') {
-      return c.json(
-        {
-          success: false,
-          error: '入力内容に問題があります',
-          errorCode: 'VALIDATION_ERROR',
-          message: 'Validation failed',
-          details: error.message,
-        },
-        400,
-      );
-    }
-
-    return c.json(
-      {
-        success: false,
-        error: '内部サーバーエラーが発生しました',
-        errorCode: 'INTERNAL_ERROR',
-        message: 'Internal server error during signup',
-      },
-      500,
-    );
+    return handleAuthError(c, error, 'ユーザー登録に失敗しました');
   }
 });
 
