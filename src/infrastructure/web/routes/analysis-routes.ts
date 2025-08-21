@@ -174,6 +174,90 @@ const calculatePassProbability = (currentAvgScore: number, targetScore: number, 
   return adjustProbabilityByDays(baseProbability, daysToExam);
 };
 
+// Helper functions for performance metrics analysis
+const analyzeStudyConsistency = (studyLogs: any[], period: number) => {
+  const studyDays = new Set(studyLogs.map(log => log.date.toDateString())).size;
+  const totalSessions = studyLogs.length;
+  const avgSessionDuration = studyLogs.length > 0 
+    ? studyLogs.reduce((sum, log) => sum + log.studyTime, 0) / studyLogs.length 
+    : 0;
+  const consistencyRate = (studyDays / period) * 100;
+
+  return {
+    study_days: studyDays,
+    total_sessions: totalSessions,
+    avg_session_duration: Math.round(avgSessionDuration),
+    consistency_rate: Math.round(consistencyRate * 10) / 10,
+  };
+};
+
+const analyzeLearningEfficiency = (quizSessions: any[]) => {
+  const totalQuestions = quizSessions.reduce((sum, session) => sum + session.totalQuestions, 0);
+  const avgScore = quizSessions.length > 0 
+    ? quizSessions.reduce((sum, session) => sum + session.score, 0) / quizSessions.length 
+    : 0;
+  const avgTimePerQuestion = quizSessions.length > 0 && totalQuestions > 0
+    ? quizSessions.reduce((sum, session) => sum + session.totalTime, 0) / totalQuestions
+    : 0;
+  const avgSessionDuration = quizSessions.length > 0 
+    ? quizSessions.reduce((sum, session) => sum + session.totalTime, 0) / quizSessions.length 
+    : 0;
+
+  return {
+    avg_score: Math.round(avgScore * 10) / 10,
+    avg_time_per_question: Math.round(avgTimePerQuestion),
+    total_questions_attempted: totalQuestions,
+    avg_total_time: Math.round(avgSessionDuration),
+  };
+};
+
+const analyzeCategoryBalance = (categoryStats: any[]) => {
+  const totalCategoryQuestions = categoryStats.reduce((sum, cat) => sum + (cat._sum.totalQuestions || 0), 0);
+  
+  return categoryStats.map(cat => ({
+    category: cat.category || "未分類",
+    questions_attempted: cat._sum.totalQuestions || 0,
+    accuracy_rate: cat._sum.totalQuestions ? (cat._sum.correctAnswers || 0) / cat._sum.totalQuestions : 0,
+    proportion: totalCategoryQuestions > 0 ? ((cat._sum.totalQuestions || 0) / totalCategoryQuestions) * 100 : 0
+  }));
+};
+
+const processWeeklyGrowthAnalysis = (weeklyStats: any[]) => {
+  const weeklyGroups: { [key: string]: number[] } = {};
+  
+  weeklyStats.forEach(session => {
+    const weekStart = new Date(session.startedAt);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+    const weekKey = weekStart.toISOString().split('T')[0];
+    
+    if (!weeklyGroups[weekKey]) {
+      weeklyGroups[weekKey] = [];
+    }
+    weeklyGroups[weekKey].push(session.score);
+  });
+
+  const growthAnalysis = Object.entries(weeklyGroups)
+    .map(([weekStart, scores]) => {
+      const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+      return {
+        week_start: weekStart,
+        avg_score: avgScore,
+        sessions_count: scores.length,
+        prev_week_score: 0,
+        score_change: 0
+      };
+    })
+    .sort((a, b) => new Date(a.week_start).getTime() - new Date(b.week_start).getTime());
+
+  // 前週比較の計算
+  for (let i = 1; i < growthAnalysis.length; i++) {
+    growthAnalysis[i].prev_week_score = growthAnalysis[i - 1].avg_score;
+    growthAnalysis[i].score_change = growthAnalysis[i].avg_score - growthAnalysis[i - 1].avg_score;
+  }
+
+  return growthAnalysis;
+};
+
 export function createAnalysisRoutes(prisma: PrismaClient) {
   const routes = new Hono();
 
@@ -183,140 +267,49 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       const period = parseInt(c.req.query("period") || "30");
       const userId = parseInt(c.req.query("userId") || "1");
       
-      // 期間の開始日を計算
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - period);
       
-      // 学習継続性の分析
+      // データ取得
       const studyLogs = await prisma.studyLog.findMany({
-        where: {
-          userId,
-          date: { gte: startDate }
-        },
+        where: { userId, date: { gte: startDate } },
         orderBy: { date: 'asc' }
       });
 
-      const studyDays = new Set(studyLogs.map(log => log.date.toDateString())).size;
-      const totalSessions = studyLogs.length;
-      const avgSessionDuration = studyLogs.length > 0 
-        ? studyLogs.reduce((sum, log) => sum + log.studyTime, 0) / studyLogs.length 
-        : 0;
-      const consistencyRate = (studyDays / period) * 100;
-
-      // クイズセッションから学習効率を分析
       const quizSessions = await prisma.quizSession.findMany({
-        where: {
-          userId,
-          startedAt: { gte: startDate },
-          isCompleted: true
-        }
+        where: { userId, startedAt: { gte: startDate }, isCompleted: true }
       });
 
-      const totalQuestions = quizSessions.reduce((sum, session) => sum + session.totalQuestions, 0);
-      const totalCorrect = quizSessions.reduce((sum, session) => sum + session.correctAnswers, 0);
-      const avgScore = quizSessions.length > 0 
-        ? quizSessions.reduce((sum, session) => sum + session.score, 0) / quizSessions.length 
-        : 0;
-      const avgTimePerQuestion = quizSessions.length > 0 && totalQuestions > 0
-        ? quizSessions.reduce((sum, session) => sum + session.totalTime, 0) / totalQuestions
-        : 0;
-
-      // カテゴリ別バランス分析
       const categoryStats = await prisma.quizSession.groupBy({
         by: ['category'],
-        where: {
-          userId,
-          startedAt: { gte: startDate },
-          isCompleted: true,
-          category: { not: null }
-        },
-        _count: {
-          id: true
-        },
-        _sum: {
-          totalQuestions: true,
-          correctAnswers: true
-        }
+        where: { userId, startedAt: { gte: startDate }, isCompleted: true, category: { not: null } },
+        _count: { id: true },
+        _sum: { totalQuestions: true, correctAnswers: true }
       });
 
-      const totalCategoryQuestions = categoryStats.reduce((sum, cat) => sum + (cat._sum.totalQuestions || 0), 0);
-      const categoryBalance = categoryStats.map(cat => ({
-        category: cat.category || "未分類",
-        questions_attempted: cat._sum.totalQuestions || 0,
-        accuracy_rate: cat._sum.totalQuestions ? (cat._sum.correctAnswers || 0) / cat._sum.totalQuestions : 0,
-        proportion: totalCategoryQuestions > 0 ? ((cat._sum.totalQuestions || 0) / totalCategoryQuestions) * 100 : 0
-      }));
-
-      // 週次成長分析
       const weeklyStats = await prisma.quizSession.findMany({
-        where: {
-          userId,
-          startedAt: { gte: startDate },
-          isCompleted: true
-        },
-        select: {
-          startedAt: true,
-          score: true
-        },
+        where: { userId, startedAt: { gte: startDate }, isCompleted: true },
+        select: { startedAt: true, score: true },
         orderBy: { startedAt: 'asc' }
       });
 
-      // 週ごとにデータをグループ化
-      const weeklyGroups: { [key: string]: number[] } = {};
-      weeklyStats.forEach(session => {
-        const weekStart = new Date(session.startedAt);
-        weekStart.setDate(weekStart.getDate() - weekStart.getDay()); // 週の開始日を日曜日に設定
-        const weekKey = weekStart.toISOString().split('T')[0];
-        
-        if (!weeklyGroups[weekKey]) {
-          weeklyGroups[weekKey] = [];
-        }
-        weeklyGroups[weekKey].push(session.score);
-      });
+      // 分析実行
+      const studyConsistency = analyzeStudyConsistency(studyLogs, period);
+      const learningEfficiency = analyzeLearningEfficiency(quizSessions);
+      const categoryBalance = analyzeCategoryBalance(categoryStats);
+      const growthAnalysis = processWeeklyGrowthAnalysis(weeklyStats);
 
-      const growthAnalysis = Object.entries(weeklyGroups)
-        .map(([weekStart, scores]) => {
-          const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-          return {
-            week_start: weekStart,
-            avg_score: avgScore,
-            sessions_count: scores.length,
-            prev_week_score: 0, // 前週比較は後で実装
-            score_change: 0
-          };
-        })
-        .sort((a, b) => new Date(a.week_start).getTime() - new Date(b.week_start).getTime());
-
-      // 前週比較の計算
-      for (let i = 1; i < growthAnalysis.length; i++) {
-        growthAnalysis[i].prev_week_score = growthAnalysis[i - 1].avg_score;
-        growthAnalysis[i].score_change = growthAnalysis[i].avg_score - growthAnalysis[i - 1].avg_score;
-      }
-
-      const response = {
+      return c.json({
         success: true,
         data: {
           period,
-          studyConsistency: {
-            study_days: studyDays,
-            total_sessions: totalSessions,
-            avg_session_duration: Math.round(avgSessionDuration),
-            consistency_rate: Math.round(consistencyRate * 10) / 10,
-          },
-          learningEfficiency: {
-            avg_score: Math.round(avgScore * 10) / 10,
-            avg_time_per_question: Math.round(avgTimePerQuestion),
-            total_questions_attempted: totalQuestions,
-            avg_total_time: Math.round(avgSessionDuration),
-          },
+          studyConsistency,
+          learningEfficiency,
           growthAnalysis,
           categoryBalance,
         },
-      };
-      
-      return c.json(response);
+      });
     } catch (error) {
-      console.error('Performance metrics error:', error);
       return c.json(
         {
           success: false,
