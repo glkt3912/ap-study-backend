@@ -1,6 +1,179 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
 
+interface CategoryPerformance {
+  total: number;
+  correct: number;
+  sessions: number;
+}
+
+interface CategoryReadiness {
+  category: string;
+  questions_attempted: number;
+  accuracy_rate: number;
+  readiness_level: 'excellent' | 'good' | 'needs_improvement' | 'critical';
+}
+
+interface StudyRecommendation {
+  type: string;
+  recommendation: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+// Helper functions for exam readiness analysis
+const validateExamDate = (examDate: string) => {
+  if (!examDate) {
+    throw new Error("Exam date is required");
+  }
+  
+  const examDateTime = new Date(examDate);
+  const currentDate = new Date();
+  const daysToExam = Math.ceil((examDateTime.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  if (daysToExam <= 0) {
+    throw new Error("Exam date must be in the future");
+  }
+  
+  return { examDateTime, daysToExam };
+};
+
+const analyzeQuizPerformance = (quizSessions: any[]) => {
+  const currentAvgScore = quizSessions.length > 0 
+    ? quizSessions.reduce((sum, session) => sum + session.score, 0) / quizSessions.length 
+    : 0;
+  
+  return { currentAvgScore };
+};
+
+const analyzeCategoryPerformance = (quizSessions: any[]): CategoryReadiness[] => {
+  const categoryPerformance: { [category: string]: CategoryPerformance } = {};
+  
+  quizSessions.forEach(session => {
+    const category = session.category || "未分類";
+    if (!categoryPerformance[category]) {
+      categoryPerformance[category] = { total: 0, correct: 0, sessions: 0 };
+    }
+    categoryPerformance[category].total += session.totalQuestions;
+    categoryPerformance[category].correct += session.correctAnswers;
+    categoryPerformance[category].sessions++;
+  });
+
+  return Object.entries(categoryPerformance).map(([category, data]) => {
+    const accuracy = data.total > 0 ? data.correct / data.total : 0;
+    let readinessLevel: 'excellent' | 'good' | 'needs_improvement' | 'critical';
+    
+    if (accuracy >= 0.8 && data.sessions >= 5) readinessLevel = 'excellent';
+    else if (accuracy >= 0.7 && data.sessions >= 3) readinessLevel = 'good';
+    else if (accuracy >= 0.5 && data.sessions >= 1) readinessLevel = 'needs_improvement';
+    else readinessLevel = 'critical';
+
+    return {
+      category,
+      questions_attempted: data.total,
+      accuracy_rate: accuracy,
+      readiness_level: readinessLevel
+    };
+  });
+};
+
+const calculateAvgAccuracy = (categoryReadiness: CategoryReadiness[]): number => {
+  return categoryReadiness.length > 0 
+    ? categoryReadiness.reduce((sum, cat) => sum + cat.accuracy_rate, 0) / categoryReadiness.length 
+    : 0;
+};
+
+const determineOverallReadiness = (categoryReadiness: CategoryReadiness[], currentAvgScore: number, targetScore: number, daysToExam: number): string => {
+  const avgAccuracy = calculateAvgAccuracy(categoryReadiness);
+  
+  if (avgAccuracy >= 0.8 && currentAvgScore >= targetScore && daysToExam >= 7) {
+    return 'excellent';
+  } else if (avgAccuracy >= 0.7 && currentAvgScore >= targetScore * 0.8) {
+    return 'good';
+  } else if (avgAccuracy >= 0.5 && daysToExam >= 14) {
+    return 'needs_improvement';
+  } else {
+    return 'critical';
+  }
+};
+
+const addScoreImprovementRecommendation = (recommendations: StudyRecommendation[], currentAvgScore: number, targetScore: number): void => {
+  if (currentAvgScore < targetScore) {
+    recommendations.push({
+      type: 'score_improvement',
+      recommendation: `目標点${targetScore}点に向けて、現在の平均点${Math.round(currentAvgScore)}点から${Math.round(targetScore - currentAvgScore)}点の向上が必要です`,
+      priority: 'high'
+    });
+  }
+};
+
+const addCategoryRecommendations = (recommendations: StudyRecommendation[], categoryReadiness: CategoryReadiness[]): void => {
+  const criticalCategories = categoryReadiness.filter(cat => cat.readiness_level === 'critical');
+  if (criticalCategories.length > 0) {
+    recommendations.push({
+      type: 'category_focus',
+      recommendation: `${criticalCategories.map(cat => cat.category).join(', ')}分野の集中学習が急務です`,
+      priority: 'high'
+    });
+  }
+
+  const needsImprovementCategories = categoryReadiness.filter(cat => cat.readiness_level === 'needs_improvement');
+  if (needsImprovementCategories.length > 0) {
+    recommendations.push({
+      type: 'category_improvement',
+      recommendation: `${needsImprovementCategories.map(cat => cat.category).join(', ')}分野の強化を推奨します`,
+      priority: 'medium'
+    });
+  }
+};
+
+const addTimeBasedRecommendations = (recommendations: StudyRecommendation[], daysToExam: number): void => {
+  if (daysToExam <= 7) {
+    recommendations.push({
+      type: 'time_management',
+      recommendation: '試験まで1週間を切っています。最重要分野に集中し、過去問演習を中心に学習してください',
+      priority: 'high'
+    });
+  } else if (daysToExam <= 14) {
+    recommendations.push({
+      type: 'intensive_study',
+      recommendation: '試験まで2週間です。弱点分野の集中学習と総復習のバランスを取りましょう',
+      priority: 'medium'
+    });
+  }
+};
+
+const generateStudyRecommendations = (currentAvgScore: number, targetScore: number, categoryReadiness: CategoryReadiness[], daysToExam: number): StudyRecommendation[] => {
+  const recommendations: StudyRecommendation[] = [];
+  
+  addScoreImprovementRecommendation(recommendations, currentAvgScore, targetScore);
+  addCategoryRecommendations(recommendations, categoryReadiness);
+  addTimeBasedRecommendations(recommendations, daysToExam);
+
+  return recommendations;
+};
+
+const getBaseProbabilityByScore = (currentAvgScore: number, targetScore: number): number => {
+  if (currentAvgScore >= targetScore * 1.1) return 90;
+  else if (currentAvgScore >= targetScore) return 80;
+  else if (currentAvgScore >= targetScore * 0.9) return 70;
+  else if (currentAvgScore >= targetScore * 0.8) return 60;
+  else if (currentAvgScore >= targetScore * 0.7) return 50;
+  else if (currentAvgScore >= targetScore * 0.6) return 40;
+  else return Math.max(20, currentAvgScore / targetScore * 60);
+};
+
+const adjustProbabilityByDays = (probability: number, daysToExam: number): number => {
+  if (daysToExam > 30) probability += 10;
+  else if (daysToExam <= 7) probability -= 10;
+  
+  return Math.max(0, Math.min(100, probability));
+};
+
+const calculatePassProbability = (currentAvgScore: number, targetScore: number, daysToExam: number): number => {
+  const baseProbability = getBaseProbabilityByScore(currentAvgScore, targetScore);
+  return adjustProbabilityByDays(baseProbability, daysToExam);
+};
+
 export function createAnalysisRoutes(prisma: PrismaClient) {
   const routes = new Hono();
 
@@ -453,23 +626,7 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       const { examDate, targetScore = 60 } = body;
       const userId = parseInt(c.req.query("userId") || "1");
 
-      if (!examDate) {
-        return c.json({
-          success: false,
-          error: "Exam date is required"
-        }, 400);
-      }
-
-      const examDateTime = new Date(examDate);
-      const currentDate = new Date();
-      const daysToExam = Math.ceil((examDateTime.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-
-      if (daysToExam <= 0) {
-        return c.json({
-          success: false,
-          error: "Exam date must be in the future"
-        }, 400);
-      }
+      const { examDateTime, daysToExam } = validateExamDate(examDate);
 
       // 最近30日間のクイズセッションを分析
       const recentDate = new Date();
@@ -483,117 +640,13 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         }
       });
 
-      // 現在の能力評価
-      const currentAvgScore = quizSessions.length > 0 
-        ? quizSessions.reduce((sum, session) => sum + session.score, 0) / quizSessions.length 
-        : 0;
-      
+      const { currentAvgScore } = analyzeQuizPerformance(quizSessions);
       const targetAchievementRate = targetScore > 0 ? (currentAvgScore / targetScore) * 100 : 0;
-
-      // カテゴリ別準備度評価
-      const categoryPerformance: { [category: string]: { total: number, correct: number, sessions: number } } = {};
       
-      quizSessions.forEach(session => {
-        const category = session.category || "未分類";
-        if (!categoryPerformance[category]) {
-          categoryPerformance[category] = { total: 0, correct: 0, sessions: 0 };
-        }
-        categoryPerformance[category].total += session.totalQuestions;
-        categoryPerformance[category].correct += session.correctAnswers;
-        categoryPerformance[category].sessions++;
-      });
-
-      const categoryReadiness = Object.entries(categoryPerformance).map(([category, data]) => {
-        const accuracy = data.total > 0 ? data.correct / data.total : 0;
-        let readinessLevel: 'excellent' | 'good' | 'needs_improvement' | 'critical';
-        
-        if (accuracy >= 0.8 && data.sessions >= 5) readinessLevel = 'excellent';
-        else if (accuracy >= 0.7 && data.sessions >= 3) readinessLevel = 'good';
-        else if (accuracy >= 0.5 && data.sessions >= 1) readinessLevel = 'needs_improvement';
-        else readinessLevel = 'critical';
-
-        return {
-          category,
-          questions_attempted: data.total,
-          accuracy_rate: accuracy,
-          readiness_level: readinessLevel
-        };
-      });
-
-      // 全体的な準備度の判定
-      const avgAccuracy = categoryReadiness.length > 0 
-        ? categoryReadiness.reduce((sum, cat) => sum + cat.accuracy_rate, 0) / categoryReadiness.length 
-        : 0;
-      
-      let overallReadiness: string;
-      if (avgAccuracy >= 0.8 && currentAvgScore >= targetScore && daysToExam >= 7) {
-        overallReadiness = 'excellent';
-      } else if (avgAccuracy >= 0.7 && currentAvgScore >= targetScore * 0.8) {
-        overallReadiness = 'good';
-      } else if (avgAccuracy >= 0.5 && daysToExam >= 14) {
-        overallReadiness = 'needs_improvement';
-      } else {
-        overallReadiness = 'critical';
-      }
-
-      // 学習推奨の生成
-      const studyRecommendations = [];
-      
-      if (currentAvgScore < targetScore) {
-        studyRecommendations.push({
-          type: 'score_improvement',
-          recommendation: `目標点${targetScore}点に向けて、現在の平均点${Math.round(currentAvgScore)}点から${Math.round(targetScore - currentAvgScore)}点の向上が必要です`,
-          priority: 'high'
-        });
-      }
-
-      const criticalCategories = categoryReadiness.filter(cat => cat.readiness_level === 'critical');
-      if (criticalCategories.length > 0) {
-        studyRecommendations.push({
-          type: 'category_focus',
-          recommendation: `${criticalCategories.map(cat => cat.category).join(', ')}分野の集中学習が急務です`,
-          priority: 'high'
-        });
-      }
-
-      const needsImprovementCategories = categoryReadiness.filter(cat => cat.readiness_level === 'needs_improvement');
-      if (needsImprovementCategories.length > 0) {
-        studyRecommendations.push({
-          type: 'category_improvement',
-          recommendation: `${needsImprovementCategories.map(cat => cat.category).join(', ')}分野の強化を推奨します`,
-          priority: 'medium'
-        });
-      }
-
-      if (daysToExam <= 7) {
-        studyRecommendations.push({
-          type: 'time_management',
-          recommendation: '試験まで1週間を切っています。最重要分野に集中し、過去問演習を中心に学習してください',
-          priority: 'high'
-        });
-      } else if (daysToExam <= 14) {
-        studyRecommendations.push({
-          type: 'intensive_study',
-          recommendation: '試験まで2週間です。弱点分野の集中学習と総復習のバランスを取りましょう',
-          priority: 'medium'
-        });
-      }
-
-      // 合格予測確率の計算（簡易版）
-      let passProbability = 0;
-      if (currentAvgScore >= targetScore * 1.1) passProbability = 90;
-      else if (currentAvgScore >= targetScore) passProbability = 80;
-      else if (currentAvgScore >= targetScore * 0.9) passProbability = 70;
-      else if (currentAvgScore >= targetScore * 0.8) passProbability = 60;
-      else if (currentAvgScore >= targetScore * 0.7) passProbability = 50;
-      else if (currentAvgScore >= targetScore * 0.6) passProbability = 40;
-      else passProbability = Math.max(20, currentAvgScore / targetScore * 60);
-
-      // 日数による調整
-      if (daysToExam > 30) passProbability += 10;
-      else if (daysToExam <= 7) passProbability -= 10;
-
-      passProbability = Math.max(0, Math.min(100, passProbability));
+      const categoryReadiness = analyzeCategoryPerformance(quizSessions);
+      const overallReadiness = determineOverallReadiness(categoryReadiness, currentAvgScore, targetScore, daysToExam);
+      const studyRecommendations = generateStudyRecommendations(currentAvgScore, targetScore, categoryReadiness, daysToExam);
+      const passProbability = calculatePassProbability(currentAvgScore, targetScore, daysToExam);
 
       return c.json({
         success: true,
@@ -614,7 +667,6 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       });
 
     } catch (error) {
-      console.error('Exam readiness evaluation error:', error);
       return c.json(
         {
           success: false,

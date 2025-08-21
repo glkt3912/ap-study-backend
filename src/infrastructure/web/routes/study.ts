@@ -1,11 +1,11 @@
 // Hono API ルート - 学習計画関連
 
-import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { GetStudyPlanUseCase } from "src/domain/usecases/GetStudyPlan.js";
-import { UpdateStudyProgressUseCase } from "src/domain/usecases/UpdateStudyProgress.js";
-import { getAuthUser, type Variables } from "../middleware/auth.js";
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+import { GetStudyPlanUseCase } from 'src/domain/usecases/GetStudyPlan.js';
+import { UpdateStudyProgressUseCase } from 'src/domain/usecases/UpdateStudyProgress.js';
+import { getAuthUser, type Variables } from '../middleware/auth.js';
 
 // バリデーションスキーマ
 const updateProgressSchema = z.object({
@@ -19,22 +19,22 @@ const updateProgressSchema = z.object({
 
 export function createStudyRoutes(
   getStudyPlanUseCase: GetStudyPlanUseCase,
-  updateStudyProgressUseCase: UpdateStudyProgressUseCase
+  updateStudyProgressUseCase: UpdateStudyProgressUseCase,
 ) {
   const app = new Hono<{ Variables: Variables }>();
 
   // GET /api/study/plan - 全学習計画取得（ユーザー別）
-  app.get("/plan", async (c) => {
+  app.get('/plan', async c => {
     try {
       const authUser = getAuthUser(c);
       console.log('Getting study plan for user:', authUser.userId);
       const weeks = await getStudyPlanUseCase.executeForUser(authUser.userId);
       console.log('Retrieved weeks:', weeks.length);
       console.log('First week goals type:', typeof weeks[0]?.goals, weeks[0]?.goals);
-      
+
       return c.json({
         success: true,
-        data: weeks.map((week) => ({
+        data: weeks.map(week => ({
           id: week.id,
           weekNumber: week.weekNumber,
           title: week.title,
@@ -50,21 +50,18 @@ export function createStudyRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "学習計画の取得に失敗しました",
+          error: error instanceof Error ? error.message : '学習計画の取得に失敗しました',
         },
-        500
+        500,
       );
     }
   });
 
   // GET /api/study/plan/:weekNumber - 特定週の計画取得
-  app.get("/plan/:weekNumber", async (c) => {
+  app.get('/plan/:weekNumber', async c => {
     try {
       const authUser = getAuthUser(c);
-      const weekNumber = parseInt(c.req.param("weekNumber"));
+      const weekNumber = parseInt(c.req.param('weekNumber'));
       const week = await getStudyPlanUseCase.getWeekForUser(authUser.userId, weekNumber);
 
       return c.json({
@@ -85,16 +82,15 @@ export function createStudyRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error ? error.message : "週の取得に失敗しました",
+          error: error instanceof Error ? error.message : '週の取得に失敗しました',
         },
-        404
+        404,
       );
     }
   });
 
   // GET /api/study/current-week - 現在の週取得
-  app.get("/current-week", async (c) => {
+  app.get('/current-week', async c => {
     try {
       const authUser = getAuthUser(c);
       const currentWeek = await getStudyPlanUseCase.getCurrentWeekForUser(authUser.userId);
@@ -117,124 +113,99 @@ export function createStudyRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "現在の週の取得に失敗しました",
+          error: error instanceof Error ? error.message : '現在の週の取得に失敗しました',
         },
-        500
+        500,
       );
     }
   });
 
   // PUT /api/study/progress - 学習進捗更新
-  app.put(
-    "/progress",
-    async (c) => {
-      // カスタムバリデーション（詳細エラーログ付き）
-      let requestBody;
-      try {
-        requestBody = await c.req.json();
-        console.log('Received request body:', JSON.stringify(requestBody, null, 2));
-      } catch (error) {
-        console.error('Failed to parse JSON request body:', error);
-        return c.json({
+  app.put('/progress', async c => {
+    // カスタムバリデーション（詳細エラーログ付き）
+    let requestBody;
+    try {
+      requestBody = await c.req.json();
+      console.log('Received request body:', JSON.stringify(requestBody, null, 2));
+    } catch (error) {
+      console.error('Failed to parse JSON request body:', error);
+      return c.json(
+        {
           success: false,
           error: 'Invalid JSON format',
-        }, 400);
-      }
+        },
+        400,
+      );
+    }
 
-      const validationResult = updateProgressSchema.safeParse(requestBody);
-      if (!validationResult.success) {
-        console.error('Validation failed:', JSON.stringify(validationResult.error.issues, null, 2));
-        return c.json({
+    const validationResult = updateProgressSchema.safeParse(requestBody);
+    if (!validationResult.success) {
+      console.error('Validation failed:', JSON.stringify(validationResult.error.issues, null, 2));
+      return c.json(
+        {
           success: false,
           error: 'Validation failed',
           details: validationResult.error.issues,
-        }, 400);
-      }
-      try {
-        const {
-          weekNumber,
-          dayIndex,
-          actualTime,
-          understanding,
-          memo,
-          completed,
-        } = validationResult.data;
-
-        // 完了状態の更新
-        if (completed !== undefined) {
-          if (completed) {
-            await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
-          } else {
-            await updateStudyProgressUseCase.uncompleteTask(weekNumber, dayIndex);
-          }
-        }
-
-        // 学習時間の更新
-        if (actualTime !== undefined) {
-          await updateStudyProgressUseCase.updateStudyTime(
-            weekNumber,
-            dayIndex,
-            actualTime
-          );
-        }
-
-        // 理解度の更新
-        if (understanding !== undefined) {
-          await updateStudyProgressUseCase.updateUnderstanding(
-            weekNumber,
-            dayIndex,
-            understanding
-          );
-        }
-
-        // メモの更新
-        if (memo !== undefined) {
-          await updateStudyProgressUseCase.updateMemo(
-            weekNumber,
-            dayIndex,
-            memo
-          );
-        }
-
-        return c.json({
-          success: true,
-          message: "進捗が更新されました",
-        });
-      } catch (error) {
-        return c.json(
-          {
-            success: false,
-            error:
-              error instanceof Error
-                ? error.message
-                : "進捗の更新に失敗しました",
-          },
-          400
-        );
-      }
+        },
+        400,
+      );
     }
-  );
+    try {
+      const { weekNumber, dayIndex, actualTime, understanding, memo, completed } = validationResult.data;
+
+      // 完了状態の更新
+      if (completed !== undefined) {
+        if (completed) {
+          await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
+        } else {
+          await updateStudyProgressUseCase.uncompleteTask(weekNumber, dayIndex);
+        }
+      }
+
+      // 学習時間の更新
+      if (actualTime !== undefined) {
+        await updateStudyProgressUseCase.updateStudyTime(weekNumber, dayIndex, actualTime);
+      }
+
+      // 理解度の更新
+      if (understanding !== undefined) {
+        await updateStudyProgressUseCase.updateUnderstanding(weekNumber, dayIndex, understanding);
+      }
+
+      // メモの更新
+      if (memo !== undefined) {
+        await updateStudyProgressUseCase.updateMemo(weekNumber, dayIndex, memo);
+      }
+
+      return c.json({
+        success: true,
+        message: '進捗が更新されました',
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : '進捗の更新に失敗しました',
+        },
+        400,
+      );
+    }
+  });
 
   // POST /api/study/complete-task - タスク完了
   app.post(
-    "/complete-task",
+    '/complete-task',
     zValidator(
-      "json",
+      'json',
       z.object({
         weekNumber: z.number().min(1).max(12),
         dayIndex: z.number().min(0).max(6),
-      }) as any
+      }) as any,
     ),
-    async (c) => {
+    async c => {
       try {
-        const { weekNumber, dayIndex } = c.req.valid("json");
-        const updatedWeek = await updateStudyProgressUseCase.completeTask(
-          weekNumber,
-          dayIndex
-        );
+        const { weekNumber, dayIndex } = c.req.valid('json');
+        const updatedWeek = await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
 
         return c.json({
           success: true,
@@ -249,21 +220,18 @@ export function createStudyRoutes(
             totalStudyTime: updatedWeek.getTotalStudyTime(),
             averageUnderstanding: updatedWeek.getAverageUnderstanding(),
           },
-          message: "タスクが完了しました",
+          message: 'タスクが完了しました',
         });
       } catch (error) {
         return c.json(
           {
             success: false,
-            error:
-              error instanceof Error
-                ? error.message
-                : "タスクの完了に失敗しました",
+            error: error instanceof Error ? error.message : 'タスクの完了に失敗しました',
           },
-          400
+          400,
         );
       }
-    }
+    },
   );
 
   return app;

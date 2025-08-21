@@ -1,46 +1,46 @@
 // API Routes: Learning Efficiency Analysis
-import { Hono } from 'hono'
-import { LearningEfficiencyAnalysisUseCase } from '../../../domain/usecases/learning-efficiency-analyzer'
+import { Hono } from 'hono';
+import { LearningEfficiencyAnalysisUseCase } from '../../../domain/usecases/learning-efficiency-analyzer';
 
 export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficiencyAnalysisUseCase) {
-  const router = new Hono()
+  const router = new Hono();
 
   // GET /analysis/:userId
-  router.get('/user/:userId', async (c) => {
+  router.get('/user/:userId', async c => {
     try {
-      const userId = c.req.param('userId')
-      const analyses = await useCase.getAnalysesByUser(userId ? parseInt(userId) : 0)
-      return c.json({ success: true, data: analyses })
+      const userId = c.req.param('userId');
+      const analyses = await useCase.getAnalysesByUser(userId ? parseInt(userId) : 0);
+      return c.json({ success: true, data: analyses });
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500)
+      return c.json({ success: false, error: error.message }, 500);
     }
-  })
+  });
 
   // GET /analysis/:id
-  router.get('/:id', async (c) => {
+  router.get('/:id', async c => {
     try {
-      const id = c.req.param('id')
-      const analysis = await useCase.getAnalysisById(id)
+      const id = c.req.param('id');
+      const analysis = await useCase.getAnalysisById(id);
       if (!analysis) {
-        return c.json({ success: false, error: 'Analysis not found' }, 404)
+        return c.json({ success: false, error: 'Analysis not found' }, 404);
       }
-      return c.json({ success: true, data: analysis })
+      return c.json({ success: true, data: analysis });
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500)
+      return c.json({ success: false, error: error.message }, 500);
     }
-  })
+  });
 
   // POST /analysis/generate
-  router.post('/generate', async (c) => {
+  router.post('/generate', async c => {
     try {
-      let body: any = {}
+      let body: any = {};
       try {
-        body = await c.req.json()
+        body = await c.req.json();
       } catch (jsonError) {
         // Handle empty body or invalid JSON - use default empty object
         // No JSON body provided, using default empty object
       }
-      
+
       // For now, return mock data since we don't have real user data
       const mockAnalysis = {
         id: Date.now().toString(),
@@ -48,50 +48,50 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
         analysisDate: new Date().toISOString(),
         efficiencyScore: 75,
         recommendations: [
-          "定期的な復習スケジュールを作成しましょう",
-          "理解度の低い分野に集中して学習しましょう",
-          "学習時間を記録して習慣化を図りましょう"
+          '定期的な復習スケジュールを作成しましょう',
+          '理解度の低い分野に集中して学習しましょう',
+          '学習時間を記録して習慣化を図りましょう',
         ],
         insights: {
-          strongAreas: ["基礎理論", "データベース"],
-          weakAreas: ["ネットワーク", "セキュリティ"],
-          timeEfficiency: "良好",
-          retentionRate: 0.68
-        }
-      }
-      
-      return c.json({ success: true, data: mockAnalysis }, 201)
+          strongAreas: ['基礎理論', 'データベース'],
+          weakAreas: ['ネットワーク', 'セキュリティ'],
+          timeEfficiency: '良好',
+          retentionRate: 0.68,
+        },
+      };
+
+      return c.json({ success: true, data: mockAnalysis }, 201);
     } catch (error: any) {
       // エラー時のフォールバック処理
-      return c.json({ success: false, error: error.message }, 500)
+      return c.json({ success: false, error: error.message }, 500);
     }
-  })
+  });
 
   // GET /latest/:userId
-  router.get('/latest/:userId', async (c) => {
+  router.get('/latest/:userId', async c => {
     try {
-      const userId = c.req.param('userId')
-      const analysis = await useCase.getLatestAnalysis(userId ? parseInt(userId) : 0)
+      const userId = c.req.param('userId');
+      const analysis = await useCase.getLatestAnalysis(userId ? parseInt(userId) : 0);
       if (!analysis) {
-        return c.json({ success: false, error: 'No analysis found for user' }, 404)
+        return c.json({ success: false, error: 'No analysis found for user' }, 404);
       }
-      return c.json({ success: true, data: analysis })
+      return c.json({ success: true, data: analysis });
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500)
+      return c.json({ success: false, error: error.message }, 500);
     }
-  })
+  });
 
   // GET /predict/:userId
-  router.get('/predict/:userId', async (c) => {
+  router.get('/predict/:userId', async c => {
     try {
-      const userId = c.req.param('userId')
-      const prediction = await useCase.generatePredictiveAnalysis(userId ? parseInt(userId) : 0)
-      return c.json({ success: true, data: prediction })
+      const userId = c.req.param('userId');
+      const prediction = await useCase.generatePredictiveAnalysis(userId ? parseInt(userId) : 0);
+      return c.json({ success: true, data: prediction });
     } catch (error: any) {
       // 履歴データがない場合は404ではなく、空のデータを返す
       if (error.message.includes('No historical data available')) {
-        return c.json({ 
-          success: true, 
+        return c.json({
+          success: true,
           data: {
             predictedOutcome: 'insufficient_data',
             confidenceLevel: 0,
@@ -100,26 +100,26 @@ export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficien
               {
                 action: '定期的な学習を開始してください',
                 expectedImprovement: 0,
-                implementationEffort: 'low'
-              }
-            ]
-          }
-        })
+                implementationEffort: 'low',
+              },
+            ],
+          },
+        });
       }
-      return c.json({ success: false, error: error.message }, 500)
+      return c.json({ success: false, error: error.message }, 500);
     }
-  })
+  });
 
   // GET /recommendations/:userId
-  router.get('/recommendations/:userId', async (c) => {
+  router.get('/recommendations/:userId', async c => {
     try {
-      const userId = c.req.param('userId')
-      const recommendations = await useCase.generatePersonalizedRecommendations(userId ? parseInt(userId) : 0)
-      return c.json({ success: true, data: recommendations })
+      const userId = c.req.param('userId');
+      const recommendations = await useCase.generatePersonalizedRecommendations(userId ? parseInt(userId) : 0);
+      return c.json({ success: true, data: recommendations });
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500)
+      return c.json({ success: false, error: error.message }, 500);
     }
-  })
+  });
 
-  return router
+  return router;
 }
