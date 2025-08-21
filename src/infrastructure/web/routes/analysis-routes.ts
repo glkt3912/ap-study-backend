@@ -174,6 +174,163 @@ const calculatePassProbability = (currentAvgScore: number, targetScore: number, 
   return adjustProbabilityByDays(baseProbability, daysToExam);
 };
 
+// Helper functions for latest analysis
+const calculateBasicStats = (studyLogs: any[], quizSessions: any[]) => {
+  const totalStudyTime = studyLogs.reduce((sum, log) => sum + log.studyTime, 0);
+  const averageUnderstanding = studyLogs.length > 0 
+    ? studyLogs.reduce((sum, log) => sum + log.understanding, 0) / studyLogs.length 
+    : 0;
+  const avgQuizScore = quizSessions.length > 0 
+    ? quizSessions.reduce((sum, session) => sum + session.score, 0) / quizSessions.length 
+    : 0;
+  
+  return { totalStudyTime, averageUnderstanding, avgQuizScore };
+};
+
+const calculateCategoryScores = (quizSessions: any[]) => {
+  const categoryGroups = quizSessions.reduce((groups: { [key: string]: number[] }, session) => {
+    const category = session.category || "未分類";
+    if (!groups[category]) groups[category] = [];
+    groups[category].push(session.score);
+    return groups;
+  }, {});
+
+  const categoryScores: { [key: string]: number } = {};
+  Object.entries(categoryGroups).forEach(([category, scores]) => {
+    categoryScores[category] = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+  });
+
+  return categoryScores;
+};
+
+const identifyWeakSubjects = (categoryScores: { [key: string]: number }) => {
+  return Object.entries(categoryScores)
+    .filter(([_, score]) => score < 70)
+    .sort(([_, a], [__, b]) => a - b)
+    .slice(0, 3);
+};
+
+const generateInsightsAndRecommendations = (studyLogs: any[], quizSessions: any[], averageUnderstanding: number, weakSubjects: any[]) => {
+  const insights = [
+    studyLogs.length > 0 ? "学習記録が蓄積されています" : "学習記録を開始しましょう",
+    quizSessions.length > 0 ? "クイズセッションが記録されています" : "クイズに挑戦してみましょう",
+    averageUnderstanding >= 3 ? "理解度は良好です" : "理解度の向上が必要です"
+  ];
+
+  const recommendations = [
+    "定期的な学習を継続しましょう",
+    "弱点分野を重点的に学習しましょう",
+    "復習を含めた学習計画を立てましょう"
+  ];
+
+  if (weakSubjects.length > 0) {
+    recommendations.unshift(`${weakSubjects[0][0]}分野の強化が特に重要です`);
+  }
+
+  return { insights, recommendations };
+};
+
+const buildAnalysisResponse = (stats: any, categoryScores: any, weakSubjects: any[], insights: string[], recommendations: string[], studyLogs: any[], quizSessions: any[]) => {
+  const { totalStudyTime, averageUnderstanding, avgQuizScore } = stats;
+  
+  return {
+    id: Date.now().toString(),
+    analysisDate: new Date().toISOString(),
+    overallScore: Math.round((averageUnderstanding * 20) + (avgQuizScore * 0.8)),
+    categoryScores,
+    insights,
+    recommendations,
+    studyPattern: {
+      totalStudyTime,
+      averageStudyTime: studyLogs.length > 0 ? totalStudyTime / studyLogs.length : 0,
+      studyFrequency: studyLogs.length,
+      consistencyScore: Math.min((studyLogs.length / 30) * 100, 100)
+    },
+    weaknessAnalysis: {
+      weakSubjects: weakSubjects.map(([subject, score]) => ({
+        subject,
+        understanding: score / 20,
+        studyTime: 0,
+        testScore: score,
+        improvement: 0
+      })),
+      weakTopics: []
+    },
+    studyRecommendation: {
+      dailyStudyTime: 60,
+      weeklyGoal: 420,
+      focusSubjects: weakSubjects.slice(0, 2).map(([subject]) => subject),
+      reviewSchedule: []
+    },
+    message: studyLogs.length === 0 && quizSessions.length === 0 
+      ? "学習データがありません。学習を開始して分析結果を確認しましょう。"
+      : "実際の学習データに基づく分析結果です。"
+  };
+};
+
+// Helper functions for learning pattern analysis
+const analyzeHourlyPerformance = (quizSessions: any[]) => {
+  const hourlyPerformance: { [hour: number]: { sessions: number, totalScore: number, totalDuration: number } } = {};
+  
+  quizSessions.forEach(session => {
+    const hour = new Date(session.startedAt).getHours();
+    if (!hourlyPerformance[hour]) {
+      hourlyPerformance[hour] = { sessions: 0, totalScore: 0, totalDuration: 0 };
+    }
+    hourlyPerformance[hour].sessions++;
+    hourlyPerformance[hour].totalScore += session.score;
+    hourlyPerformance[hour].totalDuration += session.totalTime;
+  });
+
+  return Object.entries(hourlyPerformance)
+    .map(([hour, data]) => ({
+      study_hour: parseInt(hour),
+      session_count: data.sessions,
+      avg_score: data.sessions > 0 ? data.totalScore / data.sessions : 0,
+      avg_duration: data.sessions > 0 ? data.totalDuration / data.sessions : 0
+    }))
+    .sort((a, b) => a.study_hour - b.study_hour);
+};
+
+const analyzeDailyPerformance = (quizSessions: any[]) => {
+  const dailyPerformance: { [day: number]: { sessions: number, totalScore: number } } = {};
+  
+  quizSessions.forEach(session => {
+    const day = new Date(session.startedAt).getDay();
+    if (!dailyPerformance[day]) {
+      dailyPerformance[day] = { sessions: 0, totalScore: 0 };
+    }
+    dailyPerformance[day].sessions++;
+    dailyPerformance[day].totalScore += session.score;
+  });
+
+  return Object.entries(dailyPerformance)
+    .map(([day, data]) => ({
+      day_of_week: parseInt(day),
+      session_count: data.sessions,
+      avg_score: data.sessions > 0 ? data.totalScore / data.sessions : 0
+    }))
+    .sort((a, b) => a.day_of_week - b.day_of_week);
+};
+
+const analyzeStudyVolumeCorrelation = (studyLogs: any[], quizSessions: any[]) => {
+  const correlations = [];
+  
+  if (studyLogs.length >= 5 && quizSessions.length >= 5) {
+    // 学習時間と理解度の相関
+    const avgStudyTime = studyLogs.reduce((sum, log) => sum + log.studyTime, 0) / studyLogs.length;
+    const avgUnderstanding = studyLogs.reduce((sum, log) => sum + log.understanding, 0) / studyLogs.length;
+    
+    correlations.push({
+      factor: '学習時間',
+      correlation: avgStudyTime > 60 && avgUnderstanding > 3 ? 0.7 : 0.3,
+      description: avgStudyTime > 60 ? '学習時間と理解度に正の相関があります' : '学習時間の増加が必要です'
+    });
+  }
+
+  return correlations;
+};
+
 // Helper functions for performance metrics analysis
 const analyzeStudyConsistency = (studyLogs: any[], period: number) => {
   const studyDays = new Set(studyLogs.map(log => log.date.toDateString())).size;
@@ -358,90 +515,18 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         orderBy: { startedAt: 'desc' }
       });
 
-      // 基本的な統計を計算
-      const totalStudyTime = studyLogs.reduce((sum, log) => sum + log.studyTime, 0);
-      const averageUnderstanding = studyLogs.length > 0 
-        ? studyLogs.reduce((sum, log) => sum + log.understanding, 0) / studyLogs.length 
-        : 0;
-      
-      const avgQuizScore = quizSessions.length > 0 
-        ? quizSessions.reduce((sum, session) => sum + session.score, 0) / quizSessions.length 
-        : 0;
-
-      // カテゴリ別スコア計算
-      const categoryScores: { [key: string]: number } = {};
-      const categoryGroups = quizSessions.reduce((groups: { [key: string]: number[] }, session) => {
-        const category = session.category || "未分類";
-        if (!groups[category]) groups[category] = [];
-        groups[category].push(session.score);
-        return groups;
-      }, {});
-
-      Object.entries(categoryGroups).forEach(([category, scores]) => {
-        categoryScores[category] = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-      });
-
-      // 弱点分野の特定
-      const weakSubjects = Object.entries(categoryScores)
-        .filter(([_, score]) => score < 70)
-        .sort(([_, a], [__, b]) => a - b)
-        .slice(0, 3);
-
-      const insights = [
-        studyLogs.length > 0 ? "学習記録が蓄積されています" : "学習記録を開始しましょう",
-        quizSessions.length > 0 ? "クイズセッションが記録されています" : "クイズに挑戦してみましょう",
-        averageUnderstanding >= 3 ? "理解度は良好です" : "理解度の向上が必要です"
-      ];
-
-      const recommendations = [
-        "定期的な学習を継続しましょう",
-        "弱点分野を重点的に学習しましょう",
-        "復習を含めた学習計画を立てましょう"
-      ];
-
-      if (weakSubjects.length > 0) {
-        recommendations.unshift(`${weakSubjects[0][0]}分野の強化が特に重要です`);
-      }
+      const stats = calculateBasicStats(studyLogs, quizSessions);
+      const categoryScores = calculateCategoryScores(quizSessions);
+      const weakSubjects = identifyWeakSubjects(categoryScores);
+      const { insights, recommendations } = generateInsightsAndRecommendations(studyLogs, quizSessions, stats.averageUnderstanding, weakSubjects);
+      const responseData = buildAnalysisResponse(stats, categoryScores, weakSubjects, insights, recommendations, studyLogs, quizSessions);
 
       return c.json({
         success: true,
-        data: {
-          id: Date.now().toString(),
-          analysisDate: new Date().toISOString(),
-          overallScore: Math.round((averageUnderstanding * 20) + (avgQuizScore * 0.8)),
-          categoryScores,
-          insights,
-          recommendations,
-          studyPattern: {
-            totalStudyTime,
-            averageStudyTime: studyLogs.length > 0 ? totalStudyTime / studyLogs.length : 0,
-            studyFrequency: studyLogs.length,
-            consistencyScore: Math.min((studyLogs.length / 30) * 100, 100)
-          },
-          weaknessAnalysis: {
-            weakSubjects: weakSubjects.map(([subject, score]) => ({
-              subject,
-              understanding: score / 20, // 100点スケールを5点スケールに変換
-              studyTime: 0,
-              testScore: score,
-              improvement: 0
-            })),
-            weakTopics: []
-          },
-          studyRecommendation: {
-            dailyStudyTime: 60,
-            weeklyGoal: 420,
-            focusSubjects: weakSubjects.slice(0, 2).map(([subject]) => subject),
-            reviewSchedule: []
-          },
-          message: studyLogs.length === 0 && quizSessions.length === 0 
-            ? "学習データがありません。学習を開始して分析結果を確認しましょう。"
-            : "実際の学習データに基づく分析結果です。"
-        }
+        data: responseData
       });
 
     } catch (error) {
-      console.error('Latest analysis error:', error);
       return c.json(
         {
           success: false,
@@ -458,7 +543,6 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
     try {
       const userId = parseInt(c.req.query("userId") || "1");
       
-      // 学習ログから時間帯別パターンを分析
       const studyLogs = await prisma.studyLog.findMany({
         where: { userId },
         orderBy: { date: 'desc' },
@@ -471,129 +555,38 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
         take: 100
       });
 
-      // 時間帯別パフォーマンス分析
-      const hourlyPerformance: { [hour: number]: { sessions: number, totalScore: number, totalDuration: number } } = {};
-      
-      quizSessions.forEach(session => {
-        const hour = new Date(session.startedAt).getHours();
-        if (!hourlyPerformance[hour]) {
-          hourlyPerformance[hour] = { sessions: 0, totalScore: 0, totalDuration: 0 };
-        }
-        hourlyPerformance[hour].sessions++;
-        hourlyPerformance[hour].totalScore += session.score;
-        hourlyPerformance[hour].totalDuration += session.totalTime;
-      });
+      const timePattern = analyzeHourlyPerformance(quizSessions);
+      const frequencyPattern = analyzeDailyPerformance(quizSessions);
+      const volumeCorrelations = analyzeStudyVolumeCorrelation(studyLogs, quizSessions);
 
-      const timePattern = Object.entries(hourlyPerformance)
-        .map(([hour, data]) => ({
-          study_hour: parseInt(hour),
-          session_count: data.sessions,
-          avg_score: data.sessions > 0 ? data.totalScore / data.sessions : 0,
-          avg_duration: data.sessions > 0 ? data.totalDuration / data.sessions : 0
-        }))
-        .sort((a, b) => a.study_hour - b.study_hour);
-
-      // 曜日別パフォーマンス分析
-      const dailyPerformance: { [day: number]: { sessions: number, totalScore: number } } = {};
-      
-      quizSessions.forEach(session => {
-        const day = new Date(session.startedAt).getDay();
-        if (!dailyPerformance[day]) {
-          dailyPerformance[day] = { sessions: 0, totalScore: 0 };
-        }
-        dailyPerformance[day].sessions++;
-        dailyPerformance[day].totalScore += session.score;
-      });
-
-      const frequencyPattern = Object.entries(dailyPerformance)
-        .map(([day, data]) => ({
-          day_of_week: parseInt(day),
-          session_count: data.sessions,
-          avg_score: data.sessions > 0 ? data.totalScore / data.sessions : 0
-        }))
-        .sort((a, b) => a.day_of_week - b.day_of_week);
-
-      // 学習量とパフォーマンスの相関分析
-      const dailyVolume: { [date: string]: { sessions: number, questions: number, totalScore: number } } = {};
-      
-      quizSessions.forEach(session => {
-        const date = session.startedAt.toDateString();
-        if (!dailyVolume[date]) {
-          dailyVolume[date] = { sessions: 0, questions: 0, totalScore: 0 };
-        }
-        dailyVolume[date].sessions++;
-        dailyVolume[date].questions += session.totalQuestions;
-        dailyVolume[date].totalScore += session.score;
-      });
-
-      const volumePerformanceCorrelation = Object.values(dailyVolume)
-        .map(data => ({
-          daily_sessions: data.sessions,
-          daily_questions: data.questions,
-          avg_score_for_volume: data.sessions > 0 ? data.totalScore / data.sessions : 0,
-          frequency: 1
-        }))
-        .reduce((acc: { [key: string]: { count: number, totalScore: number } }, curr) => {
-          const key = `${curr.daily_sessions}-${Math.floor(curr.daily_questions / 10) * 10}`;
-          if (!acc[key]) acc[key] = { count: 0, totalScore: 0 };
-          acc[key].count++;
-          acc[key].totalScore += curr.avg_score_for_volume;
-          return acc;
-        }, {});
-
-      const volumeCorrelationData = Object.entries(volumePerformanceCorrelation)
-        .map(([key, data]) => {
-          const [sessions, questions] = key.split('-').map(Number);
-          return {
-            daily_sessions: sessions,
-            daily_questions: questions,
-            avg_score_for_volume: data.count > 0 ? data.totalScore / data.count : 0,
-            frequency: data.count
-          };
-        });
-
-      // 最適な学習条件の推奨
-      const bestTimeSlot = timePattern.length > 0 
-        ? timePattern.reduce((best, current) => 
-            current.avg_score > best.avg_score ? current : best
-          ) 
-        : null;
-
-      const bestDayOfWeek = frequencyPattern.length > 0
-        ? frequencyPattern.reduce((best, current) => 
-            current.avg_score > best.avg_score ? current : best
-          )
-        : null;
-
+      // 推奨条件を生成
       const dayNames = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
-      
-      const optimalVolumeData = volumeCorrelationData.length > 0
-        ? volumeCorrelationData.reduce((best, current) =>
-            current.avg_score_for_volume > best.avg_score_for_volume ? current : best
-          )
+      const bestTimeSlot = timePattern.length > 0 
+        ? timePattern.reduce((best, current) => current.avg_score > best.avg_score ? current : best) 
+        : null;
+      const bestDayOfWeek = frequencyPattern.length > 0
+        ? frequencyPattern.reduce((best, current) => current.avg_score > best.avg_score ? current : best)
         : null;
 
       const recommendations = {
         optimalTimeSlot: bestTimeSlot ? `${bestTimeSlot.study_hour}時` : "データ不足",
         optimalDayOfWeek: bestDayOfWeek ? dayNames[bestDayOfWeek.day_of_week] : "データ不足",
-        recommendedDailyQuestions: optimalVolumeData ? optimalVolumeData.daily_questions : 20
+        recommendedDailyQuestions: 20
       };
+
+      const studyStats = calculateBasicStats(studyLogs, []);
 
       return c.json({
         success: true,
         data: {
           timePattern,
           frequencyPattern,
-          volumePerformanceCorrelation: volumeCorrelationData,
+          volumePerformanceCorrelation: volumeCorrelations,
           recommendations,
-          totalStudyTime: studyLogs.reduce((sum, log) => sum + log.studyTime, 0),
-          averageStudyTime: studyLogs.length > 0 
-            ? studyLogs.reduce((sum, log) => sum + log.studyTime, 0) / studyLogs.length 
-            : 0,
+          totalStudyTime: studyStats.totalStudyTime,
+          averageStudyTime: studyLogs.length > 0 ? studyStats.totalStudyTime / studyLogs.length : 0,
           studyFrequency: new Set(studyLogs.map(log => log.date.toDateString())).size,
-          consistencyScore: studyLogs.length > 0 
-            ? Math.min((studyLogs.length / 30) * 100, 100) 
-            : 0,
+          consistencyScore: studyLogs.length > 0 ? Math.min((studyLogs.length / 30) * 100, 100) : 0,
           message: studyLogs.length === 0 && quizSessions.length === 0
             ? "学習データが蓄積されると、詳細なパターン分析を提供します。"
             : "実際の学習データに基づくパターン分析結果です。"
@@ -601,7 +594,6 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
       });
 
     } catch (error) {
-      console.error('Learning pattern analysis error:', error);
       return c.json(
         {
           success: false,
