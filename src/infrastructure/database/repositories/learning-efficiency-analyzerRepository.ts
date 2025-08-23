@@ -3,8 +3,8 @@ import { PrismaClient } from '@prisma/client';
 import {
   LearningEfficiencyAnalysis,
   UpdateLearningEfficiencyAnalysisInput,
-} from '../../../domain/entities/learning-efficiency-analyzer';
-import { ILearningEfficiencyAnalysisRepository } from '../../../domain/repositories/Ilearning-efficiency-analyzerRepository';
+} from '../../../domain/entities/LearningEfficiencyAnalyzer';
+import { ILearningEfficiencyAnalysisRepository } from '../../../domain/repositories/ILearningEfficiencyAnalyzerRepository';
 
 export class LearningEfficiencyAnalysisRepository implements ILearningEfficiencyAnalysisRepository {
   constructor(private prisma: PrismaClient) {}

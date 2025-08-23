@@ -76,11 +76,16 @@ import { StudyWeek } from './StudyWeek.js';
 
 // 学習週データの型定義
 export interface StudyWeekData {
-  week: number;
-  topics: string[];
+  weekNumber: number;
+  title: string;
+  phase: string;
   goals: string[];
-  estimatedHours: number;
-  priority: 'high' | 'medium' | 'low';
+  days?: Array<{
+    day: number;
+    subject: string;
+    topics: string[];
+    estimatedTime?: number;
+  }>;
   resources?: string[];
   notes?: string;
 }

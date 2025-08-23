@@ -1,9 +1,9 @@
 // TDD Red Phase: Learning Efficiency Analysis
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { LearningEfficiencyAnalysisUseCase } from '../../domain/usecases/learning-efficiency-analyzer';
-import { ILearningEfficiencyAnalysisRepository } from '../../domain/repositories/Ilearning-efficiency-analyzerRepository';
+import { LearningEfficiencyAnalysisUseCase } from '../../domain/usecases/LearningEfficiencyAnalyzer';
+import { ILearningEfficiencyAnalysisRepository } from '../../domain/repositories/ILearningEfficiencyAnalyzerRepository';
 import { IStudyLogRepository } from '../../domain/repositories/IStudyLogRepository';
-import { CreateLearningEfficiencyAnalysisInput } from '../../domain/entities/learning-efficiency-analyzer';
+import { CreateLearningEfficiencyAnalysisInput } from '../../domain/entities/LearningEfficiencyAnalyzer';
 
 describe('LearningEfficiencyAnalysisUseCase', () => {
   let useCase: LearningEfficiencyAnalysisUseCase;

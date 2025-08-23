@@ -23,7 +23,7 @@ import { LearningEfficiencyAnalysisRepository } from 'src/infrastructure/databas
 import { GetStudyPlanUseCase } from 'src/domain/usecases/GetStudyPlan.js';
 import { UpdateStudyProgressUseCase } from 'src/domain/usecases/UpdateStudyProgress.js';
 import { CreateStudyLogUseCase } from 'src/domain/usecases/CreateStudyLog.js';
-import { LearningEfficiencyAnalysisUseCase } from 'src/domain/usecases/learning-efficiency-analyzer.js';
+import { LearningEfficiencyAnalysisUseCase } from 'src/domain/usecases/LearningEfficiencyAnalyzer.js';
 
 // ルート
 import { createStudyRoutes } from 'src/infrastructure/web/routes/study.js';

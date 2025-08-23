@@ -1,11 +1,11 @@
 import { PrismaClient } from '@prisma/client';
 import { IStudyPlanRepository } from '../../../domain/repositories/IStudyPlanRepository.js';
-import { StudyPlanEntity, CreateStudyPlanRequest, UpdateStudyPlanRequest } from '../../../domain/entities/StudyPlan.js';
+import { StudyPlan, CreateStudyPlanRequest, UpdateStudyPlanRequest } from '../../../domain/entities/StudyPlan.js';
 
 export class StudyPlanRepository implements IStudyPlanRepository {
   constructor(private prisma: PrismaClient) {}
 
-  async findByUserId(userId: number): Promise<StudyPlanEntity | null> {
+  async findByUserId(userId: number): Promise<StudyPlan | null> {
     const studyPlan = await this.prisma.studyPlan.findUnique({
       where: { userId },
       include: {
@@ -42,7 +42,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     };
   }
 
-  async findById(id: number): Promise<StudyPlanEntity | null> {
+  async findById(id: number): Promise<StudyPlan | null> {
     const studyPlan = await this.prisma.studyPlan.findUnique({
       where: { id },
       include: {
@@ -79,7 +79,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     };
   }
 
-  async findActiveByUserId(userId: number): Promise<StudyPlanEntity | null> {
+  async findActiveByUserId(userId: number): Promise<StudyPlan | null> {
     const studyPlan = await this.prisma.studyPlan.findFirst({
       where: { 
         userId,
@@ -119,7 +119,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     };
   }
 
-  async create(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlanEntity> {
+  async create(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlan> {
     console.log(`[StudyPlanRepository.create] Creating/updating plan for user ${userId}`);
     console.log(`[StudyPlanRepository.create] Received data:`, JSON.stringify(data, null, 2));
     
@@ -153,10 +153,10 @@ export class StudyPlanRepository implements IStudyPlanRepository {
           description: data.description,
           templateId: data.templateId,
           templateName: data.templateName,
-          studyWeeksData: data.studyWeeksData,
+          studyWeeksData: data.studyWeeksData as any,
           targetExamDate: data.targetExamDate,
           startDate: data.startDate || new Date(),
-          settings: data.settings || {},
+          settings: data.settings as any || {},
           isActive: true,
           updatedAt: new Date()
         },
@@ -177,10 +177,10 @@ export class StudyPlanRepository implements IStudyPlanRepository {
           description: data.description,
           templateId: data.templateId,
           templateName: data.templateName,
-          studyWeeksData: data.studyWeeksData,
+          studyWeeksData: data.studyWeeksData as any,
           targetExamDate: data.targetExamDate,
           startDate: data.startDate || new Date(),
-          settings: data.settings || {}
+          settings: data.settings as any || {}
         },
         include: {
           weeks: {
@@ -279,7 +279,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     };
   }
 
-  async update(id: number, data: UpdateStudyPlanRequest): Promise<StudyPlanEntity> {
+  async update(id: number, data: UpdateStudyPlanRequest): Promise<StudyPlan> {
     const studyPlan = await this.prisma.studyPlan.update({
       where: { id },
       data: {
@@ -289,7 +289,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
         templateName: data.templateName,
         targetExamDate: data.targetExamDate,
         isActive: data.isActive,
-        settings: data.settings
+        settings: data.settings as any
       },
       include: {
         weeks: {
@@ -326,7 +326,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     });
   }
 
-  async activate(id: number): Promise<StudyPlanEntity> {
+  async activate(id: number): Promise<StudyPlan> {
     // 同じユーザーの他のプランを無効化
     const studyPlan = await this.prisma.studyPlan.findUnique({
       where: { id }
@@ -373,7 +373,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     };
   }
 
-  async deactivate(id: number): Promise<StudyPlanEntity> {
+  async deactivate(id: number): Promise<StudyPlan> {
     const studyPlan = await this.prisma.studyPlan.update({
       where: { id },
       data: { isActive: false },
@@ -439,7 +439,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
     userId: number, 
     _templateName: string, 
     customizations?: Partial<CreateStudyPlanRequest>
-  ): Promise<StudyPlanEntity> {
+  ): Promise<StudyPlan> {
     const template = await this.getDefaultTemplate();
     
     const data = {
