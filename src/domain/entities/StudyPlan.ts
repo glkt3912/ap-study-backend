@@ -85,6 +85,10 @@ export interface StudyWeekData {
     subject: string;
     topics: string[];
     estimatedTime?: number;
+    actualTime?: number;
+    completed?: boolean;
+    understanding?: number;
+    memo?: string;
   }>;
   resources?: string[];
   notes?: string;

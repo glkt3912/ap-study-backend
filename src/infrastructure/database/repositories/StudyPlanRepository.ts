@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { IStudyPlanRepository } from '../../../domain/repositories/IStudyPlanRepository.js';
-import { StudyPlan, CreateStudyPlanRequest, UpdateStudyPlanRequest } from '../../../domain/entities/StudyPlan.js';
+import { StudyPlan, CreateStudyPlanRequest, UpdateStudyPlanRequest, StudyWeekData } from '../../../domain/entities/StudyPlan.js';
 
 export class StudyPlanRepository implements IStudyPlanRepository {
   constructor(private prisma: PrismaClient) {}
@@ -28,7 +28,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: studyPlan.targetExamDate || undefined,
       templateId: studyPlan.templateId || undefined,
       templateName: studyPlan.templateName || undefined,
-      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      studyWeeksData: (studyPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
@@ -65,7 +65,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: studyPlan.targetExamDate || undefined,
       templateId: studyPlan.templateId || undefined,
       templateName: studyPlan.templateName || undefined,
-      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      studyWeeksData: (studyPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
@@ -105,7 +105,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: studyPlan.targetExamDate || undefined,
       templateId: studyPlan.templateId || undefined,
       templateName: studyPlan.templateName || undefined,
-      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      studyWeeksData: (studyPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
@@ -214,10 +214,10 @@ export class StudyPlanRepository implements IStudyPlanRepository {
             await this.prisma.studyDay.create({
               data: {
                 weekId: createdWeek.id,
-                day: dayData.day,
+                day: String(dayData.day),
                 subject: dayData.subject,
                 topics: dayData.topics,
-                estimatedTime: dayData.estimatedTime,
+                estimatedTime: dayData.estimatedTime || 0,
                 actualTime: dayData.actualTime || 0,
                 completed: dayData.completed || false,
                 understanding: dayData.understanding || 0,
@@ -265,7 +265,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: studyPlan.targetExamDate || undefined,
       templateId: studyPlan.templateId || undefined,
       templateName: studyPlan.templateName || undefined,
-      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      studyWeeksData: (studyPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
@@ -306,7 +306,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: studyPlan.targetExamDate || undefined,
       templateId: studyPlan.templateId || undefined,
       templateName: studyPlan.templateName || undefined,
-      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      studyWeeksData: (studyPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
@@ -360,6 +360,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: updatedPlan.targetExamDate || undefined,
       templateId: updatedPlan.templateId || undefined,
       templateName: updatedPlan.templateName || undefined,
+      studyWeeksData: (updatedPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: updatedPlan.settings as any || {},
       weeks: updatedPlan.weeks ? updatedPlan.weeks.map((week: any) => ({
         ...week,
@@ -392,7 +393,7 @@ export class StudyPlanRepository implements IStudyPlanRepository {
       targetExamDate: studyPlan.targetExamDate || undefined,
       templateId: studyPlan.templateId || undefined,
       templateName: studyPlan.templateName || undefined,
-      studyWeeksData: studyPlan.studyWeeksData || undefined,
+      studyWeeksData: (studyPlan.studyWeeksData as unknown as StudyWeekData[]) || undefined,
       settings: studyPlan.settings as any || {},
       weeks: studyPlan.weeks ? studyPlan.weeks.map((week: any) => ({
         ...week,
