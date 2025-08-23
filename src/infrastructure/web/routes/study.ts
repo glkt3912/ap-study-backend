@@ -120,62 +120,53 @@ export function createStudyRoutes(
     }
   });
 
-  // PUT /api/study/progress - 学習進捗更新
-  app.put('/progress', async c => {
-    // カスタムバリデーション（詳細エラーログ付き）
-    let requestBody;
-    try {
-      requestBody = await c.req.json();
-      console.log('Received request body:', JSON.stringify(requestBody, null, 2));
-    } catch (error) {
-      console.error('Failed to parse JSON request body:', error);
-      return c.json(
-        {
-          success: false,
-          error: 'Invalid JSON format',
-        },
-        400,
-      );
-    }
-
+  // Helper functions for progress update
+  const parseRequestBody = async (c: any) => {
+    const requestBody = await c.req.json();
     const validationResult = updateProgressSchema.safeParse(requestBody);
     if (!validationResult.success) {
-      console.error('Validation failed:', JSON.stringify(validationResult.error.issues, null, 2));
-      return c.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: validationResult.error.issues,
-        },
-        400,
-      );
+      throw new Error('Validation failed');
     }
+    return validationResult.data;
+  };
+
+  const updateCompletionStatus = async (weekNumber: number, dayIndex: number, completed?: boolean) => {
+    if (completed !== undefined) {
+      if (completed) {
+        await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
+      } else {
+        await updateStudyProgressUseCase.uncompleteTask(weekNumber, dayIndex);
+      }
+    }
+  };
+
+  const updateStudyData = async (
+    weekNumber: number,
+    dayIndex: number,
+    actualTime?: number,
+    understanding?: number,
+    memo?: string,
+  ) => {
+    if (actualTime !== undefined) {
+      await updateStudyProgressUseCase.updateStudyTime(weekNumber, dayIndex, actualTime);
+    }
+
+    if (understanding !== undefined) {
+      await updateStudyProgressUseCase.updateUnderstanding(weekNumber, dayIndex, understanding);
+    }
+
+    if (memo !== undefined) {
+      await updateStudyProgressUseCase.updateMemo(weekNumber, dayIndex, memo);
+    }
+  };
+
+  // PUT /api/study/progress - 学習進捗更新
+  app.put('/progress', async c => {
     try {
-      const { weekNumber, dayIndex, actualTime, understanding, memo, completed } = validationResult.data;
+      const { weekNumber, dayIndex, actualTime, understanding, memo, completed } = await parseRequestBody(c);
 
-      // 完了状態の更新
-      if (completed !== undefined) {
-        if (completed) {
-          await updateStudyProgressUseCase.completeTask(weekNumber, dayIndex);
-        } else {
-          await updateStudyProgressUseCase.uncompleteTask(weekNumber, dayIndex);
-        }
-      }
-
-      // 学習時間の更新
-      if (actualTime !== undefined) {
-        await updateStudyProgressUseCase.updateStudyTime(weekNumber, dayIndex, actualTime);
-      }
-
-      // 理解度の更新
-      if (understanding !== undefined) {
-        await updateStudyProgressUseCase.updateUnderstanding(weekNumber, dayIndex, understanding);
-      }
-
-      // メモの更新
-      if (memo !== undefined) {
-        await updateStudyProgressUseCase.updateMemo(weekNumber, dayIndex, memo);
-      }
+      await updateCompletionStatus(weekNumber, dayIndex, completed);
+      await updateStudyData(weekNumber, dayIndex, actualTime, understanding, memo);
 
       return c.json({
         success: true,
