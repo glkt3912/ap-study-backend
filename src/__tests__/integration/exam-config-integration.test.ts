@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
-import { PrismaClient } from '@prisma/client';
-import examConfigRoutes from '../../infrastructure/web/routes/exam-config';
 
-// Mock Prisma Client for integration tests
+// Create mock at module level
 const mockPrisma = {
   examConfig: {
     findUnique: vi.fn(),
@@ -11,12 +9,15 @@ const mockPrisma = {
     update: vi.fn(),
     delete: vi.fn(),
   },
-} as unknown as PrismaClient;
+};
 
-// Mock the PrismaClient constructor
+// Mock modules at the top level
 vi.mock('@prisma/client', () => ({
   PrismaClient: vi.fn(() => mockPrisma),
 }));
+
+import { PrismaClient } from '@prisma/client';
+import examConfigRoutes from '../../infrastructure/web/routes/exam-config';
 
 describe('Exam Config Integration Tests', () => {
   let app: Hono;
