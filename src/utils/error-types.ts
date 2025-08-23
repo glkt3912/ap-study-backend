@@ -31,7 +31,7 @@ export interface StandardErrorResponse {
     userMessage: string;
     timestamp: string;
     retryable: boolean;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     context?: {
       url?: string;
       method?: string;
@@ -45,7 +45,7 @@ export interface StandardErrorResponse {
   };
 }
 
-export interface StandardSuccessResponse<T = any> {
+export interface StandardSuccessResponse<T = unknown> {
   success: true;
   data: T;
   metadata?: {
@@ -54,7 +54,7 @@ export interface StandardSuccessResponse<T = any> {
   };
 }
 
-export type StandardApiResponse<T = any> = StandardSuccessResponse<T> | StandardErrorResponse;
+export type StandardApiResponse<T = unknown> = StandardSuccessResponse<T> | StandardErrorResponse;
 
 // エラークラス
 export class StandardError extends Error {
@@ -65,7 +65,7 @@ export class StandardError extends Error {
   public readonly userMessage: string;
   public readonly timestamp: string;
   public readonly retryable: boolean;
-  public readonly details?: Record<string, any>;
+  public readonly details?: Record<string, unknown>;
   public readonly context?: {
     url?: string;
     method?: string;
@@ -80,7 +80,7 @@ export class StandardError extends Error {
     message: string;
     userMessage: string;
     retryable?: boolean;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     context?: {
       url?: string;
       method?: string;
@@ -134,7 +134,7 @@ export class StandardError extends Error {
 
 // 便利な標準エラー作成関数
 export const createStandardError = {
-  validation: (message: string, details?: Record<string, any>) => new StandardError({
+  validation: (message: string, details?: Record<string, unknown>) => new StandardError({
     category: ErrorCategory.VALIDATION,
     severity: ErrorSeverity.LOW,
     code: 'VALIDATION_ERROR',
