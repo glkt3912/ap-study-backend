@@ -705,45 +705,67 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
     }
   });
 
+  // Helper functions for learning pattern analysis
+  const fetchLearningData = async (userId: number) => {
+    const studyLogs = await prisma.studyLog.findMany({
+      where: { userId },
+      orderBy: { date: 'desc' },
+      take: 100,
+    });
+
+    const quizSessions = await prisma.quizSession.findMany({
+      where: { userId, isCompleted: true },
+      orderBy: { startedAt: 'desc' },
+      take: 100,
+    });
+
+    return { studyLogs, quizSessions };
+  };
+
+  const generateRecommendations = (timePattern: any[], frequencyPattern: any[]) => {
+    const dayNames = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+    const bestTimeSlot = timePattern.length > 0
+      ? timePattern.reduce((best, current) => (current.avg_score > best.avg_score ? current : best))
+      : null;
+    const bestDayOfWeek = frequencyPattern.length > 0
+      ? frequencyPattern.reduce((best, current) => (current.avg_score > best.avg_score ? current : best))
+      : null;
+
+    return {
+      optimalTimeSlot: bestTimeSlot ? `${bestTimeSlot.study_hour}時` : 'データ不足',
+      optimalDayOfWeek: bestDayOfWeek ? dayNames[bestDayOfWeek.day_of_week] : 'データ不足',
+      recommendedDailyQuestions: 20,
+    };
+  };
+
+  const calculateStudyMetrics = (studyLogs: any[], studyStats: any) => {
+    return {
+      totalStudyTime: studyStats.totalStudyTime,
+      averageStudyTime: studyLogs.length > 0 ? studyStats.totalStudyTime / studyLogs.length : 0,
+      studyFrequency: new Set(studyLogs.map(log => log.date.toDateString())).size,
+      consistencyScore: studyLogs.length > 0 ? Math.min((studyLogs.length / 30) * 100, 100) : 0,
+    };
+  };
+
+  const createPatternMessage = (studyLogs: any[], quizSessions: any[]) => {
+    return studyLogs.length === 0 && quizSessions.length === 0
+      ? '学習データが蓄積されると、詳細なパターン分析を提供します。'
+      : '実際の学習データに基づくパターン分析結果です。';
+  };
+
   // GET /api/analysis/learning-pattern - 学習パターン分析取得
   routes.get('/learning-pattern', async c => {
     try {
       const userId = parseInt(c.req.query('userId') || '1');
-
-      const studyLogs = await prisma.studyLog.findMany({
-        where: { userId },
-        orderBy: { date: 'desc' },
-        take: 100,
-      });
-
-      const quizSessions = await prisma.quizSession.findMany({
-        where: { userId, isCompleted: true },
-        orderBy: { startedAt: 'desc' },
-        take: 100,
-      });
+      const { studyLogs, quizSessions } = await fetchLearningData(userId);
 
       const timePattern = analyzeHourlyPerformance(quizSessions);
       const frequencyPattern = analyzeDailyPerformance(quizSessions);
       const volumeCorrelations = analyzeStudyVolumeCorrelation(studyLogs, quizSessions);
-
-      // 推奨条件を生成
-      const dayNames = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
-      const bestTimeSlot =
-        timePattern.length > 0
-          ? timePattern.reduce((best, current) => (current.avg_score > best.avg_score ? current : best))
-          : null;
-      const bestDayOfWeek =
-        frequencyPattern.length > 0
-          ? frequencyPattern.reduce((best, current) => (current.avg_score > best.avg_score ? current : best))
-          : null;
-
-      const recommendations = {
-        optimalTimeSlot: bestTimeSlot ? `${bestTimeSlot.study_hour}時` : 'データ不足',
-        optimalDayOfWeek: bestDayOfWeek ? dayNames[bestDayOfWeek.day_of_week] : 'データ不足',
-        recommendedDailyQuestions: 20,
-      };
+      const recommendations = generateRecommendations(timePattern, frequencyPattern);
 
       const studyStats = calculateBasicStats(studyLogs, []);
+      const metrics = calculateStudyMetrics(studyLogs, studyStats);
 
       return c.json({
         success: true,
@@ -752,14 +774,8 @@ export function createAnalysisRoutes(prisma: PrismaClient) {
           frequencyPattern,
           volumePerformanceCorrelation: volumeCorrelations,
           recommendations,
-          totalStudyTime: studyStats.totalStudyTime,
-          averageStudyTime: studyLogs.length > 0 ? studyStats.totalStudyTime / studyLogs.length : 0,
-          studyFrequency: new Set(studyLogs.map(log => log.date.toDateString())).size,
-          consistencyScore: studyLogs.length > 0 ? Math.min((studyLogs.length / 30) * 100, 100) : 0,
-          message:
-            studyLogs.length === 0 && quizSessions.length === 0
-              ? '学習データが蓄積されると、詳細なパターン分析を提供します。'
-              : '実際の学習データに基づくパターン分析結果です。',
+          ...metrics,
+          message: createPatternMessage(studyLogs, quizSessions),
         },
       });
     } catch (error) {
