@@ -305,7 +305,7 @@ app.post('/login', zValidator('json', loginSchema), async c => {
 const getUserFromToken = async (token: string) => {
   const secret = process.env.JWT_SECRET || 'development-secret-key';
   const payload = await verifyJWTToken(token, secret);
-  const userId = parseInt(payload.sub || payload.userId || '0');
+  const userId = parseInt(String(payload.sub || payload.userId || '0'));
 
   return await prisma.user.findUnique({
     where: { id: userId },
@@ -366,7 +366,7 @@ const getRefreshTokenFromRequest = (c: any) => {
   try {
     const cookieHeader = c.req.header('Cookie');
     if (cookieHeader) {
-      const cookies = cookieHeader.split(';').reduce((acc: Record<string, string>, cookie) => {
+      const cookies = cookieHeader.split(';').reduce((acc: Record<string, string>, cookie: string) => {
         const [name, value] = cookie.trim().split('=');
         acc[name] = value;
         return acc;
