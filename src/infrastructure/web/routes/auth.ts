@@ -34,6 +34,33 @@ const refreshSchema = z.object({
 const app = new Hono<{ Variables: Variables }>();
 const prisma = new PrismaClient();
 
+// Local helper functions for token handling
+const extractTokenFromRequest = (c: any): string | null => {
+  // 1. HttpOnly Cookieからトークン取得 (優先)
+  const cookieToken = getCookie(c, 'access_token');
+  if (cookieToken) {
+    return cookieToken;
+  }
+
+  // 2. Authorization ヘッダーからJWTトークンを取得 (フォールバック)
+  const authHeader = c.req.header('Authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  return null;
+};
+
+const verifyJWTToken = async (token: string, secret: string) => {
+  try {
+    return await verify(token, secret);
+  } catch {
+    throw new HTTPException(401, {
+      message: 'Invalid or expired authentication token'
+    });
+  }
+};
+
 // Helper functions for auth routes
 const checkExistingUser = async (email: string, username: string) => {
   const existingUserByEmail = await prisma.user.findUnique({ where: { email } });
@@ -174,238 +201,239 @@ app.post('/signup', zValidator('json', signupSchema), async c => {
   }
 });
 
+// Helper functions for login endpoint
+const findUserByEmailOrUsername = async (emailOrUsername: string) => {
+  const isEmail = emailOrUsername.includes('@');
+  return await prisma.user.findUnique({
+    where: isEmail ? { email: emailOrUsername } : { username: emailOrUsername },
+  });
+};
+
+const createInvalidCredentialsResponse = (c: any) => {
+  return c.json(
+    {
+      success: false,
+      error: 'メールアドレス/ユーザー名またはパスワードが正しくありません',
+      errorCode: 'INVALID_CREDENTIALS',
+      message: 'Invalid email/username or password',
+    },
+    401,
+  );
+};
+
+const generateJWTAndRefreshToken = async (user: any) => {
+  const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
+  const payload = {
+    sub: user.id,
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // 2時間有効
+  };
+
+  const token = await sign(payload, JWT_SECRET);
+  const refreshToken = crypto.randomBytes(64).toString('hex');
+  const refreshTokenExp = new Date();
+  refreshTokenExp.setDate(refreshTokenExp.getDate() + 7);
+
+  return { token, refreshToken, refreshTokenExp };
+};
+
+const setLoginCookies = (c: any, token: string, refreshToken: string) => {
+  setCookie(c, 'access_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 2 * 60 * 60, // 2時間
+  });
+
+  setCookie(c, 'refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 7 * 24 * 60 * 60, // 7日間
+  });
+};
+
 /**
  * ユーザーログイン
  */
 app.post('/login', zValidator('json', loginSchema), async c => {
   try {
     const { emailOrUsername, password } = c.req.valid('json');
-    const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
 
-    // メール形式かユーザー名形式かを判定
-    const isEmail = emailOrUsername.includes('@');
-
-    // ユーザー検索（メールまたはユーザー名で）
-    const user = await prisma.user.findUnique({
-      where: isEmail ? { email: emailOrUsername } : { username: emailOrUsername },
-    });
-
+    const user = await findUserByEmailOrUsername(emailOrUsername);
     if (!user) {
-      return c.json(
-        {
-          success: false,
-          error: 'メールアドレス/ユーザー名またはパスワードが正しくありません',
-          errorCode: 'INVALID_CREDENTIALS',
-          message: 'Invalid email/username or password',
-        },
-        401,
-      );
+      return createInvalidCredentialsResponse(c);
     }
 
-    // パスワード検証
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
-      return c.json(
-        {
-          success: false,
-          error: 'メールアドレスまたはパスワードが正しくありません',
-          errorCode: 'INVALID_CREDENTIALS',
-          message: 'Invalid email or password',
-        },
-        401,
-      );
+      return createInvalidCredentialsResponse(c);
     }
 
-    // JWT生成
-    const payload = {
-      sub: user.id,
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // 2時間有効
-    };
-
-    const token = await sign(payload, JWT_SECRET);
-
-    // リフレッシュトークン生成（7日間有効）
-    const refreshToken = crypto.randomBytes(64).toString('hex');
-    const refreshTokenExp = new Date();
-    refreshTokenExp.setDate(refreshTokenExp.getDate() + 7);
+    const { token, refreshToken, refreshTokenExp } = await generateJWTAndRefreshToken(user);
 
     // リフレッシュトークンをDBに保存
     await prisma.user.update({
       where: { id: user.id },
-      data: {
-        refreshToken,
-        refreshTokenExp,
-      },
+      data: { refreshToken, refreshTokenExp },
     });
 
-    // HttpOnly Cookieに設定
-    setCookie(c, 'access_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 2 * 60 * 60, // 2時間
-    });
-
-    setCookie(c, 'refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 7 * 24 * 60 * 60, // 7日間
-    });
+    setLoginCookies(c, token, refreshToken);
 
     // レスポンスからパスワードを除外
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _pwd, ...userWithoutPassword } = user;
 
     return c.json({
       success: true,
       message: 'Login successful',
       data: {
-        token, // フロントエンド互換性のため残す
+        token,
         user: userWithoutPassword,
         expiresIn: '2h',
-        refreshToken, // セキュリティ強化版
+        refreshToken,
       },
     });
   } catch (error) {
-    if (error instanceof HTTPException) {
-      throw error;
-    }
-
-    // Zodバリデーションエラー
-    if (error instanceof Error && error.name === 'ZodError') {
-      return c.json(
-        {
-          success: false,
-          error: '入力内容に問題があります',
-          errorCode: 'VALIDATION_ERROR',
-          message: 'Validation failed',
-          details: error.message,
-        },
-        400,
-      );
-    }
-
-    return c.json(
-      {
-        success: false,
-        error: '内部サーバーエラーが発生しました',
-        errorCode: 'INTERNAL_ERROR',
-        message: 'Internal server error during login',
-      },
-      500,
-    );
+    return handleAuthError(c, error, '内部サーバーエラーが発生しました');
   }
 });
+
+// Helper function for /me endpoint
+const getUserFromToken = async (token: string) => {
+  const secret = process.env.JWT_SECRET || 'development-secret-key';
+  const payload = await verifyJWTToken(token, secret);
+  const userId = parseInt(payload.sub || payload.userId || '0');
+
+  return await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      name: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
+
+const createAnonymousResponse = (c: any) => {
+  return c.json({
+    success: true,
+    data: { user: null },
+  });
+};
 
 /**
  * ユーザー情報取得（要認証）
  */
 app.get('/me', async c => {
   try {
-    // オプション認証 - 認証情報がない場合はnullを返す
-    const secret = process.env.JWT_SECRET || 'development-secret-key';
-    let token = null;
+    const token = extractTokenFromRequest(c);
 
-    // 1. HttpOnly Cookieからトークン取得 (優先)
-    const cookieToken = getCookie(c, 'access_token');
-    if (cookieToken) {
-      token = cookieToken;
-    }
-
-    // 2. Authorization ヘッダーからJWTトークンを取得 (フォールバック)
     if (!token) {
-      const authHeader = c.req.header('Authorization');
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
-      }
-    }
-
-    // 認証情報がない場合は匿名ユーザーとして扱う
-    if (!token) {
-      return c.json({
-        success: true,
-        data: { user: null },
-      });
+      return createAnonymousResponse(c);
     }
 
     try {
-      const payload = (await verify(token, secret)) as any;
-      const userId = parseInt(payload.sub || payload.userId);
-
-      // ユーザー詳細情報を取得
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          name: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      });
-
+      const user = await getUserFromToken(token);
+      
       if (!user) {
-        return c.json({
-          success: true,
-          data: { user: null },
-        });
+        return createAnonymousResponse(c);
       }
 
       return c.json({
         success: true,
         data: { user },
       });
-    } catch (jwtError) {
+    } catch {
       // JWT検証失敗時は匿名ユーザーとして扱う
-      return c.json({
-        success: true,
-        data: { user: null },
-      });
+      return createAnonymousResponse(c);
     }
   } catch (error) {
-    if (error instanceof HTTPException) {
-      throw error;
-    }
-
-    throw new HTTPException(500, { message: 'Internal server error' });
+    return handleAuthError(c, error, 'Internal server error');
   }
 });
+
+// Helper functions for refresh endpoint
+const getRefreshTokenFromRequest = (c: any) => {
+  // Cookieからリフレッシュトークン取得 (優先)
+  let refreshTokenFromCookie = null;
+  try {
+    const cookieHeader = c.req.header('Cookie');
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').reduce((acc: Record<string, string>, cookie) => {
+        const [name, value] = cookie.trim().split('=');
+        acc[name] = value;
+        return acc;
+      }, {});
+      refreshTokenFromCookie = cookies['refresh_token'];
+    }
+  } catch {
+    // Cookie parsing failed, continue with body fallback
+  }
+
+  // リクエストボディからリフレッシュトークン取得 (フォールバック)
+  const validatedBody = c.req.valid('json');
+  return refreshTokenFromCookie || validatedBody.refreshToken;
+};
+
+const validateRefreshToken = async (refreshToken: string) => {
+  return await prisma.user.findFirst({
+    where: {
+      refreshToken,
+      refreshTokenExp: {
+        gt: new Date(), // 有効期限内
+      },
+    },
+  });
+};
+
+const generateNewTokens = async (user: any) => {
+  const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
+  const payload = {
+    sub: user.id,
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // 2時間有効
+  };
+
+  const newToken = await sign(payload, JWT_SECRET);
+  const newRefreshToken = crypto.randomBytes(64).toString('hex');
+  const newRefreshTokenExp = new Date();
+  newRefreshTokenExp.setDate(newRefreshTokenExp.getDate() + 7);
+
+  return { newToken, newRefreshToken, newRefreshTokenExp };
+};
+
+const setRefreshCookies = (c: any, newToken: string, newRefreshToken: string) => {
+  setCookie(c, 'access_token', newToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 2 * 60 * 60, // 2時間
+  });
+
+  setCookie(c, 'refresh_token', newRefreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    maxAge: 7 * 24 * 60 * 60, // 7日間
+  });
+};
 
 /**
  * リフレッシュトークンベースのトークン更新
  */
 app.post('/refresh', zValidator('json', refreshSchema), async c => {
   try {
-    const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key';
-
-    // Cookieからリフレッシュトークン取得 (優先)
-    let refreshTokenFromCookie = null;
-    try {
-      const cookieHeader = c.req.header('Cookie');
-      if (cookieHeader) {
-        const cookies = cookieHeader.split(';').reduce((acc: Record<string, string>, cookie) => {
-          const [name, value] = cookie.trim().split('=');
-          acc[name] = value;
-          return acc;
-        }, {});
-        refreshTokenFromCookie = cookies['refresh_token'];
-      }
-    } catch (error) {
-      console.warn('Cookie parsing failed:', error);
-    }
-
-    // リクエストボディからリフレッシュトークン取得 (フォールバック)
-    const validatedBody = c.req.valid('json');
-    const refreshTokenFromBody = validatedBody.refreshToken;
-
-    const refreshToken = refreshTokenFromCookie || refreshTokenFromBody;
+    const refreshToken = getRefreshTokenFromRequest(c);
 
     if (!refreshToken) {
       throw new HTTPException(401, {
@@ -413,38 +441,14 @@ app.post('/refresh', zValidator('json', refreshSchema), async c => {
       });
     }
 
-    // DBからユーザー情報とリフレッシュトークンを検証
-    const user = await prisma.user.findFirst({
-      where: {
-        refreshToken,
-        refreshTokenExp: {
-          gt: new Date(), // 有効期限内
-        },
-      },
-    });
-
+    const user = await validateRefreshToken(refreshToken);
     if (!user) {
       throw new HTTPException(401, {
         message: 'Invalid or expired refresh token',
       });
     }
 
-    // 新しいアクセストークン生成
-    const payload = {
-      sub: user.id,
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 2 * 60 * 60, // 2時間有効
-    };
-
-    const newToken = await sign(payload, JWT_SECRET);
-
-    // 新しいリフレッシュトークン生成
-    const newRefreshToken = crypto.randomBytes(64).toString('hex');
-    const newRefreshTokenExp = new Date();
-    newRefreshTokenExp.setDate(newRefreshTokenExp.getDate() + 7);
+    const { newToken, newRefreshToken, newRefreshTokenExp } = await generateNewTokens(user);
 
     // リフレッシュトークンをDBに更新
     await prisma.user.update({
@@ -455,26 +459,13 @@ app.post('/refresh', zValidator('json', refreshSchema), async c => {
       },
     });
 
-    // HttpOnly Cookieに設定
-    setCookie(c, 'access_token', newToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 2 * 60 * 60, // 2時間
-    });
-
-    setCookie(c, 'refresh_token', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 7 * 24 * 60 * 60, // 7日間
-    });
+    setRefreshCookies(c, newToken, newRefreshToken);
 
     return c.json({
       success: true,
       message: 'Token refreshed successfully',
       data: {
-        token: newToken, // フロントエンド互換性のため残す
+        token: newToken,
         refreshToken: newRefreshToken,
         expiresIn: '2h',
       },
