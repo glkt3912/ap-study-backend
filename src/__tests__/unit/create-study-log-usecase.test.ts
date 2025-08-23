@@ -16,26 +16,21 @@ describe('CreateStudyLogUseCase', () => {
     memo: 'テストメモ'
   };
 
-  const mockStudyLogEntity: StudyLogEntity = {
+  const mockStudyLogEntity = new StudyLogEntity({
     id: 1,
     date: validRequest.date,
     subject: validRequest.subject,
     topics: validRequest.topics,
     studyTime: validRequest.studyTime,
     understanding: validRequest.understanding,
-    memo: validRequest.memo,
-    createdAt: new Date(),
-    updatedAt: new Date()
-  } as StudyLogEntity;
+    memo: validRequest.memo
+  });
 
   beforeEach(() => {
     mockStudyLogRepository = {
       create: vi.fn(),
       findByDateRange: vi.fn(),
-      findById: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      findByUserId: vi.fn()
+      findById: vi.fn()
     };
 
     createStudyLogUseCase = new CreateStudyLogUseCase(

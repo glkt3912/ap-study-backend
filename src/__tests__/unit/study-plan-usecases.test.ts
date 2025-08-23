@@ -14,9 +14,6 @@ describe('StudyPlanUseCases', () => {
     userId: 123,
     name: 'Test Study Plan',
     description: 'Test Description',
-    totalWeeks: 12,
-    weeklyHours: 25,
-    dailyHours: 3,
     targetExamDate: new Date('2024-06-01'),
     startDate: new Date('2024-03-01'),
     isActive: true,
@@ -62,9 +59,7 @@ describe('StudyPlanUseCases', () => {
       getProgress: vi.fn()
     };
 
-    mockStudyRepository = {
-      findByUserId: vi.fn()
-    };
+    mockStudyRepository = {};
 
     studyPlanUseCases = new StudyPlanUseCases(
       mockStudyPlanRepository as IStudyPlanRepository,
@@ -145,7 +140,12 @@ describe('StudyPlanUseCases', () => {
     });
 
     it('should not generate weeks when studyWeeksData is provided', async () => {
-      const requestWithWeeks = { ...createRequest, studyWeeksData: [{ week: 1, topics: [] }] };
+      const requestWithWeeks = { ...createRequest, studyWeeksData: [{ 
+        weekNumber: 1, 
+        title: 'Week 1', 
+        phase: 'foundation', 
+        goals: ['learn basics'] 
+      }] };
       mockStudyPlanRepository.create = vi.fn().mockResolvedValue(mockStudyPlan);
       mockStudyPlanRepository.generateWeeks = vi.fn();
 

@@ -12,9 +12,6 @@ export class StudyPlanFixtures {
       userId: 123,
       name: 'AP試験対策プラン',
       description: '応用情報技術者試験の学習計画',
-      totalWeeks: 12,
-      weeklyHours: 25,
-      dailyHours: 3,
       targetExamDate: new Date('2024-06-01'),
       startDate: new Date('2024-03-01'),
       isActive: true,
@@ -51,9 +48,6 @@ export class StudyPlanFixtures {
     return this.createBasicStudyPlan({
       name: '上級者向けAP試験対策',
       description: '経験者向けの集中学習プラン',
-      totalWeeks: 8,
-      weeklyHours: 35,
-      dailyHours: 5,
       settings: {
         timeSettings: {
           totalWeeks: 8,
@@ -128,9 +122,6 @@ export class StudyPlanFixtures {
     return {
       name: 'Updated Study Plan',
       description: 'Updated description',
-      totalWeeks: 16,
-      weeklyHours: 30,
-      dailyHours: 4,
       targetExamDate: new Date('2024-07-01'),
       isActive: true,
       settings: {
