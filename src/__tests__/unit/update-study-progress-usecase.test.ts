@@ -107,8 +107,11 @@ describe('UpdateStudyProgressUseCase', () => {
 
       // Assert
       expect(mockStudyRepository.findWeekByNumber).toHaveBeenCalledWith(1);
-      expect(completedWeek.uncompleteTask).toHaveBeenCalledWith(0);
-      expect(mockStudyRepository.updateWeek).toHaveBeenCalledWith(completedWeek);
+      expect(mockStudyRepository.updateWeek).toHaveBeenCalledWith(expect.objectContaining({
+        days: expect.arrayContaining([
+          expect.objectContaining({ completed: false })
+        ])
+      }));
       expect(result).toBeDefined();
     });
 

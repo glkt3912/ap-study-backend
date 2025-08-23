@@ -4,10 +4,10 @@ import { Context } from 'hono';
 
 describe('Logger', () => {
   let consoleSpy: {
-    debug: Mock;
-    log: Mock;
-    warn: Mock;
-    error: Mock;
+    debug: any;
+    log: any;
+    warn: any;
+    error: any;
   };
 
   beforeEach(() => {
