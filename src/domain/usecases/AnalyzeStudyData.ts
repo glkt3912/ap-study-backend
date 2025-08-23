@@ -1,5 +1,6 @@
 import { IStudyLogRepository } from "src/domain/repositories/IStudyLogRepository.js";
 import { IAnalysisRepository } from "src/domain/repositories/IAnalysisRepository.js";
+import { StudyLogEntity } from "src/domain/entities/StudyLog.js";
 import {
   AnalysisResult,
   StudyPattern,
@@ -55,7 +56,7 @@ export class AnalyzeStudyData {
     return await this.analysisRepository.save(analysisResult);
   }
 
-  private analyzeStudyPattern(studyLogs: any[]): StudyPattern {
+  private analyzeStudyPattern(studyLogs: StudyLogEntity[]): StudyPattern {
     if (studyLogs.length === 0) {
       return {
         totalStudyTime: 0,
@@ -93,7 +94,17 @@ export class AnalyzeStudyData {
     };
   }
 
-  private analyzeWeaknesses(studyLogs: any[]): WeaknessAnalysis {
+  private analyzeWeaknesses(studyLogs: StudyLogEntity[]): WeaknessAnalysis {
+    const subjectStats = this.calculateSubjectStats(studyLogs);
+    const weakSubjects = this.identifyWeakSubjects(subjectStats);
+    
+    return {
+      weakSubjects,
+      weakTopics: [], // TODO: トピック別分析を実装
+    };
+  }
+
+  private calculateSubjectStats(studyLogs: StudyLogEntity[]) {
     const subjectStats = new Map<
       string,
       {
@@ -103,7 +114,6 @@ export class AnalyzeStudyData {
       }
     >();
 
-    // 科目別統計を計算
     studyLogs.forEach((log) => {
       if (!subjectStats.has(log.subject)) {
         subjectStats.set(log.subject, {
@@ -118,13 +128,14 @@ export class AnalyzeStudyData {
       stats.count++;
     });
 
-    // 弱点科目を特定
+    return subjectStats;
+  }
+
+  private identifyWeakSubjects(subjectStats: Map<string, { understanding: number[]; studyTime: number; count: number }>) {
     const weakSubjects = Array.from(subjectStats.entries())
       .map(([subject, stats]) => ({
         subject,
-        understanding:
-          stats.understanding.reduce((a, b) => a + b, 0) /
-          stats.understanding.length,
+        understanding: this.calculateAverageUnderstanding(stats.understanding),
         studyTime: stats.studyTime,
         testScore: 0, // TODO: テスト結果と連携
         improvement: 0,
@@ -134,13 +145,18 @@ export class AnalyzeStudyData {
 
     // 改善必要度を計算
     weakSubjects.forEach((subject) => {
-      subject.improvement = Math.round((4 - subject.understanding) * 25);
+      subject.improvement = this.calculateImprovementNeeded(subject.understanding);
     });
 
-    return {
-      weakSubjects,
-      weakTopics: [], // TODO: トピック別分析を実装
-    };
+    return weakSubjects;
+  }
+
+  private calculateAverageUnderstanding(understandings: number[]): number {
+    return understandings.reduce((a, b) => a + b, 0) / understandings.length;
+  }
+
+  private calculateImprovementNeeded(understanding: number): number {
+    return Math.round((4 - understanding) * 25);
   }
 
   private generateRecommendations(
@@ -177,20 +193,36 @@ export class AnalyzeStudyData {
   ): number {
     let score = 50; // ベーススコア
 
-    // 学習時間による加点
-    if (pattern.totalStudyTime > 3600) {score += 20;} // 60時間以上
-    else if (pattern.totalStudyTime > 1800) {score += 10;} // 30時間以上
+    score += this.calculateStudyTimeBonus(pattern.totalStudyTime);
+    score += this.calculateConsistencyBonus(pattern.consistencyScore);
+    score -= this.calculateWeaknessDeduction(weakness.weakSubjects.length);
 
-    // 継続性による加点
-    score += pattern.consistencyScore * 0.2;
+    return this.normalizeScore(score);
+  }
 
-    // 弱点数による減点
-    score -= weakness.weakSubjects.length * 5;
+  private calculateStudyTimeBonus(totalStudyTime: number): number {
+    if (totalStudyTime > 3600) {
+      return 20; // 60時間以上
+    }
+    if (totalStudyTime > 1800) {
+      return 10; // 30時間以上
+    }
+    return 0;
+  }
 
+  private calculateConsistencyBonus(consistencyScore: number): number {
+    return consistencyScore * 0.2;
+  }
+
+  private calculateWeaknessDeduction(weakSubjectCount: number): number {
+    return weakSubjectCount * 5;
+  }
+
+  private normalizeScore(score: number): number {
     return Math.max(0, Math.min(100, Math.round(score)));
   }
 
-  private findBestStudyTime(studyLogs: any[]): string {
+  private findBestStudyTime(studyLogs: StudyLogEntity[]): string {
     // 簡易実装：理解度の高い学習記録の時間帯を推定
     const highUnderstandingLogs = studyLogs.filter(
       (log) => log.understanding >= 4
@@ -201,7 +233,7 @@ export class AnalyzeStudyData {
     return "9:00";
   }
 
-  private calculateConsistencyScore(studyLogs: any[]): number {
+  private calculateConsistencyScore(studyLogs: StudyLogEntity[]): number {
     if (studyLogs.length < 7) {return 0;}
 
     // 学習日の分散を計算して継続性を評価

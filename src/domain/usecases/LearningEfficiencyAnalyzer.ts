@@ -6,8 +6,8 @@ import {
   HourlyEfficiency,
   SubjectEfficiency,
   LearningRecommendation
-} from '../entities/learning-efficiency-analyzer'
-import { ILearningEfficiencyAnalysisRepository } from '../repositories/Ilearning-efficiency-analyzerRepository'
+} from '../entities/LearningEfficiencyAnalyzer'
+import { ILearningEfficiencyAnalysisRepository } from '../repositories/ILearningEfficiencyAnalyzerRepository'
 import { IStudyLogRepository } from '../repositories/IStudyLogRepository'
 
 export class LearningEfficiencyAnalysisUseCase {

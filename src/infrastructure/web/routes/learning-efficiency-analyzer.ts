@@ -1,6 +1,6 @@
 // API Routes: Learning Efficiency Analysis
 import { Hono } from 'hono';
-import { LearningEfficiencyAnalysisUseCase } from '../../../domain/usecases/learning-efficiency-analyzer';
+import { LearningEfficiencyAnalysisUseCase } from '../../../domain/usecases/LearningEfficiencyAnalyzer';
 
 export function createLearningEfficiencyAnalysisRoutes(useCase: LearningEfficiencyAnalysisUseCase) {
   const router = new Hono();

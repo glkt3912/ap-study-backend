@@ -12,7 +12,7 @@ export interface StudyPlan {
   // Template information (simplified)
   templateId?: string;
   templateName?: string;
-  studyWeeksData?: any;
+  studyWeeksData?: StudyWeekData[];
   
   // Essential settings (consolidated)
   settings: StudyPlanSettings;
@@ -22,7 +22,7 @@ export interface StudyPlan {
 }
 
 export interface StudyPlanSettings {
-  [key: string]: any;
+  [key: string]: unknown;
   timeSettings?: {
     totalWeeks: number;
     weeklyHours: number;
@@ -32,8 +32,8 @@ export interface StudyPlanSettings {
     isCustom: boolean;
     source: string;
   };
-  metadata?: Record<string, any>;
-  preferences?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  preferences?: Record<string, unknown>;
   migrationInfo?: {
     migratedFrom: string;
     migrationDate: string;
@@ -41,14 +41,13 @@ export interface StudyPlanSettings {
   };
 }
 
-export interface StudyPlanEntity extends StudyPlan {}
 
 export interface CreateStudyPlanRequest {
   name: string;
   description?: string;
   templateId?: string;
   templateName?: string;
-  studyWeeksData?: any[];
+  studyWeeksData?: StudyWeekData[];
   targetExamDate?: Date;
   startDate?: Date;
   settings?: StudyPlanSettings;
@@ -74,3 +73,23 @@ export interface StudyPlanPreferences {
 }
 
 import { StudyWeek } from './StudyWeek.js';
+
+// 学習週データの型定義
+export interface StudyWeekData {
+  weekNumber: number;
+  title: string;
+  phase: string;
+  goals: string[];
+  days?: Array<{
+    day: number;
+    subject: string;
+    topics: string[];
+    estimatedTime?: number;
+    actualTime?: number;
+    completed?: boolean;
+    understanding?: number;
+    memo?: string;
+  }>;
+  resources?: string[];
+  notes?: string;
+}

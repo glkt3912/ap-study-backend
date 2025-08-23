@@ -3,7 +3,7 @@ import {
   LearningEfficiencyAnalysis, 
   CreateLearningEfficiencyAnalysisInput, 
   UpdateLearningEfficiencyAnalysisInput 
-} from '../entities/learning-efficiency-analyzer'
+} from '../entities/LearningEfficiencyAnalyzer'
 
 export interface ILearningEfficiencyAnalysisRepository {
   findById(id: string): Promise<LearningEfficiencyAnalysis | null>
