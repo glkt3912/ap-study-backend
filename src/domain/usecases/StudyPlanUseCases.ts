@@ -1,6 +1,6 @@
 import { IStudyPlanRepository } from '../repositories/IStudyPlanRepository.js';
 import { IStudyRepository } from '../repositories/IStudyRepository.js';
-import { StudyPlanEntity, CreateStudyPlanRequest, UpdateStudyPlanRequest, StudyPlanPreferences } from '../entities/StudyPlan.js';
+import { StudyPlan, CreateStudyPlanRequest, UpdateStudyPlanRequest, StudyPlanPreferences } from '../entities/StudyPlan.js';
 
 export class StudyPlanUseCases {
   constructor(
@@ -8,7 +8,7 @@ export class StudyPlanUseCases {
     private studyRepository: IStudyRepository
   ) {}
 
-  async getUserStudyPlan(userId: number): Promise<StudyPlanEntity | null> {
+  async getUserStudyPlan(userId: number): Promise<StudyPlan | null> {
     const studyPlan = await this.studyPlanRepository.findByUserId(userId);
     
     if (!studyPlan) {
@@ -18,7 +18,7 @@ export class StudyPlanUseCases {
     return studyPlan;
   }
 
-  async createStudyPlan(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlanEntity> {
+  async createStudyPlan(userId: number, data: CreateStudyPlanRequest): Promise<StudyPlan> {
     // 学習計画を作成または更新（リポジトリレイヤーで既存計画をチェック）
     const studyPlan = await this.studyPlanRepository.create(userId, {
       name: data.name,
@@ -51,7 +51,7 @@ export class StudyPlanUseCases {
     return studyPlan;
   }
 
-  async updateStudyPlan(studyPlanId: number, data: UpdateStudyPlanRequest): Promise<StudyPlanEntity> {
+  async updateStudyPlan(studyPlanId: number, data: UpdateStudyPlanRequest): Promise<StudyPlan> {
     const studyPlan = await this.studyPlanRepository.update(studyPlanId, data);
     
     // 学習期間が変更された場合は週数を再生成
@@ -66,7 +66,7 @@ export class StudyPlanUseCases {
     await this.studyPlanRepository.delete(studyPlanId);
   }
 
-  async createFromTemplate(userId: number, templateName: string = 'default', customizations?: Partial<CreateStudyPlanRequest>): Promise<StudyPlanEntity> {
+  async createFromTemplate(userId: number, templateName: string = 'default', customizations?: Partial<CreateStudyPlanRequest>): Promise<StudyPlan> {
     // 既存のアクティブプランを無効化
     const existingPlan = await this.studyPlanRepository.findActiveByUserId(userId);
     if (existingPlan) {
@@ -92,7 +92,7 @@ export class StudyPlanUseCases {
     };
   }
 
-  async adjustStudyPlan(studyPlanId: number, preferences: Partial<StudyPlanPreferences>): Promise<StudyPlanEntity> {
+  async adjustStudyPlan(studyPlanId: number, preferences: Partial<StudyPlanPreferences>): Promise<StudyPlan> {
     const studyPlan = await this.studyPlanRepository.findById(studyPlanId);
     if (!studyPlan) {
       throw new Error('Study plan not found');
