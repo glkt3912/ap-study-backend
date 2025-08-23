@@ -259,51 +259,67 @@ class UnifiedApiService {
     }
   }
 
+  // Helper methods for createTestSession
+  private async createMorningTestSession(userId: number, sessionData: any) {
+    return await this.prisma.morningTest.create({
+      data: {
+        userId,
+        category: sessionData.category,
+        totalQuestions: sessionData.totalQuestions,
+        correctAnswers: sessionData.correctAnswers || 0,
+        timeSpent: sessionData.timeSpentMinutes * 60 || 0, // Convert to seconds
+        date: sessionData.startedAt || new Date(),
+        memo: sessionData.notes
+      }
+    });
+  }
+
+  private async createAfternoonTestSession(userId: number, sessionData: any) {
+    return await this.prisma.afternoonTest.create({
+      data: {
+        userId,
+        category: sessionData.category,
+        score: sessionData.score || 0,
+        timeSpent: sessionData.timeSpentMinutes * 60 || 0,
+        date: sessionData.startedAt || new Date(),
+        memo: sessionData.notes
+      }
+    });
+  }
+
+  private async createQuizSession(userId: number, sessionData: any) {
+    return await this.prisma.quizSession.create({
+      data: {
+        userId,
+        sessionType: 'practice', // Required field
+        category: sessionData.category,
+        totalQuestions: sessionData.totalQuestions,
+        correctAnswers: sessionData.correctAnswers || 0,
+        totalTime: sessionData.timeSpentMinutes * 60 || 0,
+        score: sessionData.score || 0,
+        isCompleted: sessionData.isCompleted || false,
+        startedAt: sessionData.startedAt || new Date(),
+        completedAt: sessionData.completedAt
+      }
+    });
+  }
+
   async createTestSession(userId: number, sessionData: any): Promise<ApiResponse> {
     try {
       let session;
       
-      // Create in appropriate table based on session type
-      if (sessionData.sessionType === 'morning') {
-        session = await this.prisma.morningTest.create({
-          data: {
-            userId,
-            category: sessionData.category,
-            totalQuestions: sessionData.totalQuestions,
-            correctAnswers: sessionData.correctAnswers || 0,
-            timeSpent: sessionData.timeSpentMinutes * 60 || 0, // Convert to seconds
-            date: sessionData.startedAt || new Date(),
-            memo: sessionData.notes
-          }
-        });
-      } else if (sessionData.sessionType === 'afternoon') {
-        session = await this.prisma.afternoonTest.create({
-          data: {
-            userId,
-            category: sessionData.category,
-            score: sessionData.score || 0,
-            timeSpent: sessionData.timeSpentMinutes * 60 || 0,
-            date: sessionData.startedAt || new Date(),
-            memo: sessionData.notes
-          }
-        });
-      } else if (sessionData.sessionType === 'quiz') {
-        session = await this.prisma.quizSession.create({
-          data: {
-            userId,
-            sessionType: 'practice', // Required field
-            category: sessionData.category,
-            totalQuestions: sessionData.totalQuestions,
-            correctAnswers: sessionData.correctAnswers || 0,
-            totalTime: sessionData.timeSpentMinutes * 60 || 0,
-            score: sessionData.score || 0,
-            isCompleted: sessionData.isCompleted || false,
-            startedAt: sessionData.startedAt || new Date(),
-            completedAt: sessionData.completedAt
-          }
-        });
-      } else {
-        return this.error('INVALID_SESSION_TYPE', 'Session type must be morning, afternoon, or quiz');
+      switch (sessionData.sessionType) {
+        case 'morning':
+          session = await this.createMorningTestSession(userId, sessionData);
+          break;
+        case 'afternoon':
+          session = await this.createAfternoonTestSession(userId, sessionData);
+          break;
+        case 'quiz':
+          session = await this.createQuizSession(userId, sessionData);
+          break;
+        default:
+          return this.error('INVALID_SESSION_TYPE', 'Session type must be morning, afternoon, or quiz');
       }
 
       return this.success(session);
@@ -365,41 +381,46 @@ class UnifiedApiService {
     }
   }
 
+  // Helper methods for createUserAnalysis
+  private async createPredictionAnalysis(userId: number, analysisData: any) {
+    return await this.prisma.predictionResult.create({
+      data: {
+        userId,
+        predictionDate: new Date(),
+        examDate: analysisData.targetExamDate,
+        passProbability: analysisData.passProbability || {},
+        examReadiness: analysisData.estimatedReadiness || {},
+        studyTimePrediction: analysisData.studyTimeRequired || {},
+        modelVersion: 'unified-api-v1.0',
+        scorePrediction: {}
+      }
+    });
+  }
+
+  private async createAnalysisResult(userId: number, analysisData: any) {
+    return await this.prisma.analysisResult.create({
+      data: {
+        userId,
+        analysisDate: new Date(),
+        overallScore: analysisData.overallScore,
+        studyPattern: analysisData.studyPattern || {},
+        weaknessAnalysis: {
+          overallWeakness: analysisData.weakAreasRating,
+          weakAreas: analysisData.weakSubjects?.split(',') || []
+        },
+        studyRecommendation: {
+          summary: analysisData.recommendations,
+          strongAreas: analysisData.strongSubjects?.split(',') || []
+        }
+      }
+    });
+  }
+
   async createUserAnalysis(userId: number, analysisData: any): Promise<ApiResponse> {
     try {
-      let analysis;
-      
-      if (analysisData.analysisType === 'prediction') {
-        analysis = await this.prisma.predictionResult.create({
-          data: {
-            userId,
-            predictionDate: new Date(),
-            examDate: analysisData.targetExamDate,
-            passProbability: analysisData.passProbability || {},
-            examReadiness: analysisData.estimatedReadiness || {},
-            studyTimePrediction: analysisData.studyTimeRequired || {},
-            modelVersion: 'unified-api-v1.0',
-            scorePrediction: {}
-          }
-        });
-      } else {
-        analysis = await this.prisma.analysisResult.create({
-          data: {
-            userId,
-            analysisDate: new Date(),
-            overallScore: analysisData.overallScore,
-            studyPattern: analysisData.studyPattern || {},
-            weaknessAnalysis: {
-              overallWeakness: analysisData.weakAreasRating,
-              weakAreas: analysisData.weakSubjects?.split(',') || []
-            },
-            studyRecommendation: {
-              summary: analysisData.recommendations,
-              strongAreas: analysisData.strongSubjects?.split(',') || []
-            }
-          }
-        });
-      }
+      const analysis = analysisData.analysisType === 'prediction'
+        ? await this.createPredictionAnalysis(userId, analysisData)
+        : await this.createAnalysisResult(userId, analysisData);
 
       return this.success(analysis);
     } catch (error) {
