@@ -147,53 +147,66 @@ export function createStudyLogRoutes(
     }
   });
 
+  // Helper functions for study log update
+  const validateLogExists = async (id: number) => {
+    const existingLog = await studyLogRepository.findById(id);
+    if (!existingLog) {
+      throw new Error('学習記録が見つかりません');
+    }
+    return existingLog;
+  };
+
+  const mergeUpdatedData = (existingLog: any, updates: any) => {
+    return {
+      id: existingLog.id!,
+      date: updates.date || existingLog.date,
+      subject: updates.subject || existingLog.subject,
+      topics: updates.topics || existingLog.topics,
+      studyTime: updates.studyTime !== undefined ? updates.studyTime : existingLog.studyTime,
+      understanding: updates.understanding !== undefined ? updates.understanding : existingLog.understanding,
+      memo: updates.memo !== undefined ? updates.memo : existingLog.memo,
+    };
+  };
+
+  const formatStudyLogResponse = (updatedLog: any) => {
+    return {
+      success: true,
+      data: {
+        id: updatedLog.id,
+        date: updatedLog.date,
+        subject: updatedLog.subject,
+        topics: updatedLog.topics,
+        studyTime: updatedLog.studyTime,
+        understanding: updatedLog.understanding,
+        memo: updatedLog.memo,
+        efficiency: updatedLog.calculateEfficiency(),
+      },
+      message: '学習記録が更新されました',
+    };
+  };
+
   // PUT /api/studylog/:id - 学習記録更新
   app.put('/:id', zValidator('json', updateStudyLogSchema as any), async c => {
     try {
       const id = parseInt(c.req.param('id'));
       const updates = c.req.valid('json');
 
-      // 既存の記録を取得
-      const existingLog = await studyLogRepository.findById(id);
-      if (!existingLog) {
+      const existingLog = await validateLogExists(id);
+      const updatedData = mergeUpdatedData(existingLog, updates);
+      const updatedLog = await createStudyLogUseCase.execute(updatedData);
+
+      return c.json(formatStudyLogResponse(updatedLog));
+    } catch (error) {
+      if (error instanceof Error && error.message === '学習記録が見つかりません') {
         return c.json(
           {
             success: false,
-            error: '学習記録が見つかりません',
+            error: error.message,
           },
           404,
         );
       }
-
-      // 更新データを作成（既存値をベースに更新）
-      const updatedData = {
-        id: existingLog.id!,
-        date: updates.date || existingLog.date,
-        subject: updates.subject || existingLog.subject,
-        topics: updates.topics || existingLog.topics,
-        studyTime: updates.studyTime !== undefined ? updates.studyTime : existingLog.studyTime,
-        understanding: updates.understanding !== undefined ? updates.understanding : existingLog.understanding,
-        memo: updates.memo !== undefined ? updates.memo : existingLog.memo,
-      };
-
-      // 新しいエンティティを作成して保存
-      const updatedLog = await createStudyLogUseCase.execute(updatedData);
-
-      return c.json({
-        success: true,
-        data: {
-          id: updatedLog.id,
-          date: updatedLog.date,
-          subject: updatedLog.subject,
-          topics: updatedLog.topics,
-          studyTime: updatedLog.studyTime,
-          understanding: updatedLog.understanding,
-          memo: updatedLog.memo,
-          efficiency: updatedLog.calculateEfficiency(),
-        },
-        message: '学習記録が更新されました',
-      });
-    } catch (error) {
+      
       return c.json(
         {
           success: false,
