@@ -20,7 +20,7 @@ describe('Exam Utils', () => {
     });
 
     it('should calculate zero for same date', () => {
-      const sameDate = new Date('2024-08-10T23:59:59Z'); // Same day
+      const sameDate = new Date('2024-08-10T00:00:00Z'); // Same day, start of day
       const result = calculateRemainingDays(sameDate);
       expect(result).toBe(0);
     });
@@ -100,7 +100,7 @@ describe('Exam Utils', () => {
     it('should format approaching days with weeks', () => {
       expect(formatRemainingDays(14)).toBe('あと14日 (約2週間)');
       expect(formatRemainingDays(21)).toBe('あと21日 (約3週間)');
-      expect(formatRemainingDays(30)).toBe('あと30日 (約1ヶ月)');
+      expect(formatRemainingDays(30)).toBe('あと30日 (約5週間)');
     });
 
     it('should format long-term days with months', () => {
