@@ -46,11 +46,11 @@ import { errorHandlerMiddleware, createErrorResponse } from 'src/infrastructure/
 
 /**
  * 依存性注入コンテナ
- * 
+ *
  * アプリケーション全体で使用される依存関係を管理するシングルトンコンテナ。
  * リポジトリ、ユースケース、データベース接続などの依存関係を一元管理し、
  * 適切な依存関係注入を実現します。
- * 
+ *
  * @example
  * ```typescript
  * const container = new DIContainer();
@@ -207,13 +207,7 @@ app.use(
       return null;
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowHeaders: [
-      'Content-Type',
-      'Authorization',
-      'X-Requested-With',
-      'Accept',
-      'Origin',
-    ],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     credentials: true, // HttpOnly Cookie対応のため必須
     maxAge: 86400, // プリフライトリクエストのキャッシュ時間（24時間）
   }),
@@ -292,7 +286,6 @@ app.use('/api/review-entries/*', authHandler);
 
 // Mount unified routes
 app.route('/api', unifiedApiRoutes);
-
 
 // エラーハンドリング（標準化されたエラーレスポンス）
 app.onError(errorHandlerMiddleware);

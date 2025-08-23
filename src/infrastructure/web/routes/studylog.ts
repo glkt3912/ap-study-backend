@@ -1,31 +1,28 @@
 // Hono API ルート - 独立学習記録関連
 
-import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
-import { CreateStudyLogUseCase } from "src/domain/usecases/CreateStudyLog.js";
-import { StudyLogRepository } from "src/infrastructure/database/repositories/StudyLogRepository.js";
-import { standardTopicsBySubject } from "src/data/study-topics.js";
-import type { StudyLogData } from "src/domain/entities/StudyLog.js";
+import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
+import { z } from 'zod';
+import { CreateStudyLogUseCase } from 'src/domain/usecases/CreateStudyLog.js';
+import { StudyLogRepository } from 'src/infrastructure/database/repositories/StudyLogRepository.js';
+import { standardTopicsBySubject } from 'src/data/study-topics.js';
+import type { StudyLogData } from 'src/domain/entities/StudyLog.js';
 import type { Variables } from '../middleware/auth.js';
 
 // バリデーションスキーマ
 const createStudyLogSchema = z.object({
-  date: z.string().transform((str) => new Date(str)),
-  subject: z.string().min(1, "科目は必須です"),
-  topics: z.array(z.string()).min(1, "学習項目は1つ以上必要です"),
-  studyTime: z.number().min(1, "学習時間は1分以上必要です"),
-  understanding: z
-    .number()
-    .min(1)
-    .max(5, "理解度は1-5の範囲で入力してください"),
-  memo: z.string().optional().default(""),
+  date: z.string().transform(str => new Date(str)),
+  subject: z.string().min(1, '科目は必須です'),
+  topics: z.array(z.string()).min(1, '学習項目は1つ以上必要です'),
+  studyTime: z.number().min(1, '学習時間は1分以上必要です'),
+  understanding: z.number().min(1).max(5, '理解度は1-5の範囲で入力してください'),
+  memo: z.string().optional().default(''),
 });
 
 const updateStudyLogSchema = z.object({
   date: z
     .string()
-    .transform((str) => new Date(str))
+    .transform(str => new Date(str))
     .optional(),
   subject: z.string().min(1).optional(),
   topics: z.array(z.string()).min(1).optional(),
@@ -35,20 +32,20 @@ const updateStudyLogSchema = z.object({
 });
 
 const dateRangeSchema = z.object({
-  startDate: z.string().transform((str) => new Date(str)),
-  endDate: z.string().transform((str) => new Date(str)),
+  startDate: z.string().transform(str => new Date(str)),
+  endDate: z.string().transform(str => new Date(str)),
 });
 
 export function createStudyLogRoutes(
   createStudyLogUseCase: CreateStudyLogUseCase,
-  studyLogRepository: StudyLogRepository
+  studyLogRepository: StudyLogRepository,
 ) {
   const app = new Hono<{ Variables: Variables }>();
 
   // POST /api/studylog - 学習記録作成
-  app.post("/", zValidator("json", createStudyLogSchema as any), async (c) => {
+  app.post('/', zValidator('json', createStudyLogSchema as any), async c => {
     try {
-      const studyLogData = c.req.valid("json");
+      const studyLogData = c.req.valid('json');
       const authUser = c.get('authUser') || { userId: 7 }; // 開発環境用フォールバック
       const studyLogWithUser = { ...studyLogData, userId: authUser.userId };
       const studyLog = await createStudyLogUseCase.execute(studyLogWithUser);
@@ -66,32 +63,29 @@ export function createStudyLogRoutes(
             memo: studyLog.memo,
             efficiency: studyLog.calculateEfficiency(),
           },
-          message: "学習記録が作成されました",
+          message: '学習記録が作成されました',
         },
-        201
+        201,
       );
     } catch (error) {
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "学習記録の作成に失敗しました",
+          error: error instanceof Error ? error.message : '学習記録の作成に失敗しました',
         },
-        400
+        400,
       );
     }
   });
 
   // GET /api/studylog - 全学習記録取得
-  app.get("/", async (c) => {
+  app.get('/', async c => {
     try {
       const studyLogs = await studyLogRepository.findAll();
 
       return c.json({
         success: true,
-        data: studyLogs.map((log) => ({
+        data: studyLogs.map(log => ({
           id: log.id,
           date: log.date,
           subject: log.subject,
@@ -106,29 +100,26 @@ export function createStudyLogRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "学習記録の取得に失敗しました",
+          error: error instanceof Error ? error.message : '学習記録の取得に失敗しました',
         },
-        500
+        500,
       );
     }
   });
 
   // GET /api/studylog/:id - 特定の学習記録取得
-  app.get("/:id", async (c) => {
+  app.get('/:id', async c => {
     try {
-      const id = parseInt(c.req.param("id"));
+      const id = parseInt(c.req.param('id'));
       const studyLog = await studyLogRepository.findById(id);
 
       if (!studyLog) {
         return c.json(
           {
             success: false,
-            error: "学習記録が見つかりません",
+            error: '学習記録が見つかりません',
           },
-          404
+          404,
         );
       }
 
@@ -149,90 +140,87 @@ export function createStudyLogRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "学習記録の取得に失敗しました",
+          error: error instanceof Error ? error.message : '学習記録の取得に失敗しました',
         },
-        500
+        500,
       );
     }
   });
 
+  // Helper functions for study log update
+  const validateLogExists = async (id: number) => {
+    const existingLog = await studyLogRepository.findById(id);
+    if (!existingLog) {
+      throw new Error('学習記録が見つかりません');
+    }
+    return existingLog;
+  };
+
+  const mergeUpdatedData = (existingLog: any, updates: any) => {
+    return {
+      id: existingLog.id!,
+      date: updates.date || existingLog.date,
+      subject: updates.subject || existingLog.subject,
+      topics: updates.topics || existingLog.topics,
+      studyTime: updates.studyTime !== undefined ? updates.studyTime : existingLog.studyTime,
+      understanding: updates.understanding !== undefined ? updates.understanding : existingLog.understanding,
+      memo: updates.memo !== undefined ? updates.memo : existingLog.memo,
+    };
+  };
+
+  const formatStudyLogResponse = (updatedLog: any) => {
+    return {
+      success: true,
+      data: {
+        id: updatedLog.id,
+        date: updatedLog.date,
+        subject: updatedLog.subject,
+        topics: updatedLog.topics,
+        studyTime: updatedLog.studyTime,
+        understanding: updatedLog.understanding,
+        memo: updatedLog.memo,
+        efficiency: updatedLog.calculateEfficiency(),
+      },
+      message: '学習記録が更新されました',
+    };
+  };
+
   // PUT /api/studylog/:id - 学習記録更新
-  app.put(
-    "/:id",
-    zValidator("json", updateStudyLogSchema as any),
-    async (c) => {
-      try {
-        const id = parseInt(c.req.param("id"));
-        const updates = c.req.valid("json");
+  app.put('/:id', zValidator('json', updateStudyLogSchema as any), async c => {
+    try {
+      const id = parseInt(c.req.param('id'));
+      const updates = c.req.valid('json');
 
-        // 既存の記録を取得
-        const existingLog = await studyLogRepository.findById(id);
-        if (!existingLog) {
-          return c.json(
-            {
-              success: false,
-              error: "学習記録が見つかりません",
-            },
-            404
-          );
-        }
+      const existingLog = await validateLogExists(id);
+      const updatedData = mergeUpdatedData(existingLog, updates);
+      const updatedLog = await createStudyLogUseCase.execute(updatedData);
 
-        // 更新データを作成（既存値をベースに更新）
-        const updatedData = {
-          id: existingLog.id!,
-          date: updates.date || existingLog.date,
-          subject: updates.subject || existingLog.subject,
-          topics: updates.topics || existingLog.topics,
-          studyTime:
-            updates.studyTime !== undefined
-              ? updates.studyTime
-              : existingLog.studyTime,
-          understanding:
-            updates.understanding !== undefined
-              ? updates.understanding
-              : existingLog.understanding,
-          memo: updates.memo !== undefined ? updates.memo : existingLog.memo,
-        };
-
-        // 新しいエンティティを作成して保存
-        const updatedLog = await createStudyLogUseCase.execute(updatedData);
-
-        return c.json({
-          success: true,
-          data: {
-            id: updatedLog.id,
-            date: updatedLog.date,
-            subject: updatedLog.subject,
-            topics: updatedLog.topics,
-            studyTime: updatedLog.studyTime,
-            understanding: updatedLog.understanding,
-            memo: updatedLog.memo,
-            efficiency: updatedLog.calculateEfficiency(),
-          },
-          message: "学習記録が更新されました",
-        });
-      } catch (error) {
+      return c.json(formatStudyLogResponse(updatedLog));
+    } catch (error) {
+      if (error instanceof Error && error.message === '学習記録が見つかりません') {
         return c.json(
           {
             success: false,
-            error:
-              error instanceof Error
-                ? error.message
-                : "学習記録の更新に失敗しました",
+            error: error.message,
           },
-          400
+          404,
         );
       }
+      
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : '学習記録の更新に失敗しました',
+        },
+        400,
+      );
     }
-  );
+  });
 
   // DELETE /api/studylog/:id - 学習記録削除
-  app.delete("/:id", async (c) => {
+  app.delete('/:id', async c => {
     try {
-      const id = parseInt(c.req.param("id"));
+      const id = parseInt(c.req.param('id'));
 
       // 記録が存在するか確認
       const existingLog = await studyLogRepository.findById(id);
@@ -240,9 +228,9 @@ export function createStudyLogRoutes(
         return c.json(
           {
             success: false,
-            error: "学習記録が見つかりません",
+            error: '学習記録が見つかりません',
           },
-          404
+          404,
         );
       }
 
@@ -250,32 +238,28 @@ export function createStudyLogRoutes(
 
       return c.json({
         success: true,
-        message: "学習記録が削除されました",
+        message: '学習記録が削除されました',
       });
     } catch (error) {
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "学習記録の削除に失敗しました",
+          error: error instanceof Error ? error.message : '学習記録の削除に失敗しました',
         },
-        500
+        500,
       );
     }
   });
 
-
   // GET /api/studylog/subject/:subject - 科目別学習記録取得
-  app.get("/subject/:subject", async (c) => {
+  app.get('/subject/:subject', async c => {
     try {
-      const subject = c.req.param("subject");
+      const subject = c.req.param('subject');
       const studyLogs = await studyLogRepository.findBySubject(subject);
 
       return c.json({
         success: true,
-        data: studyLogs.map((log) => ({
+        data: studyLogs.map(log => ({
           id: log.id,
           date: log.date,
           subject: log.subject,
@@ -290,23 +274,19 @@ export function createStudyLogRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "科目別学習記録の取得に失敗しました",
+          error: error instanceof Error ? error.message : '科目別学習記録の取得に失敗しました',
         },
-        500
+        500,
       );
     }
   });
 
   // GET /api/studylog/stats - 学習統計取得
-  app.get("/stats", async (c) => {
+  app.get('/stats', async c => {
     try {
       const stats = await studyLogRepository.getStudyStats();
       const totalTime = await studyLogRepository.getTotalStudyTime();
-      const averageUnderstanding =
-        await studyLogRepository.getAverageUnderstanding();
+      const averageUnderstanding = await studyLogRepository.getAverageUnderstanding();
 
       return c.json({
         success: true,
@@ -320,12 +300,9 @@ export function createStudyLogRoutes(
       return c.json(
         {
           success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "学習統計の取得に失敗しました",
+          error: error instanceof Error ? error.message : '学習統計の取得に失敗しました',
         },
-        500
+        500,
       );
     }
   });
@@ -358,10 +335,8 @@ export function createStudyLogRoutes(
   const filterBySubject = (suggestions: string[], logs: StudyLogData[], subject: string): string[] => {
     const subjectLogs = logs.filter(log => log.subject === subject);
     const subjectTopics = collectExistingTopics(subjectLogs);
-    
-    return suggestions.filter(
-      topic => subjectTopics.has(topic) || standardTopicsBySubject[subject]?.includes(topic),
-    );
+
+    return suggestions.filter(topic => subjectTopics.has(topic) || standardTopicsBySubject[subject]?.includes(topic));
   };
 
   const sortByFrequency = (suggestions: string[], logs: StudyLogData[]): string[] => {
