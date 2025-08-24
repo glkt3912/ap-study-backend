@@ -36,7 +36,6 @@ import authRoutes from 'src/infrastructure/web/routes/auth.js';
 import logoutRoutes from 'src/infrastructure/web/routes/logout.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
 import examConfigRoutes from 'src/infrastructure/web/routes/exam-config.js';
-// Legacy study-plan route import removed
 import createUnifiedApiRoutes from 'src/infrastructure/web/routes/unified-api.js';
 
 // ミドルウェア
@@ -273,9 +272,7 @@ app.route(
 // Exam Config API
 app.route('/api/exam-config', examConfigRoutes);
 
-// Legacy Study Plan API removed - migrated to Unified API
-
-// Phase 2: Unified API Routes - Direct Path Integration
+// Unified API Routes - Direct Path Integration
 const unifiedApiRoutes = createUnifiedApiRoutes(container.prisma);
 
 // Unified API endpoints authentication
@@ -331,7 +328,6 @@ async function startServer() {
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
   logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
   logger.info(`📅 Exam Config API: http://localhost:${port}/api/exam-config`);
-  // Legacy Study Plan API removed
   logger.info(`🔄 Study Plans API: http://localhost:${port}/api/study-plans`);
   logger.info(`🔄 Test Sessions API: http://localhost:${port}/api/test-sessions`);
   logger.info(`🔄 User Analysis API: http://localhost:${port}/api/user-analysis`);
