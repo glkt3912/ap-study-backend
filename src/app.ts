@@ -17,21 +17,17 @@ logger.info(`  ALLOWED_ORIGINS: ${process.env.ALLOWED_ORIGINS || 'http://localho
 // リポジトリ
 import { StudyRepository } from 'src/infrastructure/database/repositories/StudyRepository.js';
 import { StudyLogRepository } from 'src/infrastructure/database/repositories/StudyLogRepository.js';
-import { LearningEfficiencyAnalysisRepository } from 'src/infrastructure/database/repositories/learning-efficiency-analyzerRepository.js';
 
 // ユースケース
 import { GetStudyPlanUseCase } from 'src/domain/usecases/GetStudyPlan.js';
 import { UpdateStudyProgressUseCase } from 'src/domain/usecases/UpdateStudyProgress.js';
 import { CreateStudyLogUseCase } from 'src/domain/usecases/CreateStudyLog.js';
-import { LearningEfficiencyAnalysisUseCase } from 'src/domain/usecases/LearningEfficiencyAnalyzer.js';
 
 // ルート
 import { createStudyRoutes } from 'src/infrastructure/web/routes/study.js';
 import { createStudyLogRoutes } from 'src/infrastructure/web/routes/studylog.js';
 import { createTestRoutes } from 'src/infrastructure/web/routes/test.js';
-import { createAnalysisRoutes } from 'src/infrastructure/web/routes/analysis-routes.js';
 import { createQuizRoutes } from 'src/infrastructure/web/routes/quiz.js';
-import { createLearningEfficiencyAnalysisRoutes } from 'src/infrastructure/web/routes/learning-efficiency-analyzer.js';
 import authRoutes from 'src/infrastructure/web/routes/auth.js';
 import logoutRoutes from 'src/infrastructure/web/routes/logout.js';
 import monitoring from 'src/infrastructure/web/routes/monitoring.js';
@@ -61,11 +57,9 @@ class DIContainer {
   private _prisma: PrismaClient;
   private _studyRepository: StudyRepository;
   private _studyLogRepository: StudyLogRepository;
-  private _learningEfficiencyAnalysisRepository: LearningEfficiencyAnalysisRepository;
   private _getStudyPlanUseCase: GetStudyPlanUseCase;
   private _updateStudyProgressUseCase: UpdateStudyProgressUseCase;
   private _createStudyLogUseCase: CreateStudyLogUseCase;
-  private _learningEfficiencyAnalysisUseCase: LearningEfficiencyAnalysisUseCase;
 
   private constructor() {
     // Prisma Client
@@ -74,16 +68,11 @@ class DIContainer {
     // Repository
     this._studyRepository = new StudyRepository(this._prisma);
     this._studyLogRepository = new StudyLogRepository(this._prisma);
-    this._learningEfficiencyAnalysisRepository = new LearningEfficiencyAnalysisRepository(this._prisma);
 
     // Use Cases
     this._getStudyPlanUseCase = new GetStudyPlanUseCase(this._studyRepository);
     this._updateStudyProgressUseCase = new UpdateStudyProgressUseCase(this._studyRepository);
     this._createStudyLogUseCase = new CreateStudyLogUseCase(this._studyLogRepository);
-    this._learningEfficiencyAnalysisUseCase = new LearningEfficiencyAnalysisUseCase(
-      this._learningEfficiencyAnalysisRepository,
-      this._studyLogRepository,
-    );
   }
 
   static getInstance(): DIContainer {
@@ -110,9 +99,6 @@ class DIContainer {
   }
   get createStudyLogUseCase() {
     return this._createStudyLogUseCase;
-  }
-  get learningEfficiencyAnalysisUseCase() {
-    return this._learningEfficiencyAnalysisUseCase;
   }
 }
 
@@ -239,9 +225,6 @@ app.use('/api/test/*', authHandler);
 app.use('/api/quiz/*', authHandler);
 app.use('/api/exam-config/*', authHandler);
 
-// 分析は常にオプショナル認証（読み取り専用のため）
-app.use('/api/analysis/*', optionalAuthMiddleware);
-app.use('/api/learning-efficiency-analysis/*', optionalAuthMiddleware);
 
 // API ルート
 app.route('/api/study', createStudyRoutes(container.getStudyPlanUseCase, container.updateStudyProgressUseCase));
@@ -252,22 +235,10 @@ app.route('/api/studylog', createStudyLogRoutes(container.createStudyLogUseCase,
 // 問題演習記録API
 app.route('/api/test', createTestRoutes(container.prisma));
 
-// 分析API
-try {
-  const analysisRoutes = createAnalysisRoutes(container.prisma);
-  app.route('/api/analysis', analysisRoutes);
-} catch (error) {
-  logger.error('Failed to mount analysis routes:', error instanceof Error ? error : new Error(String(error)));
-}
 
 // Quiz API
 app.route('/api/quiz', createQuizRoutes());
 
-// Learning Efficiency Analysis API
-app.route(
-  '/api/learning-efficiency-analysis',
-  createLearningEfficiencyAnalysisRoutes(container.learningEfficiencyAnalysisUseCase),
-);
 
 // Exam Config API
 app.route('/api/exam-config', examConfigRoutes);
@@ -280,6 +251,8 @@ app.use('/api/study-plans/*', authHandler);
 app.use('/api/test-sessions/*', authHandler);
 app.use('/api/user-analysis/*', authHandler);
 app.use('/api/review-entries/*', authHandler);
+app.use('/api/topic-suggestions', authHandler);
+app.use('/api/exam-config', authHandler);
 
 // Mount unified routes
 app.route('/api', unifiedApiRoutes);
@@ -324,9 +297,7 @@ async function startServer() {
   logger.info(`🎯 学習計画API: http://localhost:${port}/api/study/plan`);
   logger.info(`📝 学習記録API: http://localhost:${port}/api/studylog`);
   logger.info(`📋 問題演習API: http://localhost:${port}/api/test`);
-  logger.info(`📊 分析API: http://localhost:${port}/api/analysis`);
   logger.info(`🧭 Quiz API: http://localhost:${port}/api/quiz`);
-  logger.info(`📈 Learning Efficiency Analysis API: http://localhost:${port}/api/learning-efficiency-analysis`);
   logger.info(`📅 Exam Config API: http://localhost:${port}/api/exam-config`);
   logger.info(`🔄 Study Plans API: http://localhost:${port}/api/study-plans`);
   logger.info(`🔄 Test Sessions API: http://localhost:${port}/api/test-sessions`);
