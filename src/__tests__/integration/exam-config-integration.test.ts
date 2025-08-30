@@ -1,23 +1,26 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 
-// Create mock at module level
-const mockPrisma = {
-  examConfig: {
-    findUnique: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-  },
-};
-
-// Mock modules at the top level
-vi.mock('@prisma/client', () => ({
-  PrismaClient: vi.fn(() => mockPrisma),
-}));
+// Mock modules at the top level BEFORE imports
+vi.mock('@prisma/client', () => {
+  const mockPrisma = {
+    examConfig: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  };
+  return {
+    PrismaClient: vi.fn(() => mockPrisma),
+  };
+});
 
 import { PrismaClient } from '@prisma/client';
 import examConfigRoutes from '../../infrastructure/web/routes/exam-config';
+
+// Access mock after import
+const mockPrisma = (new PrismaClient() as any);
 
 describe('Exam Config Integration Tests', () => {
   let app: Hono;
