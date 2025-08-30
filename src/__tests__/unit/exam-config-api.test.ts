@@ -35,7 +35,7 @@ describe('Exam Config API', () => {
     vi.resetAllMocks();
   });
 
-  describe('GET /exam-config/:userId', () => {
+  describe('GET /:userId', () => {
     it('should return exam config with remaining days', async () => {
       const mockExamConfig = {
         id: 1,
@@ -48,7 +48,7 @@ describe('Exam Config API', () => {
 
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(mockExamConfig);
 
-      const response = await app.request('/exam-config/1');
+      const response = await app.request('/1');
       const result = await response.json();
 
       expect(response.status).toBe(200);
@@ -65,7 +65,7 @@ describe('Exam Config API', () => {
     it('should return 404 when exam config not found', async () => {
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(null);
 
-      const response = await app.request('/exam-config/999');
+      const response = await app.request('/999');
       const result = await response.json();
 
       expect(response.status).toBe(404);
@@ -73,7 +73,7 @@ describe('Exam Config API', () => {
     });
 
     it('should return 400 for invalid user ID', async () => {
-      const response = await app.request('/exam-config/invalid');
+      const response = await app.request('/invalid');
       const result = await response.json();
 
       expect(response.status).toBe(400);
@@ -81,7 +81,7 @@ describe('Exam Config API', () => {
     });
   });
 
-  describe('POST /exam-config/:userId', () => {
+  describe('POST /:userId', () => {
     it('should create new exam config', async () => {
       const requestData = {
         examDate: '2024-12-01T00:00:00Z',
@@ -100,7 +100,7 @@ describe('Exam Config API', () => {
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(null);
       mockPrisma.examConfig.create = vi.fn().mockResolvedValue(mockCreatedConfig);
 
-      const response = await app.request('/exam-config/1', {
+      const response = await app.request('/1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
@@ -149,7 +149,7 @@ describe('Exam Config API', () => {
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(existingConfig);
       mockPrisma.examConfig.update = vi.fn().mockResolvedValue(updatedConfig);
 
-      const response = await app.request('/exam-config/1', {
+      const response = await app.request('/1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
@@ -174,7 +174,7 @@ describe('Exam Config API', () => {
         targetScore: 'not-a-number',
       };
 
-      const response = await app.request('/exam-config/1', {
+      const response = await app.request('/1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(invalidData),
@@ -204,7 +204,7 @@ describe('Exam Config API', () => {
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(null);
       mockPrisma.examConfig.create = vi.fn().mockResolvedValue(mockCreatedConfig);
 
-      const response = await app.request('/exam-config/1', {
+      const response = await app.request('/1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestData),
@@ -217,7 +217,7 @@ describe('Exam Config API', () => {
     });
   });
 
-  describe('DELETE /exam-config/:userId', () => {
+  describe('DELETE /:userId', () => {
     it('should delete exam config successfully', async () => {
       mockPrisma.examConfig.delete = vi.fn().mockResolvedValue({
         id: 1,
@@ -228,7 +228,7 @@ describe('Exam Config API', () => {
         updatedAt: new Date(),
       });
 
-      const response = await app.request('/exam-config/1', {
+      const response = await app.request('/1', {
         method: 'DELETE',
       });
 
@@ -242,7 +242,7 @@ describe('Exam Config API', () => {
     });
 
     it('should return 400 for invalid user ID', async () => {
-      const response = await app.request('/exam-config/invalid', {
+      const response = await app.request('/invalid', {
         method: 'DELETE',
       });
 
@@ -255,7 +255,7 @@ describe('Exam Config API', () => {
     it('should handle database errors', async () => {
       mockPrisma.examConfig.delete = vi.fn().mockRejectedValue(new Error('Database error'));
 
-      const response = await app.request('/exam-config/1', {
+      const response = await app.request('/1', {
         method: 'DELETE',
       });
 
@@ -282,7 +282,7 @@ describe('Exam Config API', () => {
 
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(mockExamConfig);
 
-      const response = await app.request('/exam-config/1');
+      const response = await app.request('/1');
       const result = await response.json();
 
       expect(response.status).toBe(200);
@@ -305,7 +305,7 @@ describe('Exam Config API', () => {
 
       mockPrisma.examConfig.findUnique = vi.fn().mockResolvedValue(mockExamConfig);
 
-      const response = await app.request('/exam-config/1');
+      const response = await app.request('/1');
       const result = await response.json();
 
       expect(response.status).toBe(200);
