@@ -7,6 +7,7 @@
 
 import { Hono } from 'hono';
 import { PrismaClient } from '@prisma/client';
+import type { Variables } from '../middleware/auth.js';
 
 // Unified response types
 interface ApiResponse<T = any> {
@@ -89,17 +90,72 @@ class UnifiedApiService {
         where: { userId }
       });
 
+      let studyPlan;
+
       if (existing) {
-        return this.error('STUDY_PLAN_EXISTS', 'User already has a study plan');
+        // If study plan exists, update it instead of creating a new one
+        studyPlan = await this.prisma.studyPlan.update({
+          where: { userId },
+          data: {
+            name: planData.name || existing.name,
+            description: planData.description || existing.description,
+            targetExamDate: planData.targetExamDate || existing.targetExamDate,
+            templateId: planData.templateId || existing.templateId,
+            updatedAt: new Date()
+          },
+          include: {
+            weeks: {
+              include: {
+                days: true
+              }
+            }
+          }
+        });
+      } else {
+        // Create new study plan
+        studyPlan = await this.prisma.studyPlan.create({
+          data: {
+            userId,
+            name: planData.name || 'Default Study Plan',
+            description: planData.description,
+            targetExamDate: planData.targetExamDate,
+            templateId: planData.templateId
+          },
+          include: {
+            weeks: {
+              include: {
+                days: true
+              }
+            }
+          }
+        });
       }
 
-      const studyPlan = await this.prisma.studyPlan.create({
+      return this.success(studyPlan);
+    } catch (error) {
+      return this.error('INTERNAL_ERROR', 'Failed to create or update study plan', error);
+    }
+  }
+
+  async updateStudyPlan(userId: number, planData: any): Promise<ApiResponse> {
+    try {
+      // Check if user has a study plan
+      const existing = await this.prisma.studyPlan.findUnique({
+        where: { userId }
+      });
+
+      if (!existing) {
+        return this.error('STUDY_PLAN_NOT_FOUND', 'User does not have a study plan to update');
+      }
+
+      const studyPlan = await this.prisma.studyPlan.update({
+        where: { userId },
         data: {
-          userId,
-          name: planData.name || 'Default Study Plan',
-          description: planData.description,
-          targetExamDate: planData.targetExamDate,
-          templateId: planData.templateId
+          name: planData.name || existing.name,
+          description: planData.description || existing.description,
+          targetExamDate: planData.targetExamDate || existing.targetExamDate,
+          templateId: planData.templateId || existing.templateId,
+          updatedAt: new Date()
         },
         include: {
           weeks: {
@@ -112,7 +168,7 @@ class UnifiedApiService {
 
       return this.success(studyPlan);
     } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to create study plan', error);
+      return this.error('INTERNAL_ERROR', 'Failed to update study plan', error);
     }
   }
 
@@ -330,196 +386,185 @@ class UnifiedApiService {
 
   // ===== USER ANALYSIS API =====
 
-  async getUserAnalysis(userId: number, analysisType?: string): Promise<ApiResponse> {
+  async getUserAnalysis(_userId: number, _analysisType?: string): Promise<ApiResponse> {
+    return this.success([]);
+  }
+
+  async createUserAnalysis(_userId: number, _analysisData: unknown): Promise<ApiResponse> {
+    return this.error('FEATURE_DISABLED', 'User analysis feature has been simplified and removed');
+  }
+
+  // ===== EXAM CONFIG API =====
+
+  async getExamConfig(userId: number): Promise<ApiResponse> {
     try {
-      // Fetch from AnalysisResult and PredictionResult tables
-      const [analysisResults, predictionResults] = await Promise.all([
-        this.prisma.analysisResult.findMany({
+      const examConfig = await this.prisma.examConfig.findUnique({
+        where: { userId },
+      });
+
+      if (!examConfig) {
+        return this.error('EXAM_CONFIG_NOT_FOUND', 'Exam configuration not found');
+      }
+
+      // 残り日数を計算
+      const now = new Date();
+      const examDate = new Date(examConfig.examDate);
+      const remainingDays = Math.ceil((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+      return this.success({
+        ...examConfig,
+        remainingDays,
+      });
+    } catch (error) {
+      return this.error('INTERNAL_ERROR', 'Failed to fetch exam config', error);
+    }
+  }
+
+  async createExamConfig(userId: number, configData: any): Promise<ApiResponse> {
+    try {
+      // 既存の設定があるかチェック
+      const existingConfig = await this.prisma.examConfig.findUnique({
+        where: { userId },
+      });
+
+      let examConfig;
+      if (existingConfig) {
+        // 更新
+        examConfig = await this.prisma.examConfig.update({
           where: { userId },
-          orderBy: { analysisDate: 'desc' },
-          take: 5
-        }),
-        this.prisma.predictionResult.findMany({
-          where: { userId },
-          orderBy: { predictionDate: 'desc' },
-          take: 5
-        })
-      ]);
-
-      // Unified format
-      const unifiedAnalysis = [
-        ...analysisResults.map(result => ({
-          id: result.id,
-          type: 'learning_efficiency',
-          date: result.analysisDate,
-          overallScore: result.overallScore,
-          studyPattern: result.studyPattern,
-          weaknessAnalysis: result.weaknessAnalysis,
-          studyRecommendation: result.studyRecommendation,
-          createdAt: result.createdAt
-        })),
-        ...predictionResults.map(result => ({
-          id: result.id,
-          type: 'prediction',
-          date: result.predictionDate,
-          examDate: result.examDate,
-          passProbability: result.passProbability,
-          examReadiness: result.examReadiness,
-          studyTimeRequired: result.studyTimePrediction,
-          createdAt: result.createdAt
-        }))
-      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-      // Filter by type if specified
-      const filteredResults = analysisType 
-        ? unifiedAnalysis.filter(item => item.type === analysisType)
-        : unifiedAnalysis;
-
-      return this.success(filteredResults.slice(0, 10));
-    } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to fetch user analysis', error);
-    }
-  }
-
-  // Helper methods for createUserAnalysis
-  private async createPredictionAnalysis(userId: number, analysisData: any) {
-    return await this.prisma.predictionResult.create({
-      data: {
-        userId,
-        predictionDate: new Date(),
-        examDate: analysisData.targetExamDate,
-        passProbability: analysisData.passProbability || {},
-        examReadiness: analysisData.estimatedReadiness || {},
-        studyTimePrediction: analysisData.studyTimeRequired || {},
-        modelVersion: 'unified-api-v1.0',
-        scorePrediction: {}
-      }
-    });
-  }
-
-  private async createAnalysisResult(userId: number, analysisData: any) {
-    return await this.prisma.analysisResult.create({
-      data: {
-        userId,
-        analysisDate: new Date(),
-        overallScore: analysisData.overallScore,
-        studyPattern: analysisData.studyPattern || {},
-        weaknessAnalysis: {
-          overallWeakness: analysisData.weakAreasRating,
-          weakAreas: analysisData.weakSubjects?.split(',') || []
-        },
-        studyRecommendation: {
-          summary: analysisData.recommendations,
-          strongAreas: analysisData.strongSubjects?.split(',') || []
-        }
-      }
-    });
-  }
-
-  async createUserAnalysis(userId: number, analysisData: any): Promise<ApiResponse> {
-    try {
-      const analysis = analysisData.analysisType === 'prediction'
-        ? await this.createPredictionAnalysis(userId, analysisData)
-        : await this.createAnalysisResult(userId, analysisData);
-
-      return this.success(analysis);
-    } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to create user analysis', error);
-    }
-  }
-
-  // ===== REVIEW ENTRIES API =====
-
-  async getReviewEntries(userId: number, activeOnly = true): Promise<ApiResponse> {
-    try {
-      const whereClause: any = { userId };
-      if (activeOnly) {
-        whereClause.isCompleted = false;
-      }
-
-      const entries = await this.prisma.reviewItem.findMany({
-        where: whereClause,
-        orderBy: { nextReviewDate: 'asc' }
-      });
-
-      return this.success(entries);
-    } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to fetch review entries', error);
-    }
-  }
-
-  async getTodayReviews(userId: number): Promise<ApiResponse> {
-    try {
-      const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
-
-      const reviews = await this.prisma.reviewItem.findMany({
-        where: {
-          userId,
-          isCompleted: false,
-          nextReviewDate: {
-            gte: startOfDay,
-            lt: endOfDay
-          }
-        },
-        orderBy: { nextReviewDate: 'asc' }
-      });
-
-      return this.success(reviews);
-    } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to fetch today reviews', error);
-    }
-  }
-
-  async completeReview(userId: number, entryId: number, understanding: number): Promise<ApiResponse> {
-    try {
-      // Verify ownership
-      const entry = await this.prisma.reviewItem.findFirst({
-        where: { id: entryId, userId }
-      });
-
-      if (!entry) {
-        return this.error('REVIEW_ENTRY_NOT_FOUND', 'Review entry not found or access denied');
-      }
-
-      // Calculate next review interval using spaced repetition
-      const currentInterval = entry.intervalDays;
-      let nextInterval = currentInterval;
-      
-      if (understanding >= 4) {
-        nextInterval = Math.min(currentInterval * 2, 30); // Max 30 days
-      } else if (understanding >= 2) {
-        nextInterval = currentInterval;
+          data: {
+            examDate: configData.examDate ? new Date(configData.examDate) : existingConfig.examDate,
+            targetScore: configData.targetScore || existingConfig.targetScore,
+          },
+        });
       } else {
-        nextInterval = Math.max(Math.floor(currentInterval / 2), 1); // Min 1 day
+        // 新規作成
+        examConfig = await this.prisma.examConfig.create({
+          data: {
+            userId,
+            examDate: new Date(configData.examDate),
+            targetScore: configData.targetScore,
+          },
+        });
       }
 
-      const nextReviewDate = new Date();
-      nextReviewDate.setDate(nextReviewDate.getDate() + nextInterval);
+      // 残り日数を計算
+      const now = new Date();
+      const examDate = new Date(examConfig.examDate);
+      const remainingDays = Math.ceil((examDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-      const updatedEntry = await this.prisma.reviewItem.update({
-        where: { id: entryId },
-        data: {
-          lastStudyDate: new Date(),
-          nextReviewDate,
-          reviewCount: entry.reviewCount + 1,
-          intervalDays: nextInterval,
-          understanding
-        }
+      return this.success({
+        ...examConfig,
+        remainingDays,
       });
-
-      return this.success(updatedEntry);
     } catch (error) {
-      return this.error('INTERNAL_ERROR', 'Failed to complete review', error);
+      return this.error('INTERNAL_ERROR', 'Failed to create or update exam config', error);
     }
   }
+
+  // ===== TOPIC SUGGESTIONS API =====
+
+  async getTopicSuggestions(subject?: string, query?: string): Promise<ApiResponse> {
+    try {
+      // PR #24の元実装通り：既存記録と標準トピックを組み合わせ
+      const { TOPIC_SUGGESTIONS } = await import('src/domain/constants/topic-suggestions.js');
+      
+      // 既存の学習記録から学習項目を取得
+      const allLogs = await this.prisma.studyLog.findMany({
+        select: { topics: true, subject: true }
+      });
+      
+      const allTopics = new Set<string>();
+      
+      // 既存記録からトピックを収集
+      for (const log of allLogs) {
+        if (Array.isArray(log.topics)) {
+          for (const topic of log.topics) {
+            if (typeof topic === 'string') {
+              allTopics.add(topic);
+            }
+          }
+        }
+      }
+      
+      // 標準トピックを追加
+      if (subject && TOPIC_SUGGESTIONS[subject]) {
+        for (const topic of TOPIC_SUGGESTIONS[subject]) {
+          allTopics.add(topic);
+        }
+      } else {
+        // 科目指定なしの場合は全トピックを追加
+        for (const topics of Object.values(TOPIC_SUGGESTIONS)) {
+          for (const topic of topics) {
+            allTopics.add(topic);
+          }
+        }
+      }
+      
+      let suggestions = Array.from(allTopics);
+      
+      // クエリでフィルタリング（元実装通り）
+      if (query && query.trim().length > 0) {
+        const lowerQuery = query.toLowerCase();
+        suggestions = suggestions.filter(topic => 
+          topic.toLowerCase().includes(lowerQuery)
+        );
+      }
+      
+      // 科目でフィルタリング（元実装通り）
+      if (subject) {
+        const subjectLogs = allLogs.filter(log => log.subject === subject);
+        const subjectTopics = new Set<string>();
+        
+        for (const log of subjectLogs) {
+          if (Array.isArray(log.topics)) {
+            for (const topic of log.topics) {
+              if (typeof topic === 'string') {
+                subjectTopics.add(topic);
+              }
+            }
+          }
+        }
+        
+        suggestions = suggestions.filter(
+          topic => subjectTopics.has(topic) || (TOPIC_SUGGESTIONS[subject]?.includes(topic))
+        );
+      }
+      
+      // 使用頻度でソート（元実装通り）
+      const topicFrequency = new Map<string, number>();
+      for (const log of allLogs) {
+        if (Array.isArray(log.topics)) {
+          for (const topic of log.topics) {
+            if (typeof topic === 'string') {
+              topicFrequency.set(topic, (topicFrequency.get(topic) || 0) + 1);
+            }
+          }
+        }
+      }
+      
+      suggestions.sort((a, b) => {
+        const freqA = topicFrequency.get(a) || 0;
+        const freqB = topicFrequency.get(b) || 0;
+        if (freqA !== freqB) {
+          return freqB - freqA;
+        }
+        return a.localeCompare(b);
+      });
+      
+      // 上位20件に制限
+      return this.success(suggestions.slice(0, 20));
+    } catch (error) {
+      return this.error('INTERNAL_ERROR', 'Failed to fetch topic suggestions', error);
+    }
+  }
+
 }
 
 // ===== HONO ROUTES =====
 
 export function createUnifiedApiRoutes(prisma: PrismaClient) {
-  const app = new Hono();
+  const app = new Hono<{ Variables: Variables }>();
   const service = new UnifiedApiService(prisma);
 
   // Study Plans
@@ -534,6 +579,13 @@ export function createUnifiedApiRoutes(prisma: PrismaClient) {
     const body = await c.req.json();
     const result = await service.createStudyPlan(userId, body);
     return c.json(result, result.success ? 201 : 400);
+  });
+
+  app.put('/study-plans/:userId', async (c) => {
+    const userId = parseInt(c.req.param('userId'));
+    const body = await c.req.json();
+    const result = await service.updateStudyPlan(userId, body);
+    return c.json(result, result.success ? 200 : 400);
   });
 
   app.put('/study-plans/:userId/days/:dayId', async (c) => {
@@ -575,26 +627,50 @@ export function createUnifiedApiRoutes(prisma: PrismaClient) {
     return c.json(result, result.success ? 201 : 400);
   });
 
-  // Review Entries
-  app.get('/review-entries/:userId', async (c) => {
-    const userId = parseInt(c.req.param('userId'));
-    const activeOnly = c.req.query('active') !== 'false';
-    const result = await service.getReviewEntries(userId, activeOnly);
+  // Topic Suggestions (PR #27 style)
+  app.get('/topic-suggestions', async (c) => {
+    const subject = c.req.query('subject');
+    const query = c.req.query('query');
+    const result = await service.getTopicSuggestions(subject, query);
     return c.json(result, result.success ? 200 : 400);
   });
 
-  app.get('/review-entries/:userId/today', async (c) => {
-    const userId = parseInt(c.req.param('userId'));
-    const result = await service.getTodayReviews(userId);
-    return c.json(result, result.success ? 200 : 400);
+  // Exam Config (query parameter support)
+  app.get('/exam-config', async (c) => {
+    const userId = parseInt(c.req.query('userId') || '');
+    if (isNaN(userId)) {
+      return c.json({ success: false, error: { code: 'INVALID_USER_ID', message: 'Valid userId is required' } }, 400);
+    }
+    const result = await service.getExamConfig(userId);
+    return c.json(result, result.success ? 200 : 404);
   });
 
-  app.put('/review-entries/:userId/:entryId', async (c) => {
-    const userId = parseInt(c.req.param('userId'));
-    const entryId = parseInt(c.req.param('entryId'));
+  app.post('/exam-config', async (c) => {
     const body = await c.req.json();
-    const result = await service.completeReview(userId, entryId, body.understanding);
-    return c.json(result, result.success ? 200 : 400);
+    
+    // userIdをクエリパラメータ、ボディ、または認証コンテキストから取得
+    let userId: number;
+    const queryUserId = c.req.query('userId');
+    const bodyUserId = body.userId;
+    const authUserId = c.get('authUser')?.userId;
+    
+    if (queryUserId) {
+      userId = parseInt(queryUserId);
+    } else if (bodyUserId) {
+      userId = parseInt(bodyUserId);
+    } else if (authUserId) {
+      userId = authUserId;
+    } else {
+      // デフォルトのテストユーザーID（開発環境用）
+      userId = 1;
+    }
+    
+    if (isNaN(userId)) {
+      return c.json({ success: false, error: { code: 'INVALID_USER_ID', message: 'Valid userId is required' } }, 400);
+    }
+    
+    const result = await service.createExamConfig(userId, body);
+    return c.json(result, result.success ? 201 : 400);
   });
 
   return app;
