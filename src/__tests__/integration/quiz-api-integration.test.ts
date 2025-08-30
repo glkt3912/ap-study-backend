@@ -29,7 +29,7 @@ vi.mock('@prisma/client', () => {
 });
 
 import { PrismaClient } from '@prisma/client';
-import quizRoutes from '../../infrastructure/web/routes/quiz';
+import { createQuizRoutes } from '../../infrastructure/web/routes/quiz';
 
 // Access mock after import
 const mockPrisma = (new PrismaClient() as any);
@@ -39,7 +39,7 @@ describe('Quiz API Integration Tests', () => {
 
   beforeEach(() => {
     app = new Hono();
-    app.route('/', quizRoutes);
+    app.route('/', createQuizRoutes());
     vi.clearAllMocks();
   });
 

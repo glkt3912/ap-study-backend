@@ -26,7 +26,7 @@ vi.mock('@prisma/client', () => {
 });
 
 import { PrismaClient } from '@prisma/client';
-import studyRoutes from '../../infrastructure/web/routes/study';
+import { createStudyRoutes } from '../../infrastructure/web/routes/study';
 
 // Access mock after import
 const mockPrisma = (new PrismaClient() as any);
@@ -83,7 +83,11 @@ describe('Analysis API Integration Tests', () => {
 
   beforeEach(() => {
     app = new Hono();
-    app.route('/', studyRoutes);
+    const mockUseCases = {
+      getStudyPlanUseCase: {} as any,
+      updateStudyProgressUseCase: {} as any
+    };
+    app.route('/', createStudyRoutes(mockUseCases.getStudyPlanUseCase, mockUseCases.updateStudyProgressUseCase));
     vi.clearAllMocks();
   });
 
