@@ -102,13 +102,22 @@ async function seedDatabase() {
       }
     });
 
+    // ユーザー1の学習計画を取得
+    const studyPlan = await prisma.studyPlan.findUnique({
+      where: { userId: 1 }
+    });
+
+    if (!studyPlan) {
+      throw new Error('StudyPlan for user 1 not found. Please create a study plan first.');
+    }
+
     // 学習週データを作成（既存データがない場合のみ）
     for (const weekData of studyPlanData) {
       // 既存の週データをチェック
       const existingWeek = await prisma.studyWeek.findFirst({
         where: {
           weekNumber: weekData.weekNumber,
-          studyPlanId: null
+          studyPlanId: studyPlan.id
         }
       });
       
@@ -119,6 +128,7 @@ async function seedDatabase() {
 
       const week = await prisma.studyWeek.create({
         data: {
+          studyPlanId: studyPlan.id,
           weekNumber: weekData.weekNumber,
           title: weekData.title,
           phase: weekData.phase,
