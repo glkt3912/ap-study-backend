@@ -55,7 +55,7 @@ describe('Auth API Integration Tests', () => {
 
   beforeEach(() => {
     app = new Hono();
-    app.route('/', authRoutes);
+    app.route('/api/auth', authRoutes);
     vi.clearAllMocks();
   });
 
