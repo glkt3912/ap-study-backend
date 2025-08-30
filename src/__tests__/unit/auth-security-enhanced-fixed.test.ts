@@ -43,6 +43,7 @@ let logoutRoutes: any;
 const mockUser = {
   id: 1,
   email: 'test@example.com',
+  username: 'testuser',
   name: 'Test User',
   password: 'hashedpassword',
   role: 'user',
@@ -96,6 +97,7 @@ describe('Enhanced JWT Authentication System (Fixed)', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'test@example.com',
+          username: 'testuser',
           password: 'testpassword123',
           name: 'Test User'
         }),
@@ -241,6 +243,7 @@ describe('Enhanced JWT Authentication System (Fixed)', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'test@example.com',
+          username: 'testuser',
           password: 'testpassword123',
           name: 'Test User'
         }),
@@ -466,6 +469,7 @@ describe('Enhanced JWT Authentication System (Fixed)', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: 'test@example.com',
+          username: 'testuser',
           password: 'testpassword123',
           name: 'Test User'
         }),
