@@ -394,6 +394,100 @@ class UnifiedApiService {
     return this.error('FEATURE_DISABLED', 'User analysis feature has been simplified and removed');
   }
 
+  // ===== BATCH API =====
+  
+  async getBatchData(userId: number, endpoints?: string[]): Promise<ApiResponse> {
+    try {
+      const defaultEndpoints = ['study-plan', 'test-sessions', 'exam-config', 'recent-logs'];
+      const requestedEndpoints = endpoints || defaultEndpoints;
+      
+      const batchResults: Record<string, any> = {};
+      
+      // 並列実行でAPI呼び出し回数を削減
+      const promises = requestedEndpoints.map(async (endpoint) => {
+        try {
+          switch (endpoint) {
+            case 'study-plan':
+              const studyPlan = await this.getStudyPlan(userId);
+              return { endpoint, data: studyPlan.data, success: studyPlan.success };
+            
+            case 'test-sessions':
+              const testSessions = await this.getTestSessions(userId, 10, 0);
+              return { endpoint, data: testSessions.data, success: testSessions.success };
+            
+            case 'exam-config':
+              const examConfig = await this.getExamConfig(userId);
+              return { endpoint, data: examConfig.data, success: examConfig.success };
+            
+            case 'recent-logs':
+              const recentLogs = await this.prisma.studyLog.findMany({
+                where: { userId },
+                orderBy: { date: 'desc' },
+                take: 5,
+              });
+              return { endpoint, data: recentLogs, success: true };
+            
+            case 'study-stats':
+              const stats = await this.prisma.studyLog.aggregate({
+                where: { userId },
+                _count: { id: true },
+                _sum: { studyTime: true },
+                _avg: { understanding: true },
+              });
+              
+              const subjectStats = await this.prisma.studyLog.groupBy({
+                where: { userId },
+                by: ['subject'],
+                _sum: { studyTime: true },
+                orderBy: { _sum: { studyTime: 'desc' } },
+                take: 1,
+              });
+              
+              return {
+                endpoint,
+                data: {
+                  totalLogs: stats._count?.id || 0,
+                  totalTime: stats._sum?.studyTime || 0,
+                  averageUnderstanding: stats._avg?.understanding || 0,
+                  mostStudiedSubject: subjectStats[0]?.subject || 'なし',
+                },
+                success: true,
+              };
+            
+            default:
+              return { endpoint, data: null, success: false, error: 'Unknown endpoint' };
+          }
+        } catch (error) {
+          return { endpoint, data: null, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      });
+      
+      const results = await Promise.all(promises);
+      
+      // 結果を整理
+      results.forEach(result => {
+        batchResults[result.endpoint] = {
+          success: result.success,
+          data: result.data,
+          error: result.error,
+        };
+      });
+      
+      // 成功した項目の数を計算
+      const successCount = results.filter(r => r.success).length;
+      
+      return this.success(batchResults, {
+        batchInfo: {
+          requested: requestedEndpoints.length,
+          successful: successCount,
+          failed: requestedEndpoints.length - successCount,
+        },
+      });
+    } catch (error) {
+      return this.error('BATCH_REQUEST_FAILED', 'Failed to process batch request', error);
+    }
+  }
+
   // ===== EXAM CONFIG API =====
 
   async getExamConfig(userId: number): Promise<ApiResponse> {
@@ -671,6 +765,20 @@ export function createUnifiedApiRoutes(prisma: PrismaClient) {
     
     const result = await service.createExamConfig(userId, body);
     return c.json(result, result.success ? 201 : 400);
+  });
+
+  // ===== BATCH API ENDPOINT =====
+  
+  app.get('/batch/:userId', async (c) => {
+    const userId = parseInt(c.req.param('userId'));
+    const endpoints = c.req.query('endpoints')?.split(',').map(e => e.trim()) || undefined;
+    
+    if (isNaN(userId)) {
+      return c.json({ success: false, error: { code: 'INVALID_USER_ID', message: 'Valid userId is required' } }, 400);
+    }
+    
+    const result = await service.getBatchData(userId, endpoints);
+    return c.json(result, result.success ? 200 : 400);
   });
 
   return app;

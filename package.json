@@ -52,7 +52,6 @@
     "@hono/zod-openapi": "^1.0.2",
     "@hono/zod-validator": "^0.7.2",
     "@prisma/client": "^5.10.0",
-    "@supabase/supabase-js": "^2.45.0",
     "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^2.4.6",
     "bcrypt": "^6.0.0",
