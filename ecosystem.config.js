@@ -41,14 +41,14 @@ module.exports = {
     env_file: '.env.production'
   }],
   
-  // デプロイ設定
+  // デプロイ設定（環境変数から取得）
   deploy: {
     production: {
-      user: 'root',
-      host: 'YOUR_VPS_IP',
+      user: process.env.DEPLOY_USER || 'root',
+      host: process.env.VPS_IP || 'YOUR_VPS_IP',
       ref: 'origin/main',
-      repo: 'https://github.com/USERNAME/ap-study-project.git',
-      path: '/var/www/ap-study',
+      repo: process.env.DEPLOY_REPO || 'https://github.com/USERNAME/ap-study-project.git',
+      path: process.env.DEPLOY_PATH || '/var/www/ap-study',
       'post-deploy': 'cd ap-study-backend && npm ci && npm run build && pm2 reload ecosystem.config.js',
       'pre-setup': 'apt update && apt install git nodejs npm -y'
     }
