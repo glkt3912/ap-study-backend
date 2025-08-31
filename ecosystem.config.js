@@ -9,11 +9,11 @@ module.exports = {
     watch: false,
     max_memory_restart: '400M',
     
-    // 環境変数
+    // 環境変数（.envから読み込み）
     env: {
-      NODE_ENV: 'production',
-      PORT: 8000,
-      HOST: '0.0.0.0'
+      NODE_ENV: process.env.NODE_ENV || 'production',
+      PORT: process.env.PORT || 8000,
+      HOST: process.env.HOST || '0.0.0.0'
     },
     
     // ログ設定
