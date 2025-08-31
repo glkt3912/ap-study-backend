@@ -107,6 +107,26 @@ export function createStudyLogRoutes(
     }
   });
 
+  // GET /api/studylog/stats - 学習統計取得
+  app.get('/stats', async c => {
+    try {
+      const stats = await studyLogRepository.getStudyStats();
+
+      return c.json({
+        success: true,
+        data: stats,
+      });
+    } catch (error) {
+      return c.json(
+        {
+          success: false,
+          error: error instanceof Error ? error.message : '学習統計の取得に失敗しました',
+        },
+        500,
+      );
+    }
+  });
+
   // GET /api/studylog/:id - 特定の学習記録取得
   app.get('/:id', async c => {
     try {
@@ -275,32 +295,6 @@ export function createStudyLogRoutes(
         {
           success: false,
           error: error instanceof Error ? error.message : '科目別学習記録の取得に失敗しました',
-        },
-        500,
-      );
-    }
-  });
-
-  // GET /api/studylog/stats - 学習統計取得
-  app.get('/stats', async c => {
-    try {
-      const stats = await studyLogRepository.getStudyStats();
-      const totalTime = await studyLogRepository.getTotalStudyTime();
-      const averageUnderstanding = await studyLogRepository.getAverageUnderstanding();
-
-      return c.json({
-        success: true,
-        data: {
-          ...stats,
-          totalTime,
-          averageUnderstanding,
-        },
-      });
-    } catch (error) {
-      return c.json(
-        {
-          success: false,
-          error: error instanceof Error ? error.message : '学習統計の取得に失敗しました',
         },
         500,
       );
